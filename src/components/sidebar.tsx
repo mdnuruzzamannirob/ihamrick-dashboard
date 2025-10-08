@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
@@ -13,22 +15,21 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import SidebarButton from "@/components/sidebar-button";
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: FileText, label: "Manage Blog" },
-  { icon: Video, label: "Manage Videos" },
-  { icon: Mic, label: "Manage Podcasts" },
-  { icon: BookOpen, label: "Manage Publications" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+  { icon: FileText, label: "Manage Blog", href: "/manage-blog" },
+  { icon: Video, label: "Manage Videos", href: "/manage-videos" },
+  { icon: Mic, label: "Manage Podcasts", href: "/manage-podcasts" },
+  {
+    icon: BookOpen,
+    label: "Manage Publications",
+    href: "/manage-publications",
+  },
 ];
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activebar, setActivebar] = useState("dashboard");
-
-  const handleActiveBar = (key: string) => {
-    setActivebar(key);
-  };
+  const pathname = usePathname();
 
   return (
     <div>
@@ -64,44 +65,24 @@ export function Sidebar() {
 
           {/* Menu Items */}
           <nav className="flex-1 space-y-1">
-            {/* {menuItems.map((item) => (
-              <button
-                key={item.label}
-                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium transition-colors ${
-                  item.active
-                    ? "bg-white text-neutral-900"
-                    : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
-                }`}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.label}
-              </button>
-            ))} */}
-            <SidebarButton
-              item={{ icon: LayoutDashboard, label: "Dashboard" }}
-              onClick={handleActiveBar}
-              active={activebar === "Dashboard"}
-            />
-            <SidebarButton
-              item={{ icon: FileText, label: "Manage Blog" }}
-              onClick={handleActiveBar}
-              active={activebar === "Manage Blog"}
-            />
-            <SidebarButton
-              item={{ icon: Video, label: "Manage Videos" }}
-              onClick={handleActiveBar}
-              active={activebar === "Manage Videos"}
-            />
-            <SidebarButton
-              item={{ icon: Mic, label: "Manage Podcasts" }}
-              onClick={handleActiveBar}
-              active={activebar === "Manage Podcasts"}
-            />
-            <SidebarButton
-              item={{ icon: BookOpen, label: "Manage Publications" }}
-              onClick={handleActiveBar}
-              active={activebar === "Manage Publications"}
-            />
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 font-poppins py-2.5 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-white text-neutral-900"
+                      : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
 
             {/* Settings with Dropdown */}
             <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white">
