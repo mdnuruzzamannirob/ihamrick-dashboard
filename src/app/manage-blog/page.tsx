@@ -5,6 +5,10 @@ import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import UploadModal from "@/components/modal/uploadModal";
+import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
+import { ViewBlogModal } from "@/components/modal/viewModal";
+import QualityOfLifeModal from "@/components/modal/qualityModal";
+
 interface BlogPost {
   id: number;
   title: string;
@@ -22,9 +26,59 @@ const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
 }));
 
 export default function ManageBlogPage() {
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<number | null>(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [postToView, setPostToView] = useState<BlogPost | null>(null);
+
+  //calculations
+  const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentPosts = blogPosts.slice(startIndex, endIndex);
+
+  const handleViewClick = (post: BlogPost) => {
+    setPostToView(post);
+    setViewModalOpen(true);
+  };
+
+  const closeViewModal = () => {
+    setViewModalOpen(false);
+    setPostToView(null);
+  };
+  const handleDeleteClick = (id: number) => {
+    setPostToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (postToDelete !== null) {
+      setBlogPosts((prev) => {
+        const updatedPosts = prev.filter((post) => post.id !== postToDelete);
+
+        // Recalculate total pages based on updated posts
+        const newTotalPages = Math.ceil(updatedPosts.length / ITEMS_PER_PAGE);
+
+        // Adjust current page if needed after deletion
+        if (currentPage > newTotalPages && newTotalPages > 0) {
+          setCurrentPage(newTotalPages);
+        }
+
+        return updatedPosts;
+      });
+    }
+    setDeleteModalOpen(false);
+    setPostToDelete(null);
+  };
+
+  const cancelDelete = () => {
+    setDeleteModalOpen(false);
+    setPostToDelete(null);
+  };
   const handleEdit = (post: BlogPost) => {
     setSelectedPost(post);
     setIsModalOpen(true);
@@ -46,10 +100,6 @@ export default function ManageBlogPage() {
     // Add your save logic here (API call, etc.)
     setIsModalOpen(false);
   };
-  const totalPages = Math.ceil(allBlogPosts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentPosts = allBlogPosts.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -113,12 +163,12 @@ export default function ManageBlogPage() {
 
           {/* Action Buttons */}
           <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
-            <button className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800">
-              <Pencil className="h-4 w-4" />
-              Quality Of Life
-            </button>
-            <button className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800">
-              <span className="text-lg">+</span>
+            <QualityOfLifeModal />
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"
+            >
+              <span className="text-base">+</span>
               Add
             </button>
           </div>
@@ -170,12 +220,14 @@ export default function ManageBlogPage() {
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
+                            onClick={() => handleDeleteClick(post.id)}
                             className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
                             aria-label="Delete"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                           <button
+                            onClick={() => handleViewClick(post)}
                             className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
                             aria-label="View"
                           >
@@ -241,6 +293,18 @@ export default function ManageBlogPage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSave={handleSave}
+        post={selectedPost}
+      />
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+      />
+      <ViewBlogModal
+        isOpen={viewModalOpen}
+        onClose={closeViewModal}
+        blog={postToView}
       />
     </div>
   );

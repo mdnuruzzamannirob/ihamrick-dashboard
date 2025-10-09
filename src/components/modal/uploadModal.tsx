@@ -13,12 +13,18 @@ interface UploadModalProps {
     description: string;
     file?: File;
   }) => void;
+  post: {
+    id: number;
+    title: string;
+    status: "Published" | "Unpublished";
+  } | null;
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({
   isOpen = true,
   onClose = () => {},
   onSave = () => {},
+  post,
 }) => {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("");
@@ -26,7 +32,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const editor = useRef(null);
-
+  // console.log("rasel", post);
   const config = useMemo(
     () =>
       ({
@@ -109,9 +115,10 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </label>
               <input
                 type="text"
-                value={title}
+                value={post?.title || ""}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-poppins"
+                placeholder="Write the title.."
+                className="w-full text-neutral-800 px-3 py-2 text-xs sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent font-poppins"
               />
             </div>
             <div>
@@ -120,14 +127,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </label>
               <div className="relative">
                 <select
-                  value={status}
+                  value={post?.status || status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white font-poppins"
+                  className="w-full text-neutral-800 px-3 py-2 text-xs sm:text-base border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent bg-white font-poppins"
                 >
-                  <option value=""></option>
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Archived</option>
+                  {/* <option value=""></option>
+                  <option value="draft">Draft</option> */}
+                  <option value="Published">Published</option>
+                  <option value="Unpublished">Unpublished</option>
                 </select>
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                   <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
@@ -149,10 +156,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 font-poppins">
               Description
             </label>
-            <div className="border border-gray-300 rounded-md overflow-hidden">
+            <div className="border font-poppins text-xs text-neutral-800 border-gray-300 rounded-md overflow-hidden">
               <JoditEditor
                 ref={editor}
-                value={description}
+                value={
+                  post?.id
+                    ? "A healthy life isn’t just about eating greens or hitting the gym — it’s about cultivating habits that nourish your body, mind, and soul. In this post, we explore how small lifestyle shifts can lead to lasting happiness. From mindful mornings to joyful movement, discover practical ways to feel more energized, balanced, and fulfilled every day. Because when you care for your health, happiness naturally follows."
+                    : description
+                }
                 config={config}
                 onBlur={(newContent) => setDescription(newContent)}
                 onChange={(newContent) => {}}
@@ -170,7 +181,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center transition-colors ${
-                isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+                isDragging ? "border-red-400 bg-blue-50" : "border-gray-300"
               }`}
             >
               <input
@@ -203,7 +214,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
                     ) : (
                       <>
                         Drag and Drop a file here, or{" "}
-                        <span className="text-blue-600 font-semibold">
+                        <span className="text-red-400 font-semibold">
                           Browse
                         </span>
                       </>
