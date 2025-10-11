@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import JoditEditor from "jodit-react";
-import { Pencil, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 
 interface FormData {
   title: string;
@@ -11,71 +11,20 @@ interface FormData {
   coverVideo: File | null;
 }
 
-interface BlogPost {
-  id: number;
-  title: string;
-  status: "Published" | "Unpublished";
-}
-
-interface VideoEditModalProps {
-  post?: BlogPost | null;
-}
-
-const VideoEditModal = ({ post }: VideoEditModalProps) => {
+const videoUploadModal = () => {
   const [formData, setFormData] = useState<FormData>({
-    title: post?.title || "",
-    date: "2025-10-11",
-    status: post?.status.toLowerCase() || "",
-    description:
-      "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul. In this post, we explore how small lifestyle shifts can lead to lasting happiness.",
-    transcriptions: `Introduction to Healthy Living [00:00]
-
-Hello everyone and welcome back to our channel. Today we're diving deep into the topic of healthy living and how small, sustainable changes can transform your life. Whether you're just starting your wellness journey or looking to optimize your current routine, this video has something valuable for you.
-
-The Foundation of Wellness [01:15]
-
-Let's start with the basics. Healthy living encompasses three main pillars: nutrition, physical activity, and mental wellbeing. Many people focus on just one aspect, but true wellness comes from balancing all three. Think of it like a three-legged stool - if one leg is weak, the whole structure becomes unstable.
-
-Nutrition Tips for Busy Lives [03:30]
-
-When it comes to nutrition, you don't need to be perfect. Start by adding more whole foods to your diet - fresh vegetables, fruits, lean proteins, and whole grains. Meal prep on Sundays can save you hours during the week. Keep healthy snacks like nuts, fruits, and yogurt readily available to avoid reaching for processed options when hunger strikes.
-
-Movement and Exercise [06:45]
-
-Exercise doesn't have to mean spending hours at the gym. Find activities you genuinely enjoy - whether that's dancing, hiking, swimming, or playing sports with friends. The key is consistency over intensity. Even 20-30 minutes of daily movement can significantly impact your health, mood, and energy levels.
-
-Mental Health Matters [09:20]
-
-Don't neglect your mental wellness. Practice stress management techniques like meditation, deep breathing, or journaling. Set boundaries with work and technology. Quality sleep is non-negotiable - aim for 7-9 hours each night. Remember, taking care of your mental health isn't selfish, it's essential.
-
-Building Sustainable Habits [12:00]
-
-The secret to lasting change is building habits gradually. Start with one small change and master it before adding another. Track your progress, celebrate small wins, and be kind to yourself when you slip up. Remember, progress isn't linear - what matters is getting back on track.
-
-Conclusion [14:30]
-
-Thank you for watching today's video on healthy living. Remember, your health is your wealth. Start small, stay consistent, and watch how these changes compound over time. If you found this helpful, please like, subscribe, and hit the notification bell for more wellness content. Share your own healthy living tips in the comments below - I love hearing from you all. Until next time, take care of yourself!`,
+    title: "",
+    date: "",
+    status: "",
+    description: "",
+    transcriptions: "",
     coverVideo: null,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [videoPreview, setVideoPreview] = useState<string>(
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-  );
+  const [videoPreview, setVideoPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const descriptionEditor = useRef(null);
   const transcriptionsEditor = useRef(null);
-
-  // Update formData when post prop changes
-  useEffect(() => {
-    if (post && isModalOpen) {
-      setFormData((prev) => ({
-        ...prev,
-        title: post.title,
-        status: post.status.toLowerCase(),
-      }));
-    }
-  }, [post, isModalOpen]);
-
   const handleSave = (data: FormData) => {
     // console.log("Form data:", data);
     // console.log("Video file:", data.coverVideo);
@@ -147,10 +96,10 @@ Thank you for watching today's video on healthy living. Remember, your health is
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-        aria-label="Edit"
+        className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
       >
-        <Pencil className="h-4 w-4" />
+        <Upload size={18} />
+        Upload
       </button>
 
       {isModalOpen && (
@@ -222,6 +171,8 @@ Thank you for watching today's video on healthy living. Remember, your health is
                         paddingRight: "36px",
                       }}
                     >
+                      {/* <option value="">Select status</option> */}
+                      {/* <option value="draft">Draft</option> */}
                       <option value="published">Published</option>
                       <option value="unpublished">Unpublished</option>
                     </select>
@@ -341,7 +292,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   onClick={() => handleSave(formData)}
                   className="bg-black font-poppins text-white px-7 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition-colors w-full md:w-auto"
                 >
-                  Save Changes
+                  Submit
                 </button>
               </div>
             </div>
@@ -352,4 +303,4 @@ Thank you for watching today's video on healthy living. Remember, your health is
   );
 };
 
-export default VideoEditModal;
+export default videoUploadModal;

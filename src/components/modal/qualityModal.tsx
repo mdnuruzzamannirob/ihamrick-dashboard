@@ -81,7 +81,7 @@ const QualityOfLifeModal: React.FC = () => {
           <div className="bg-gray-200 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-poppins md:text-2xl font-bold text-gray-800">
+                <h2 className="text-xl font-poppins md:text-2xl font-bold text-[#202020]">
                   To Increase Quality of Life
                 </h2>
                 <button
@@ -95,7 +95,7 @@ const QualityOfLifeModal: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Decrease Column */}
                 <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="bg-gray-300 px-4 py-3 font-poppins font-semibold text-gray-800 text-center border-b-2 border-gray-400">
+                  <div className="bg-gray-300 px-4 py-3 font-poppins font-semibold text-[#202020] text-center border-b-2 border-gray-400">
                     Decrease
                   </div>
                   <div className="max-h-64 overflow-y-auto">
@@ -110,7 +110,7 @@ const QualityOfLifeModal: React.FC = () => {
                         >
                           <Minus size={18} />
                         </button>
-                        <span className="text-gray-800">{item.text}</span>
+                        <span className="text-[#202020]">{item.text}</span>
                       </div>
                     ))}
                     {showDecreaseInput && (
@@ -122,7 +122,7 @@ const QualityOfLifeModal: React.FC = () => {
                           onKeyPress={handleDecreaseKeyPress}
                           onBlur={addDecreaseItem}
                           placeholder="Type and press Enter"
-                          className="w-full px-2 py-1 text-neutral-800 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-400"
+                          className="w-full px-2 py-1 text-neutral-800 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
                           autoFocus
                         />
                       </div>
@@ -130,7 +130,7 @@ const QualityOfLifeModal: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setShowDecreaseInput(true)}
-                    className="w-full bg-gray-800 text-white py-2 flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
+                    className="w-full bg-[#202020] text-white py-2 flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
                   >
                     <Plus size={18} />
                     Add info
@@ -139,7 +139,7 @@ const QualityOfLifeModal: React.FC = () => {
 
                 {/* Increase Column */}
                 <div className="bg-white rounded-lg overflow-hidden shadow">
-                  <div className="bg-gray-300 font-poppins px-4 py-3 font-semibold text-gray-800 text-center border-b-2 border-gray-400">
+                  <div className="bg-gray-300 font-poppins px-4 py-3 font-semibold text-[#202020] text-center border-b-2 border-gray-400">
                     Increase
                   </div>
                   <div className="max-h-64 overflow-y-auto">
@@ -154,7 +154,7 @@ const QualityOfLifeModal: React.FC = () => {
                         >
                           <Minus size={18} />
                         </button>
-                        <span className="text-gray-800">{item.text}</span>
+                        <span className="text-[#202020]">{item.text}</span>
                       </div>
                     ))}
                     {showIncreaseInput && (
@@ -166,7 +166,7 @@ const QualityOfLifeModal: React.FC = () => {
                           onKeyPress={handleIncreaseKeyPress}
                           onBlur={addIncreaseItem}
                           placeholder="Type and press Enter"
-                          className="w-full px-2 py-1 text-neutral-800 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-400"
+                          className="w-full px-2 py-1 text-neutral-800 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400"
                           autoFocus
                         />
                       </div>
@@ -174,7 +174,7 @@ const QualityOfLifeModal: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setShowIncreaseInput(true)}
-                    className="w-full bg-gray-800 text-white py-2 flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
+                    className="w-full bg-[#202020] text-white py-2 flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
                   >
                     <Plus size={18} />
                     Add info

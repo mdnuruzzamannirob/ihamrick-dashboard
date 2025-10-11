@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import JoditEditor from "jodit-react";
-import { Pencil, Upload } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 interface FormData {
   title: string;
@@ -8,7 +7,7 @@ interface FormData {
   status: string;
   description: string;
   transcriptions: string;
-  coverVideo: File | null;
+  coverImage: File | null;
 }
 
 interface BlogPost {
@@ -17,11 +16,11 @@ interface BlogPost {
   status: "Published" | "Unpublished";
 }
 
-interface VideoEditModalProps {
+interface PodcastsEditModalProps {
   post?: BlogPost | null;
 }
 
-const VideoEditModal = ({ post }: VideoEditModalProps) => {
+const PodcastsEditModal = ({ post }: PodcastsEditModalProps) => {
   const [formData, setFormData] = useState<FormData>({
     title: post?.title || "",
     date: "2025-10-11",
@@ -55,15 +54,13 @@ The secret to lasting change is building habits gradually. Start with one small 
 Conclusion [14:30]
 
 Thank you for watching today's video on healthy living. Remember, your health is your wealth. Start small, stay consistent, and watch how these changes compound over time. If you found this helpful, please like, subscribe, and hit the notification bell for more wellness content. Share your own healthy living tips in the comments below - I love hearing from you all. Until next time, take care of yourself!`,
-    coverVideo: null,
+    coverImage: null,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [videoPreview, setVideoPreview] = useState<string>(
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+  const [imagePreview, setImagePreview] = useState<string>(
+    "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400"
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const descriptionEditor = useRef(null);
-  const transcriptionsEditor = useRef(null);
 
   // Update formData when post prop changes
   useEffect(() => {
@@ -77,32 +74,15 @@ Thank you for watching today's video on healthy living. Remember, your health is
   }, [post, isModalOpen]);
 
   const handleSave = (data: FormData) => {
-    // console.log("Form data:", data);
-    // console.log("Video file:", data.coverVideo);
+    console.log("Form data:", data);
+    console.log("Image file:", data.coverImage);
     setIsModalOpen(false);
-  };
-  const editorConfig = {
-    readonly: false,
-    toolbar: true,
-    height: 150,
-    buttons: [
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "outdent",
-      "indent",
-      "|",
-      "link",
-    ],
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -111,10 +91,10 @@ Thank you for watching today's video on healthy living. Remember, your health is
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev) => ({ ...prev, coverVideo: file }));
+      setFormData((prev) => ({ ...prev, coverImage: file }));
       const reader = new FileReader();
       reader.onloadend = () => {
-        setVideoPreview(reader.result as string);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -129,11 +109,11 @@ Thank you for watching today's video on healthy living. Remember, your health is
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("video/")) {
-      setFormData((prev) => ({ ...prev, coverVideo: file }));
+    if (file && file.type.startsWith("image/")) {
+      setFormData((prev) => ({ ...prev, coverImage: file }));
       const reader = new FileReader();
       reader.onloadend = () => {
-        setVideoPreview(reader.result as string);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -170,7 +150,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   <div>
                     <label
                       htmlFor="title"
-                      className="block text-sm font-poppins font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       Title
                     </label>
@@ -181,14 +161,14 @@ Thank you for watching today's video on healthy living. Remember, your health is
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="Write the title..."
-                      className="w-full px-3 text-xs py-2 border text-neutral-800 placeholder:text-gray-400  border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                      className="w-full px-3 text-xs py-2 border text-neutral-800 placeholder:text-gray-400 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="date"
-                      className="block font-poppins text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       Date
                     </label>
@@ -205,7 +185,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   <div>
                     <label
                       htmlFor="status"
-                      className="block text-sm font-poppins font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-gray-700 mb-2"
                     >
                       Status
                     </label>
@@ -214,7 +194,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
-                      className="w-full font-poppins px-3 py-2 border text-neutral-800 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-sm appearance-none bg-white"
+                      className="w-full px-3 py-2 border text-neutral-800 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-sm appearance-none bg-white"
                       style={{
                         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
                         backgroundRepeat: "no-repeat",
@@ -230,39 +210,37 @@ Thank you for watching today's video on healthy living. Remember, your health is
 
                 {/* Right Column - Upload Area */}
                 <div className="flex flex-col">
-                  <label className="block font-poppins text-sm font-medium text-gray-700 mb-2">
-                    Upload Video
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Image
                   </label>
                   <div
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    onClick={() => !videoPreview && handleBrowseClick()}
+                    onClick={() => !imagePreview && handleBrowseClick()}
                     className="border-2 border-dashed border-gray-300 rounded hover:border-gray-400 transition-colors cursor-pointer flex flex-col items-center justify-center flex-1 min-h-[140px] p-6"
                   >
-                    {videoPreview ? (
+                    {imagePreview ? (
                       <div className="relative w-full flex flex-col items-center">
-                        <video
-                          src={videoPreview}
-                          controls
-                          className="max-w-full font-poppins max-h-[140px] rounded"
-                        >
-                          Your browser does not support the video tag.
-                        </video>
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="max-w-full max-h-[140px] rounded object-cover"
+                        />
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setVideoPreview("");
+                            setImagePreview("");
                             setFormData((prev) => ({
                               ...prev,
-                              coverVideo: null,
+                              coverImage: null,
                             }));
                             if (fileInputRef.current) {
                               fileInputRef.current.value = "";
                             }
                           }}
-                          className="mt-3 text-sm text-red-500 hover:text-red-700 font-poppins underline"
+                          className="mt-3 text-sm text-red-500 hover:text-red-700 underline"
                         >
-                          Remove Video
+                          Remove Image
                         </button>
                       </div>
                     ) : (
@@ -277,12 +255,12 @@ Thank you for watching today's video on healthy living. Remember, your health is
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
                         <p className="text-sm text-gray-600 text-center">
-                          Drag and Drop a file here, or{" "}
-                          <span className="text-red-400 font-poppins underline cursor-pointer hover:text-red-600">
+                          Drag and Drop an image here, or{" "}
+                          <span className="text-red-400 underline cursor-pointer hover:text-red-600">
                             Browse
                           </span>
                         </p>
@@ -292,7 +270,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="video/*"
+                    accept="image/*"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -300,38 +278,30 @@ Thank you for watching today's video on healthy living. Remember, your health is
               </div>
 
               {/* Description Editor */}
-              <div className="mb-5  text-xs placeholder:text-gray-400 font-poppins text-neutral-800 ">
+              <div className="mb-5 text-xs placeholder:text-gray-400 text-neutral-800">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
                 </label>
-                <JoditEditor
-                  ref={descriptionEditor}
+                <textarea
+                  name="description"
                   value={formData.description}
-                  config={editorConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      description: newContent,
-                    }))
-                  }
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border text-neutral-800 placeholder:text-gray-400 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-sm resize-none"
                 />
               </div>
 
               {/* Transcriptions Editor */}
-              <div className="mb-6 text-xs placeholder:text-gray-400  font-poppins text-neutral-800 ">
+              <div className="mb-6 text-xs placeholder:text-gray-400 text-neutral-800">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Transcriptions
                 </label>
-                <JoditEditor
-                  ref={transcriptionsEditor}
+                <textarea
+                  name="transcriptions"
                   value={formData.transcriptions}
-                  config={editorConfig}
-                  onBlur={(newContent) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      transcriptions: newContent,
-                    }))
-                  }
+                  onChange={handleInputChange}
+                  rows={8}
+                  className="w-full px-3 py-2 border text-neutral-800 placeholder:text-gray-400 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-sm resize-none"
                 />
               </div>
 
@@ -339,7 +309,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
               <div className="flex justify-end">
                 <button
                   onClick={() => handleSave(formData)}
-                  className="bg-black font-poppins text-white px-7 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition-colors w-full md:w-auto"
+                  className="bg-black text-white px-7 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition-colors w-full md:w-auto"
                 >
                   Save Changes
                 </button>
@@ -352,4 +322,4 @@ Thank you for watching today's video on healthy living. Remember, your health is
   );
 };
 
-export default VideoEditModal;
+export default PodcastsEditModal;

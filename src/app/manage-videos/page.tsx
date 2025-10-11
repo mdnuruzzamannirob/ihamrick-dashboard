@@ -11,10 +11,10 @@ import {
   ChevronRight,
   Upload,
 } from "lucide-react";
-import UploadModal from "@/components/modal/uploadModal";
 import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
-import { ViewBlogModal } from "@/components/modal/viewModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
+import VideoUploadModal from "@/components/modal/videoUploadModal";
+import { VideoViewModal } from "@/components/modal/videoViewModal";
 import VideoEditModal from "@/components/modal/videoEditModal";
 
 interface BlogPost {
@@ -40,8 +40,8 @@ export default function ManageVideos() {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [postToView, setPostToView] = useState<BlogPost | null>(null);
+  // const [viewModalOpen, setViewModalOpen] = useState(false);
+  // const [postToView, setPostToView] = useState<BlogPost | null>(null);
 
   //calculations
   const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
@@ -49,15 +49,15 @@ export default function ManageVideos() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentPosts = blogPosts.slice(startIndex, endIndex);
 
-  const handleViewClick = (post: BlogPost) => {
-    setPostToView(post);
-    setViewModalOpen(true);
-  };
+  // const handleViewClick = (post: BlogPost) => {
+  //   setPostToView(post);
+  //   setViewModalOpen(true);
+  // };
 
-  const closeViewModal = () => {
-    setViewModalOpen(false);
-    setPostToView(null);
-  };
+  // const closeViewModal = () => {
+  //   setViewModalOpen(false);
+  //   setPostToView(null);
+  // };
   const handleDeleteClick = (id: number) => {
     setPostToDelete(id);
     setDeleteModalOpen(true);
@@ -172,14 +172,7 @@ export default function ManageVideos() {
           {/* Action Buttons */}
           <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
             <QualityOfLifeModal />
-            {/* <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
-            >
-              <Upload size={18} />
-              Upload
-            </button> */}
-            <VideoEditModal />
+            <VideoUploadModal />
           </div>
 
           {/* Table */}
@@ -221,13 +214,7 @@ export default function ManageVideos() {
                       </td>
                       <td className="px-4 py-4 md:px-6">
                         <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleEdit(post)}
-                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-                            aria-label="Edit"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
+                          <VideoEditModal post={post} />
                           <button
                             onClick={() => handleDeleteClick(post.id)}
                             className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
@@ -235,13 +222,7 @@ export default function ManageVideos() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
-                          <button
-                            onClick={() => handleViewClick(post)}
-                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-                            aria-label="View"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
+                          <VideoViewModal />
                         </div>
                       </td>
                     </tr>
@@ -297,23 +278,11 @@ export default function ManageVideos() {
           </div>
         </div>
       </div>
-      {/* Add Modal Here */}
-      <UploadModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSave}
-        post={selectedPost}
-      />
       {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-      />
-      <ViewBlogModal
-        isOpen={viewModalOpen}
-        onClose={closeViewModal}
-        blog={postToView}
       />
     </div>
   );

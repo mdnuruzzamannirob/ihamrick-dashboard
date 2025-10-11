@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import JoditEditor from "jodit-react";
-import { Pencil, Upload } from "lucide-react";
+import { Cast, Upload } from "lucide-react";
 
 interface FormData {
   title: string;
@@ -11,71 +11,20 @@ interface FormData {
   coverVideo: File | null;
 }
 
-interface BlogPost {
-  id: number;
-  title: string;
-  status: "Published" | "Unpublished";
-}
-
-interface VideoEditModalProps {
-  post?: BlogPost | null;
-}
-
-const VideoEditModal = ({ post }: VideoEditModalProps) => {
+const PodcastsUploadModal = () => {
   const [formData, setFormData] = useState<FormData>({
-    title: post?.title || "",
-    date: "2025-10-11",
-    status: post?.status.toLowerCase() || "",
-    description:
-      "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul. In this post, we explore how small lifestyle shifts can lead to lasting happiness.",
-    transcriptions: `Introduction to Healthy Living [00:00]
-
-Hello everyone and welcome back to our channel. Today we're diving deep into the topic of healthy living and how small, sustainable changes can transform your life. Whether you're just starting your wellness journey or looking to optimize your current routine, this video has something valuable for you.
-
-The Foundation of Wellness [01:15]
-
-Let's start with the basics. Healthy living encompasses three main pillars: nutrition, physical activity, and mental wellbeing. Many people focus on just one aspect, but true wellness comes from balancing all three. Think of it like a three-legged stool - if one leg is weak, the whole structure becomes unstable.
-
-Nutrition Tips for Busy Lives [03:30]
-
-When it comes to nutrition, you don't need to be perfect. Start by adding more whole foods to your diet - fresh vegetables, fruits, lean proteins, and whole grains. Meal prep on Sundays can save you hours during the week. Keep healthy snacks like nuts, fruits, and yogurt readily available to avoid reaching for processed options when hunger strikes.
-
-Movement and Exercise [06:45]
-
-Exercise doesn't have to mean spending hours at the gym. Find activities you genuinely enjoy - whether that's dancing, hiking, swimming, or playing sports with friends. The key is consistency over intensity. Even 20-30 minutes of daily movement can significantly impact your health, mood, and energy levels.
-
-Mental Health Matters [09:20]
-
-Don't neglect your mental wellness. Practice stress management techniques like meditation, deep breathing, or journaling. Set boundaries with work and technology. Quality sleep is non-negotiable - aim for 7-9 hours each night. Remember, taking care of your mental health isn't selfish, it's essential.
-
-Building Sustainable Habits [12:00]
-
-The secret to lasting change is building habits gradually. Start with one small change and master it before adding another. Track your progress, celebrate small wins, and be kind to yourself when you slip up. Remember, progress isn't linear - what matters is getting back on track.
-
-Conclusion [14:30]
-
-Thank you for watching today's video on healthy living. Remember, your health is your wealth. Start small, stay consistent, and watch how these changes compound over time. If you found this helpful, please like, subscribe, and hit the notification bell for more wellness content. Share your own healthy living tips in the comments below - I love hearing from you all. Until next time, take care of yourself!`,
+    title: "",
+    date: "",
+    status: "",
+    description: "",
+    transcriptions: "",
     coverVideo: null,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [videoPreview, setVideoPreview] = useState<string>(
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-  );
+  const [videoPreview, setVideoPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const descriptionEditor = useRef(null);
   const transcriptionsEditor = useRef(null);
-
-  // Update formData when post prop changes
-  useEffect(() => {
-    if (post && isModalOpen) {
-      setFormData((prev) => ({
-        ...prev,
-        title: post.title,
-        status: post.status.toLowerCase(),
-      }));
-    }
-  }, [post, isModalOpen]);
-
   const handleSave = (data: FormData) => {
     // console.log("Form data:", data);
     // console.log("Video file:", data.coverVideo);
@@ -129,7 +78,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("video/")) {
+    if (file && file.type.startsWith("image/")) {
       setFormData((prev) => ({ ...prev, coverVideo: file }));
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -147,10 +96,11 @@ Thank you for watching today's video on healthy living. Remember, your health is
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-        aria-label="Edit"
+        className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
       >
-        <Pencil className="h-4 w-4" />
+        {/* <Upload size={18} /> */}
+        <Cast size={18} />
+        Go Live
       </button>
 
       {isModalOpen && (
@@ -222,6 +172,8 @@ Thank you for watching today's video on healthy living. Remember, your health is
                         paddingRight: "36px",
                       }}
                     >
+                      {/* <option value="">Select status</option> */}
+                      {/* <option value="draft">Draft</option> */}
                       <option value="published">Published</option>
                       <option value="unpublished">Unpublished</option>
                     </select>
@@ -231,7 +183,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                 {/* Right Column - Upload Area */}
                 <div className="flex flex-col">
                   <label className="block font-poppins text-sm font-medium text-gray-700 mb-2">
-                    Upload Video
+                    Upload Cover Photo
                   </label>
                   <div
                     onDragOver={handleDragOver}
@@ -241,13 +193,11 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   >
                     {videoPreview ? (
                       <div className="relative w-full flex flex-col items-center">
-                        <video
+                        <img
                           src={videoPreview}
-                          controls
-                          className="max-w-full font-poppins max-h-[140px] rounded"
-                        >
-                          Your browser does not support the video tag.
-                        </video>
+                          alt="Cover preview"
+                          className="max-w-full font-poppins max-h-[140px] rounded object-cover"
+                        />
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -262,7 +212,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                           }}
                           className="mt-3 text-sm text-red-500 hover:text-red-700 font-poppins underline"
                         >
-                          Remove Video
+                          Remove Photo
                         </button>
                       </div>
                     ) : (
@@ -277,7 +227,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                           />
                         </svg>
                         <p className="text-sm text-gray-600 text-center">
@@ -292,7 +242,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="video/*"
+                    accept="image/*"
                     onChange={handleFileChange}
                     className="hidden"
                   />
@@ -341,7 +291,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   onClick={() => handleSave(formData)}
                   className="bg-black font-poppins text-white px-7 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition-colors w-full md:w-auto"
                 >
-                  Save Changes
+                  Go Live
                 </button>
               </div>
             </div>
@@ -352,4 +302,4 @@ Thank you for watching today's video on healthy living. Remember, your health is
   );
 };
 
-export default VideoEditModal;
+export default PodcastsUploadModal;
