@@ -121,11 +121,11 @@ export function PublicationModal() {
       </button>
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex  justify-center bg-black/50 "
+          className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4 md:p-5"
           onClick={() => setShowModal(false)}
         >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-[420px] p-8 font-sans relative max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-8 font-sans relative  overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
