@@ -9,20 +9,39 @@ import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import { ViewBlogModal } from "@/components/modal/viewModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
 
+// Updated interface to match ViewBlogModal expectations
 interface BlogPost {
   id: number;
   title: string;
+  author: string;
+  publishDate: string;
   status: "Published" | "Unpublished";
+  description: string;
+  featuredImage: string;
+  readTime: string;
+  category: string;
+  tags: string[];
+  views: number;
 }
 
 const ITEMS_PER_PAGE = 10;
 
-// Sample data - 50 blog posts for pagination demo
+// Sample data - updated to match the new interface
 const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
   id: i + 1,
   title:
     i % 2 === 0 ? "Healthy Living Happier Life" : "Small Habits Big Health",
+  author: i % 2 === 0 ? "Dr. Sarah Johnson" : "Dr. Michael Chen",
+  publishDate: "2025-10-11",
   status: i % 3 === 0 ? "Unpublished" : "Published",
+  description:
+    "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul.",
+  featuredImage:
+    "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80",
+  readTime: "5 min read",
+  category: i % 2 === 0 ? "Health & Wellness" : "Lifestyle",
+  tags: ["Wellness", "Lifestyle", "Mindfulness", "Health"],
+  views: Math.floor(Math.random() * 1000) + 500,
 }));
 
 export default function ManageBlogPage() {
@@ -35,7 +54,7 @@ export default function ManageBlogPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [postToView, setPostToView] = useState<BlogPost | null>(null);
 
-  //calculations
+  // Calculations
   const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -50,6 +69,7 @@ export default function ManageBlogPage() {
     setViewModalOpen(false);
     setPostToView(null);
   };
+
   const handleDeleteClick = (id: number) => {
     setPostToDelete(id);
     setDeleteModalOpen(true);
@@ -79,6 +99,7 @@ export default function ManageBlogPage() {
     setDeleteModalOpen(false);
     setPostToDelete(null);
   };
+
   const handleEdit = (post: BlogPost) => {
     setSelectedPost(post);
     setIsModalOpen(true);
@@ -182,8 +203,14 @@ export default function ManageBlogPage() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
                       Title
                     </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
+                      Author
+                    </th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
                       Status
+                    </th>
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
+                      Views
                     </th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
                       Action
@@ -199,6 +226,9 @@ export default function ManageBlogPage() {
                       <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
                         {post.title}
                       </td>
+                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
+                        {post.author}
+                      </td>
                       <td className="px-4 py-4 text-center md:px-6">
                         <span
                           className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
@@ -209,6 +239,9 @@ export default function ManageBlogPage() {
                         >
                           {post.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-4 text-center text-sm text-neutral-900 md:px-6">
+                        {post.views.toLocaleString()}
                       </td>
                       <td className="px-4 py-4 md:px-6">
                         <div className="flex items-center justify-center gap-2">
