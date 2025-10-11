@@ -9,11 +9,25 @@ import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import { ViewBlogModal } from "@/components/modal/viewModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
 import { PublicationModal } from "@/components/modal/publication-modal";
+import { EditPublicationsModal } from "@/components/modal/edit-publications";
 
 interface BlogPost {
   id: number;
   title: string;
   status: "Published" | "Unpublished";
+}
+
+interface Publication {
+  id: string;
+  title: string;
+  author: string;
+  publicationDate: string;
+  publicationType: string;
+  status: "Published" | "Unpublished";
+  description: string;
+  coverImage: string;
+  fileUrl: string;
+  fileName: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -26,6 +40,21 @@ const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
   status: i % 3 === 0 ? "Unpublished" : "Published",
 }));
 
+// Sample publication data
+const samplePublication: Publication = {
+  id: "1",
+  title: "Healthy Living Happier Life",
+  author: "Harmick",
+  publicationDate: "2024-01-15",
+  publicationType: "Research Paper",
+  status: "Published",
+  description:
+    "A healthy life is a balanced lifestyle that promotes physical, mental, and emotional well-being. It includes nutritious eating, regular exercise, adequate sleep, stress management, and positive habits that support long-term vitality and disease prevention.",
+  coverImage: "healthy_living_cover.jpg",
+  fileUrl: "/publications/healthy_living.pdf",
+  fileName: "healthy_living.pdf",
+};
+
 export default function ManageBlogPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,6 +64,22 @@ export default function ManageBlogPage() {
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [postToView, setPostToView] = useState<BlogPost | null>(null);
+
+  // State to control modal visibility for each post
+  const [editModalVisible, setEditModalVisible] = useState<{
+    [key: number]: boolean;
+  }>({});
+  const [viewModalVisible, setViewModalVisible] = useState<{
+    [key: number]: boolean;
+  }>({});
+
+  // Create publication data for each blog post
+  const getPublicationForPost = (post: BlogPost): Publication => ({
+    ...samplePublication,
+    id: post.id.toString(),
+    title: post.title,
+    status: post.status,
+  });
 
   //calculations
   const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
@@ -51,6 +96,7 @@ export default function ManageBlogPage() {
     setViewModalOpen(false);
     setPostToView(null);
   };
+
   const handleDeleteClick = (id: number) => {
     setPostToDelete(id);
     setDeleteModalOpen(true);
@@ -80,6 +126,7 @@ export default function ManageBlogPage() {
     setDeleteModalOpen(false);
     setPostToDelete(null);
   };
+
   const handleEdit = (post: BlogPost) => {
     setSelectedPost(post);
     setIsModalOpen(true);
@@ -90,16 +137,18 @@ export default function ManageBlogPage() {
     setSelectedPost(null);
   };
 
-  const handleSave = (data: {
-    title: string;
-    status: string;
-    description: string;
-    file?: File;
-  }) => {
-    console.log("Saving:", data);
-    console.log("For post:", selectedPost);
+  const handleSavePublication = (publicationData: any) => {
+    console.log("Saving publication:", publicationData);
     // Add your save logic here (API call, etc.)
-    setIsModalOpen(false);
+    // You can update the blogPosts state with the new data
+  };
+
+  const handleCloseEditModal = (postId: number) => {
+    setEditModalVisible((prev) => ({ ...prev, [postId]: false }));
+  };
+
+  const handleCloseViewModal = (postId: number) => {
+    setViewModalVisible((prev) => ({ ...prev, [postId]: false }));
   };
 
   const handlePageChange = (page: number) => {
@@ -207,13 +256,14 @@ export default function ManageBlogPage() {
                       </td>
                       <td className="px-4 py-4 md:px-6">
                         <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleEdit(post)}
-                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-                            aria-label="Edit"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
+                          <EditPublicationsModal
+                            publication={getPublicationForPost(post)}
+                            mode="edit"
+                            onSave={handleSavePublication}
+                            onClose={() => handleCloseEditModal(post.id)}
+                            visible={editModalVisible[post.id] || false}
+                          />
+
                           <button
                             onClick={() => handleDeleteClick(post.id)}
                             className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
@@ -221,13 +271,14 @@ export default function ManageBlogPage() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
-                          <button
-                            onClick={() => handleViewClick(post)}
-                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-                            aria-label="View"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
+
+                          <EditPublicationsModal
+                            publication={getPublicationForPost(post)}
+                            mode="view"
+                            onSave={handleSavePublication}
+                            onClose={() => handleCloseViewModal(post.id)}
+                            visible={viewModalVisible[post.id] || false}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -283,23 +334,13 @@ export default function ManageBlogPage() {
           </div>
         </div>
       </div>
-      {/* Add Modal Here */}
-      <UploadModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSave}
-        post={selectedPost}
-      />
-      {/* Delete Confirmation Modal */}
+
+      {/* Other Modals */}
+
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-      />
-      <ViewBlogModal
-        isOpen={viewModalOpen}
-        onClose={closeViewModal}
-        blog={postToView}
       />
     </div>
   );

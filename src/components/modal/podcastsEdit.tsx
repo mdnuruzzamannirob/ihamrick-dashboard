@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
+import JoditEditor from "jodit-react";
 
 interface FormData {
   title: string;
@@ -19,6 +20,25 @@ interface BlogPost {
 interface PodcastsEditModalProps {
   post?: BlogPost | null;
 }
+const config = {
+  readonly: false,
+  toolbar: true,
+  height: 150,
+  buttons: [
+    "bold",
+    "italic",
+    "underline",
+    "strikethrough",
+    "|",
+    "ul",
+    "ol",
+    "|",
+    "outdent",
+    "indent",
+    "|",
+    "link",
+  ],
+};
 
 const PodcastsEditModal = ({ post }: PodcastsEditModalProps) => {
   const [formData, setFormData] = useState<FormData>({
@@ -56,12 +76,13 @@ Conclusion [14:30]
 Thank you for watching today's video on healthy living. Remember, your health is your wealth. Start small, stay consistent, and watch how these changes compound over time. If you found this helpful, please like, subscribe, and hit the notification bell for more wellness content. Share your own healthy living tips in the comments below - I love hearing from you all. Until next time, take care of yourself!`,
     coverImage: null,
   });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>(
     "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400"
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const editor = useRef(null);
   // Update formData when post prop changes
   useEffect(() => {
     if (post && isModalOpen) {
@@ -277,18 +298,20 @@ Thank you for watching today's video on healthy living. Remember, your health is
                 </div>
               </div>
 
-              {/* Description Editor */}
-              <div className="mb-5 text-xs placeholder:text-gray-400 text-neutral-800">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              {/* Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-poppins font-medium text-gray-700 block">
                   Description
                 </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-3 py-2 border text-neutral-800 placeholder:text-gray-400 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-sm resize-none"
-                />
+                <div className="border text-neutral-800 placeholder:text-gray-400  border-gray-300 rounded-lg overflow-hidden [&_.jodit-container]:border-0 [&_.jodit-workplace]:text-sm [&_.jodit-toolbar-button]:text-xs">
+                  <JoditEditor
+                    ref={editor}
+                    value={formData.description}
+                    config={config}
+                    // onBlur={(newContent) => setFormData(newContent)}
+                    onChange={(newContent) => {}}
+                  />
+                </div>
               </div>
 
               {/* Transcriptions Editor */}
@@ -296,13 +319,15 @@ Thank you for watching today's video on healthy living. Remember, your health is
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Transcriptions
                 </label>
-                <textarea
-                  name="transcriptions"
-                  value={formData.transcriptions}
-                  onChange={handleInputChange}
-                  rows={8}
-                  className="w-full px-3 py-2 border text-neutral-800 placeholder:text-gray-400 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-sm resize-none"
-                />
+                <div className="border text-neutral-800 placeholder:text-gray-400  border-gray-300 rounded-lg overflow-hidden [&_.jodit-container]:border-0 [&_.jodit-workplace]:text-sm [&_.jodit-toolbar-button]:text-xs">
+                  <JoditEditor
+                    ref={editor}
+                    value={formData.transcriptions}
+                    config={config}
+                    // onBlur={(newContent) => setFormData(newContent)}
+                    onChange={(newContent) => {}}
+                  />
+                </div>
               </div>
 
               {/* Save Button */}
