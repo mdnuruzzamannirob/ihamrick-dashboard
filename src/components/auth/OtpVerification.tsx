@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useRef, KeyboardEvent, ChangeEvent } from "react";
-
+import { useRouter } from "next/navigation";
 export default function OTPVerification() {
   const [otp, setOtp] = useState<string[]>(["", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
+  const router = useRouter();
   const handleChange = (index: number, value: string) => {
     // Only allow numbers
     if (value && !/^\d$/.test(value)) return;
@@ -48,8 +48,7 @@ export default function OTPVerification() {
   const handleVerify = () => {
     const otpValue = otp.join("");
     if (otpValue.length === 5) {
-      console.log("OTP:", otpValue);
-      // Add your verification logic here
+      router.replace("/set-password");
     }
   };
 

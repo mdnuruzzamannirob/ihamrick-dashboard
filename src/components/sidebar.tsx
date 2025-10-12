@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   LayoutDashboard,
   FileText,
@@ -12,9 +15,14 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  ChevronRight,
   Menu,
   X,
+  User,
+  Info,
+  Shield,
 } from "lucide-react";
+
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: FileText, label: "Manage Blog", href: "/manage-blog" },
@@ -27,9 +35,25 @@ const menuItems = [
   },
 ];
 
+const settingsSubItems = [
+  { icon: User, label: "Profile", href: "/settings/profile" },
+  { icon: Info, label: "About Us", href: "/settings/about-us" },
+  { icon: Shield, label: "Privacy", href: "/settings/privacy" },
+];
+
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  function handleLogout() {
+    toast.success("Logout successful. See you soon!");
+
+    setTimeout(() => {
+      router.replace("/");
+    }, 1200);
+  }
 
   return (
     <div>
@@ -85,20 +109,57 @@ export function Sidebar() {
             })}
 
             {/* Settings with Dropdown */}
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white">
-              <Settings className="h-5 w-5" />
-              Settings
-              <ChevronDown className="ml-auto h-4 w-4" />
-            </button>
+            <div>
+              <button
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+              >
+                <Settings className="h-5 w-5" />
+                Settings
+                {isSettingsOpen ? (
+                  <ChevronDown className="ml-auto h-4 w-4" />
+                ) : (
+                  <ChevronRight className="ml-auto h-4 w-4" />
+                )}
+              </button>
+
+              {/* Settings Submenu */}
+              {isSettingsOpen && (
+                <div className="mt-1 space-y-1 pl-4">
+                  {settingsSubItems.map((subItem) => {
+                    const isActive = pathname === subItem.href;
+                    return (
+                      <Link
+                        key={subItem.label}
+                        href={subItem.href}
+                        onClick={() => setIsOpen(false)}
+                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-poppins font-medium transition-colors ${
+                          isActive
+                            ? "bg-white text-neutral-900"
+                            : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                        }`}
+                      >
+                        <subItem.icon className="h-4 w-4" />
+                        {subItem.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Log Out */}
-          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+          >
             <LogOut className="h-5 w-5" />
             Log Out
           </button>
         </div>
       </aside>
+      <ToastContainer position="top-right" autoClose={1000} />
     </div>
   );
 }
