@@ -1,0 +1,27 @@
+"use client";
+import BrandSection from "@/components/auth/Brand-section";
+import EmailField from "@/components/auth/EmailField";
+import Header from "@/components/auth/Header";
+import React from "react";
+import { useRouter } from "next/navigation";
+import OTPVerification from "@/components/auth/OtpVerification";
+export default function MailCheck() {
+  const router = useRouter();
+  return (
+    <div className="flex bg-white min-h-screen flex-col lg:flex-row">
+      <BrandSection />
+      {/* right-side */}
+
+      <div className="flex flex-col h-screen w-full items-center justify-center px-6 py-12 lg:w-2/5 lg:px-8">
+        <div className=" max-w-md">
+          <Header
+            title="Check Your Email"
+            subtitle="We sent a reset link to contact@gmail.com
+            enter 5 digit code that mentioned in the email"
+          />
+          <OTPVerification />
+        </div>
+      </div>
+    </div>
+  );
+}
