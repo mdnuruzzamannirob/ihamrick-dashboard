@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: FileText, label: "Manage Blog", href: "/manage-blog" },
   { icon: Video, label: "Manage Videos", href: "/manage-videos" },
   { icon: Mic, label: "Manage Podcasts", href: "/manage-podcasts" },

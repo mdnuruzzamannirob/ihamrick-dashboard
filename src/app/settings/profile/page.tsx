@@ -151,7 +151,8 @@ export default function ProfilePage() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-sm text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                      placeholder="Write your full name"
+                      className="w-full placeholder:text-gray-400 text-xs rounded-lg border border-gray-300 px-4 py-2.5 font-poppins  text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                     />
                   </div>
 
@@ -168,7 +169,8 @@ export default function ProfilePage() {
                       name="location"
                       value={formData.location}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-sm text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                      placeholder="Write your location"
+                      className="w-full  placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                     />
                   </div>
                 </div>
@@ -188,7 +190,8 @@ export default function ProfilePage() {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-sm text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                      placeholder="hamrick@gmail.com"
+                      className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                     />
                   </div>
 
@@ -204,8 +207,9 @@ export default function ProfilePage() {
                       id="phoneNumber"
                       name="phoneNumber"
                       value={formData.phoneNumber}
+                      placeholder="+42"
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-sm text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                      className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                     />
                   </div>
                 </div>
