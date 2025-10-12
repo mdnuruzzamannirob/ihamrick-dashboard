@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
-import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Clock,
+} from "lucide-react";
 import UploadModal from "@/components/modal/uploadModal";
 import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import { ViewBlogModal } from "@/components/modal/viewModal";
@@ -17,6 +25,8 @@ interface BlogPost {
   id: number;
   title: string;
   status: "Published" | "Unpublished";
+  date?: string;
+  duration?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -27,9 +37,11 @@ const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
   title:
     i % 2 === 0 ? "Healthy Living Happier Life" : "Small Habits Big Health",
   status: i % 3 === 0 ? "Unpublished" : "Published",
+  date: "2024-01-15",
+  duration: "45:30",
 }));
 
-export default function ManageBlogPage() {
+export default function ManagePodcasts() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -180,6 +192,12 @@ export default function ManageBlogPage() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
                       Title
                     </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
+                      Duration
+                    </th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
                       Status
                     </th>
@@ -196,6 +214,22 @@ export default function ManageBlogPage() {
                     >
                       <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
                         {post.title}
+                      </td>
+                      <td className="px-4 py-4 md:px-6">
+                        <div className="flex items-center gap-2 text-sm text-neutral-700">
+                          <Calendar className="h-4 w-4 text-neutral-500" />
+                          <span>
+                            {post.date
+                              ? new Date(post.date).toLocaleDateString()
+                              : "N/A"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 md:px-6">
+                        <div className="flex items-center gap-2 text-sm text-neutral-700">
+                          <Clock className="h-4 w-4 text-neutral-500" />
+                          <span>{post.duration || "N/A"}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-4 text-center md:px-6">
                         <span

@@ -4,12 +4,12 @@ import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import {
-  Pencil,
   Trash2,
-  Eye,
   ChevronLeft,
   ChevronRight,
   Upload,
+  Calendar,
+  Clock,
 } from "lucide-react";
 import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
@@ -21,6 +21,8 @@ interface BlogPost {
   id: number;
   title: string;
   status: "Published" | "Unpublished";
+  date?: string;
+  duration?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -31,17 +33,15 @@ const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
   title:
     i % 2 === 0 ? "Healthy Living Happier Life" : "Small Habits Big Health",
   status: i % 3 === 0 ? "Unpublished" : "Published",
+  date: "2024-01-15",
+  duration: "12:45",
 }));
 
 export default function ManageVideos() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
-  // const [viewModalOpen, setViewModalOpen] = useState(false);
-  // const [postToView, setPostToView] = useState<BlogPost | null>(null);
 
   //calculations
   const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
@@ -49,15 +49,6 @@ export default function ManageVideos() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentPosts = blogPosts.slice(startIndex, endIndex);
 
-  // const handleViewClick = (post: BlogPost) => {
-  //   setPostToView(post);
-  //   setViewModalOpen(true);
-  // };
-
-  // const closeViewModal = () => {
-  //   setViewModalOpen(false);
-  //   setPostToView(null);
-  // };
   const handleDeleteClick = (id: number) => {
     setPostToDelete(id);
     setDeleteModalOpen(true);
@@ -86,27 +77,6 @@ export default function ManageVideos() {
   const cancelDelete = () => {
     setDeleteModalOpen(false);
     setPostToDelete(null);
-  };
-  const handleEdit = (post: BlogPost) => {
-    setSelectedPost(post);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedPost(null);
-  };
-
-  const handleSave = (data: {
-    title: string;
-    status: string;
-    description: string;
-    file?: File;
-  }) => {
-    console.log("Saving:", data);
-    console.log("For post:", selectedPost);
-    // Add your save logic here (API call, etc.)
-    setIsModalOpen(false);
   };
 
   const handlePageChange = (page: number) => {
@@ -184,6 +154,12 @@ export default function ManageVideos() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
                       Title
                     </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
+                      Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
+                      Duration
+                    </th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
                       Status
                     </th>
@@ -200,6 +176,22 @@ export default function ManageVideos() {
                     >
                       <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
                         {post.title}
+                      </td>
+                      <td className="px-4 py-4 md:px-6">
+                        <div className="flex items-center gap-2 text-sm text-neutral-700">
+                          <Calendar className="h-4 w-4 text-neutral-500" />
+                          <span>
+                            {post.date
+                              ? new Date(post.date).toLocaleDateString()
+                              : "2024-01-15"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 md:px-6">
+                        <div className="flex items-center gap-2 text-sm text-neutral-700">
+                          <Clock className="h-4 w-4 text-neutral-500" />
+                          <span>{post.duration || "12:45"}</span>
+                        </div>
                       </td>
                       <td className="px-4 py-4 text-center md:px-6">
                         <span
