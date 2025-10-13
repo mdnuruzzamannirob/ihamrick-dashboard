@@ -43,7 +43,7 @@ const settingsSubItems = [
 
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
 

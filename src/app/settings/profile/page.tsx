@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ArrowLeft, User, Camera } from "lucide-react";
+import { ArrowLeft, User, Camera, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import Avatar from "@/assets/svg/Avatar.svg";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
+import Button from "@/components/ui/button";
 export default function ProfilePage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "Hamrick",
     location: "New York",
@@ -43,14 +45,13 @@ export default function ProfilePage() {
   };
 
   const handleSaveChanges = () => {
-    console.log("Saving changes:", formData);
-    console.log("Profile image:", profileImage);
+    // console.log("Saving changes:", formData);
+    // console.log("Profile image:", profileImage);
     // Add your save logic here
   };
 
   const handleChangePassword = () => {
-    console.log("Change password clicked");
-    // Add your password change logic here
+    router.push("/change-password");
   };
 
   return (
@@ -123,9 +124,10 @@ export default function ProfilePage() {
 
               <button
                 onClick={handleChangePassword}
-                className="rounded-lg bg-black px-4 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-6 sm:py-2.5"
+                className="rounded-lg gap-x-1   flex flex-row items-center bg-black px-4 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-6 sm:py-2.5"
               >
                 Change Password
+                <ArrowRight className="h-4 text-white w-4" />
               </button>
             </div>
 
@@ -217,12 +219,7 @@ export default function ProfilePage() {
 
               {/* Save Button */}
               <div className="mt-8 flex justify-end">
-                <button
-                  onClick={handleSaveChanges}
-                  className="rounded-lg bg-black px-6 py-2.5 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800"
-                >
-                  Save Changes
-                </button>
+                <Button />
               </div>
             </div>
           </div>
