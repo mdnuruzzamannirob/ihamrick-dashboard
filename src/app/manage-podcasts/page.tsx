@@ -4,19 +4,14 @@ import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import {
-  Pencil,
   Trash2,
-  Eye,
   ChevronLeft,
   ChevronRight,
   Calendar,
   Clock,
 } from "lucide-react";
-import UploadModal from "@/components/modal/uploadModal";
 import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
-import { ViewBlogModal } from "@/components/modal/viewModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
-import { Cast } from "lucide-react";
 import PodcastsUploadModal from "@/components/modal/padcastsUpload";
 import PodcastsEditModal from "@/components/modal/podcastsEdit";
 import { PodcastsViewModal } from "@/components/modal/podcastsViewModal";
@@ -44,12 +39,8 @@ const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
 export default function ManagePodcasts() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [postToView, setPostToView] = useState<BlogPost | null>(null);
 
   //calculations
   const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
@@ -57,15 +48,6 @@ export default function ManagePodcasts() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentPosts = blogPosts.slice(startIndex, endIndex);
 
-  const handleViewClick = (post: BlogPost) => {
-    setPostToView(post);
-    setViewModalOpen(true);
-  };
-
-  const closeViewModal = () => {
-    setViewModalOpen(false);
-    setPostToView(null);
-  };
   const handleDeleteClick = (id: number) => {
     setPostToDelete(id);
     setDeleteModalOpen(true);
@@ -94,27 +76,6 @@ export default function ManagePodcasts() {
   const cancelDelete = () => {
     setDeleteModalOpen(false);
     setPostToDelete(null);
-  };
-  const handleEdit = (post: BlogPost) => {
-    setSelectedPost(post);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedPost(null);
-  };
-
-  const handleSave = (data: {
-    title: string;
-    status: string;
-    description: string;
-    file?: File;
-  }) => {
-    console.log("Saving:", data);
-    console.log("For post:", selectedPost);
-    // Add your save logic here (API call, etc.)
-    setIsModalOpen(false);
   };
 
   const handlePageChange = (page: number) => {

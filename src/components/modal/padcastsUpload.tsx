@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import JoditEditor from "jodit-react";
-import { Cast, Upload } from "lucide-react";
+import { Cast } from "lucide-react";
+import Image from "next/image";
 
 interface FormData {
   title: string;
@@ -25,9 +26,7 @@ const PodcastsUploadModal = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const descriptionEditor = useRef(null);
   const transcriptionsEditor = useRef(null);
-  const handleSave = (data: FormData) => {
-    // console.log("Form data:", data);
-    // console.log("Video file:", data.coverVideo);
+  const handleSave = () => {
     setIsModalOpen(false);
   };
   const editorConfig = {
@@ -193,11 +192,14 @@ const PodcastsUploadModal = () => {
                   >
                     {videoPreview ? (
                       <div className="relative w-full flex flex-col items-center">
-                        <img
+                        <Image
                           src={videoPreview}
                           alt="Cover preview"
+                          width={800} // adjust based on your layout
+                          height={140}
                           className="max-w-full font-poppins max-h-[140px] rounded object-cover"
                         />
+
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -288,7 +290,7 @@ const PodcastsUploadModal = () => {
               {/* Save Button */}
               <div className="flex justify-end">
                 <button
-                  onClick={() => handleSave(formData)}
+                  onClick={() => handleSave()}
                   className="bg-black font-poppins text-white px-7 py-2.5 rounded text-sm font-medium hover:bg-gray-800 transition-colors w-full md:w-auto"
                 >
                   Go Live

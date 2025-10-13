@@ -4,7 +4,6 @@ import React from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // ✅ REQUIRED
 import { useRouter } from "next/navigation";
-
 import BrandSection from "@/components/auth/Brand-section";
 import Header from "@/components/auth/Header";
 import PasswordField from "@/components/auth/PasswordField";

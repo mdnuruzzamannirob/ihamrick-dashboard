@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { ArrowLeft, User, Camera, ArrowRight } from "lucide-react";
+import { ArrowLeft, Camera, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";

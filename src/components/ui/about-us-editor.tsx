@@ -84,6 +84,7 @@ export default function AboutUsEditor({ title }: { title: string }) {
         draggable: true,
       });
       setIsSaving(false);
+      console.log(error);
     }
   };
 
@@ -102,7 +103,7 @@ export default function AboutUsEditor({ title }: { title: string }) {
             value={content}
             config={config}
             onBlur={(newContent) => setContent(newContent)}
-            onChange={(newContent) => {}}
+            // onChange={(newContent) => {}}
           />
         </div>
 

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
 import JoditEditor from "jodit-react";
+import Image from "next/image";
 
 interface FormData {
   title: string;
@@ -242,11 +243,14 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   >
                     {imagePreview ? (
                       <div className="relative w-full flex flex-col items-center">
-                        <img
+                        <Image
                           src={imagePreview}
                           alt="Preview"
+                          width={800} // adjust based on your layout
+                          height={140}
                           className="max-w-full max-h-[140px] rounded object-cover"
                         />
+
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -309,7 +313,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                     value={formData.description}
                     config={config}
                     // onBlur={(newContent) => setFormData(newContent)}
-                    onChange={(newContent) => {}}
+                    // onChange={(newContent) => {}}
                   />
                 </div>
               </div>

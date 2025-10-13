@@ -3,17 +3,8 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
-import {
-  Pencil,
-  Trash2,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-} from "lucide-react";
-import UploadModal from "@/components/modal/uploadModal";
+import { Trash2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
-import { ViewBlogModal } from "@/components/modal/viewModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
 import { PublicationModal } from "@/components/modal/publication-modal";
 import { EditPublicationsModal } from "@/components/modal/edit-publications";
@@ -65,12 +56,8 @@ const samplePublication: Publication = {
 export default function ManageBlogPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState<number | null>(null);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [postToView, setPostToView] = useState<BlogPost | null>(null);
 
   // State to control modal visibility for each post
   const [editModalVisible, setEditModalVisible] = useState<{
@@ -93,16 +80,6 @@ export default function ManageBlogPage() {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentPosts = blogPosts.slice(startIndex, endIndex);
-
-  const handleViewClick = (post: BlogPost) => {
-    setPostToView(post);
-    setViewModalOpen(true);
-  };
-
-  const closeViewModal = () => {
-    setViewModalOpen(false);
-    setPostToView(null);
-  };
 
   const handleDeleteClick = (id: number) => {
     setPostToDelete(id);
@@ -132,16 +109,6 @@ export default function ManageBlogPage() {
   const cancelDelete = () => {
     setDeleteModalOpen(false);
     setPostToDelete(null);
-  };
-
-  const handleEdit = (post: BlogPost) => {
-    setSelectedPost(post);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedPost(null);
   };
 
   const handleSavePublication = (publicationData: any) => {

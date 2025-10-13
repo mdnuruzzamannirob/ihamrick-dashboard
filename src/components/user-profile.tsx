@@ -1,4 +1,3 @@
-import { User } from "lucide-react";
 import Image from "next/image";
 import Avatar from "@/assets/svg/Avatar.svg";
 export function UserProfile() {

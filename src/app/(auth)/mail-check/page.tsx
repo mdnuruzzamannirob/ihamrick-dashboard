@@ -1,12 +1,9 @@
 "use client";
 import BrandSection from "@/components/auth/Brand-section";
-import EmailField from "@/components/auth/EmailField";
 import Header from "@/components/auth/Header";
 import React from "react";
-import { useRouter } from "next/navigation";
 import OTPVerification from "@/components/auth/OtpVerification";
 export default function MailCheck() {
-  const router = useRouter();
   return (
     <div className="flex bg-white min-h-screen flex-col lg:flex-row">
       <BrandSection />

@@ -4,7 +4,7 @@ import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import JoditEditor from "jodit-react";
 import { Pencil } from "lucide-react";
-
+import Image from "next/image";
 interface FormData {
   title: string;
   date: string;
@@ -348,14 +348,17 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   className="border-2 border-dashed border-gray-300 rounded hover:border-gray-400 transition-colors cursor-pointer flex flex-col items-center justify-center p-6"
                 >
                   <div className="relative w-full flex flex-col items-center">
-                    <img
+                    <Image
                       src={
                         thumbnailPreview ||
                         "https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
                       }
                       alt="Thumbnail preview"
+                      width={1074}
+                      height={200}
                       className="w-full h-full max-h-[200px] rounded object-cover"
                     />
+
                     {formData.thumbnail && (
                       <button
                         onClick={(e) => {

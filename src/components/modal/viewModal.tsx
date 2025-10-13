@@ -1,6 +1,7 @@
 "use client";
 
 import { X, Calendar, User, File, Eye, Clock, Tag } from "lucide-react";
+import Image from "next/image";
 
 interface Blog {
   id: string | number;
@@ -176,11 +177,14 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
               Featured Image
             </label>
             <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <img
+              <Image
                 src={currentBlog.featuredImage}
                 alt={currentBlog.title}
+                width={1280} // adjust based on layout
+                height={320} // matches h-80 (20rem)
                 className="w-full h-64 md:h-80 object-cover"
               />
+
               <div className="p-3 bg-gray-50 border-t border-gray-200">
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <File className="w-4 h-4" />

@@ -3,7 +3,6 @@
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import PasswordField from "@/components/auth/PasswordField";
-import { useRouter } from "next/navigation";
 import "react-toastify/dist/ReactToastify.css";
 import Button from "@/components/ui/button";
 export default function ChangePasswordPage() {

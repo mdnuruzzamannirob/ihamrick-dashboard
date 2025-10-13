@@ -1,30 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import AboutUsEditor from "@/components/ui/about-us-editor";
 
 export default function AboutUs() {
-  const [formData, setFormData] = useState({
-    firstName: "Hamrick",
-    location: "New York",
-    email: "hamrick@gmail.com",
-    phoneNumber: "866 12 346 0780",
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSaveChanges = () => {
-    // Add your save logic here
-  };
-
   return (
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
