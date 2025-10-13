@@ -1,24 +1,25 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useRef } from "react";
 import { ChevronDown, X, Upload, File } from "lucide-react";
-import JoditEditor from "jodit-react";
+import dynamic from "next/dynamic";
 
 export function PublicationModal() {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [publicationDate, setPublicationDate] = useState("");
-  const [publicationType, setPublicationType] = useState("");
+
   const [status, setStatus] = useState("");
-  const [description, setDescription] = useState("");
-  const [publicationTypeOpen, setPublicationTypeOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [podcastFile, setPodcastFile] = useState<File | null>(null);
   const [coverDragging, setCoverDragging] = useState(false);
   const [podcastDragging, setPodcastDragging] = useState(false);
+  // Dynamically import JoditEditor only on client side
+  const JoditEditor = dynamic(() => import("jodit-react"), {
+    ssr: false,
+  });
 
   const editor = useRef(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -45,18 +46,7 @@ export function PublicationModal() {
     ],
   };
 
-  const handleSave = () => {
-    console.log({
-      title,
-      author,
-      publicationDate,
-      publicationType,
-      status,
-      description,
-      coverFile,
-      podcastFile,
-    });
-  };
+  const handleSave = () => {};
 
   const handleCoverDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -337,10 +327,10 @@ export function PublicationModal() {
                 <div className="border text-neutral-800 placeholder:text-gray-400  border-gray-300 rounded-lg overflow-hidden [&_.jodit-container]:border-0 [&_.jodit-workplace]:text-sm [&_.jodit-toolbar-button]:text-xs">
                   <JoditEditor
                     ref={editor}
-                    value={description}
+                    value=""
                     config={config}
-                    onBlur={(newContent) => setDescription(newContent)}
-                    onChange={(newContent) => {}}
+                    // onBlur={(newContent) => setDescription(newContent)}
+                    // onChange={(newContent) => {}}
                   />
                 </div>
               </div>

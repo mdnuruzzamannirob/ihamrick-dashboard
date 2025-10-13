@@ -1,8 +1,7 @@
 import React, { useState, useRef } from "react";
-import JoditEditor from "jodit-react";
 import { Cast } from "lucide-react";
 import Image from "next/image";
-
+import dynamic from "next/dynamic";
 interface FormData {
   title: string;
   date: string;
@@ -29,6 +28,12 @@ const PodcastsUploadModal = () => {
   const handleSave = () => {
     setIsModalOpen(false);
   };
+
+  // Dynamically import JoditEditor only on client side
+  const JoditEditor = dynamic(() => import("jodit-react"), {
+    ssr: false,
+  });
+
   const editorConfig = {
     readonly: false,
     toolbar: true,

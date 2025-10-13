@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState } from "react";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Lock, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import BrandSection from "@/components/auth/Brand-section";
 import Header from "@/components/auth/Header";
@@ -10,7 +10,6 @@ import EmailField from "@/components/auth/EmailField";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();

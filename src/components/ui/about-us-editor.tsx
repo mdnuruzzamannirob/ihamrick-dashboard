@@ -1,10 +1,16 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
-import JoditEditor from "jodit-react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import dynamic from "next/dynamic";
+
+// Dynamically import JoditEditor only on client side
+const JoditEditor = dynamic(() => import("jodit-react"), {
+  ssr: false,
+});
+
 const initialContent = `
 <h2 style="font-weight: 600; font-size: 1rem; margin-bottom: 1rem;">1. Intro</h2>
 <p style="line-height: 1.6; margin-bottom: 1rem;">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the middle of text. All the Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.</p>
@@ -18,48 +24,37 @@ export default function AboutUsEditor({ title }: { title: string }) {
   const router = useRouter();
   const [content, setContent] = useState(initialContent);
   const [isSaving, setIsSaving] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  const config = useMemo(
-    () =>
-      ({
-        readonly: false,
-        placeholder: "",
-        height: "calc(100vh - 220px)",
-        toolbar: true,
-        toolbarButtonSize: "small",
-        buttons: [
-          "bold",
-          "italic",
-          "underline",
-          "|",
-          "align",
-          "|",
-          "ul",
-          "ol",
-          "|",
-          "link",
-        ],
-        uploader: {
-          insertImageAsBase64URI: false,
-        },
-        removeButtons: ["brush", "file", "image", "video", "about"],
-        showCharsCounter: false,
-        showWordsCounter: false,
-        showXPathInStatusbar: false,
-      } as any),
-    []
-  );
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const config = {
+    readonly: false,
+    toolbar: true,
+    height: "calc(100vh - 220px)",
+    buttons: [
+      "bold",
+      "italic",
+      "underline",
+      "strikethrough",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "outdent",
+      "indent",
+      "|",
+      "link",
+    ],
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
 
     try {
-      // Simulate API call - replace with your actual save logic
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // console.log("Saving content:", content);
-      // Add your actual save API call here
-      // await saveAboutUsContent(content);
 
       toast.success("Changes saved successfully!", {
         position: "top-right",
@@ -70,7 +65,6 @@ export default function AboutUsEditor({ title }: { title: string }) {
         draggable: true,
       });
 
-      // Redirect to dashboard after toast is shown
       setTimeout(() => {
         router.push("/dashboard");
       }, 2000);
@@ -88,8 +82,21 @@ export default function AboutUsEditor({ title }: { title: string }) {
     }
   };
 
+  // Show loading state until client-side
+  if (!isClient) {
+    return (
+      <div className="min-h-screen font-poppins">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-48 mb-6"></div>
+          <div className="h-64 bg-gray-200 rounded mb-6"></div>
+          <div className="h-10 bg-gray-200 rounded w-32 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen font-poppins ">
+    <div className="min-h-screen font-poppins">
       <div className="">
         <div className="mb-6">
           <h1 className="text-lg font-poppins font-semibold text-gray-900">
@@ -97,13 +104,12 @@ export default function AboutUsEditor({ title }: { title: string }) {
           </h1>
         </div>
 
-        <div className="rounded-lg  text-base font-poppins text-[#333333] border border-gray-200 ">
+        <div className="rounded-lg text-base font-poppins text-[#333333] border border-gray-200">
           <JoditEditor
             ref={editor}
             value={content}
             config={config}
             onBlur={(newContent) => setContent(newContent)}
-            // onChange={(newContent) => {}}
           />
         </div>
 

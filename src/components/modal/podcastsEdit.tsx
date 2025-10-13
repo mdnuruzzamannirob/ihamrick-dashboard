@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
-import JoditEditor from "jodit-react";
 import Image from "next/image";
-
+import videoEdit from "@/assets/image/videoEdit.png";
+import dynamic from "next/dynamic";
 interface FormData {
   title: string;
   date: string;
@@ -82,6 +82,11 @@ Thank you for watching today's video on healthy living. Remember, your health is
   const [imagePreview, setImagePreview] = useState<string>(
     "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400"
   );
+  // Dynamically import JoditEditor only on client side
+  const JoditEditor = dynamic(() => import("jodit-react"), {
+    ssr: false,
+  });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editor = useRef(null);
   // Update formData when post prop changes
@@ -244,7 +249,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                     {imagePreview ? (
                       <div className="relative w-full flex flex-col items-center">
                         <Image
-                          src={imagePreview}
+                          src={videoEdit}
                           alt="Preview"
                           width={800} // adjust based on your layout
                           height={140}
@@ -329,7 +334,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                     value={formData.transcriptions}
                     config={config}
                     // onBlur={(newContent) => setFormData(newContent)}
-                    onChange={(newContent) => {}}
+                    // onChange={(newContent) => {}}
                   />
                 </div>
               </div>

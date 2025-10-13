@@ -44,12 +44,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSaveChanges = () => {
-    // console.log("Saving changes:", formData);
-    // console.log("Profile image:", profileImage);
-    // Add your save logic here
-  };
-
   const handleChangePassword = () => {
     router.push("/change-password");
   };

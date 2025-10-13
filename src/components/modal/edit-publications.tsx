@@ -1,19 +1,18 @@
 "use client";
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import {
   ChevronDown,
   X,
-  Upload,
   File,
   Eye,
   Pencil,
   Calendar,
   User,
-  Type,
-  Image as ImageIcon,
 } from "lucide-react";
-import JoditEditor from "jodit-react";
+import videoEdit from "@/assets/image/videoEdit.png";
+import dynamic from "next/dynamic";
 
 interface Publication {
   id: string;
@@ -27,11 +26,19 @@ interface Publication {
   fileUrl: string;
   fileName: string;
 }
+interface SaveData {
+  title: string;
+  author: string;
+  publicationDate: string;
+  publicationType: string;
+  status: "Published" | "Unpublished";
+  description: string;
+}
 
 interface EditPublicationsModalProps {
   publication: Publication;
   mode?: "edit" | "view";
-  onSave?: (data: any) => void;
+  onSave?: (data: SaveData) => void;
   onClose?: () => void;
   visible?: boolean;
 }
@@ -57,11 +64,14 @@ export function EditPublicationsModal({
   const [description, setDescription] = useState(publication.description);
   const [statusOpen, setStatusOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(visible);
+  // Dynamically import JoditEditor only on client side
+  const JoditEditor = dynamic(() => import("jodit-react"), {
+    ssr: false,
+  });
 
   const editor = useRef(null);
   const [currentMode, setCurrentMode] = useState<"edit" | "view">(mode);
 
-  // Sync with parent's visible prop
   useEffect(() => {
     setIsVisible(visible);
   }, [visible]);
@@ -86,20 +96,6 @@ export function EditPublicationsModal({
     ],
   };
 
-  // Dummy cover images for demonstration
-  const dummyCoverImages = [
-    "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
-    "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
-  ];
-
-  // Get a consistent dummy image based on publication ID
-  const getDummyCoverImage = (pubId: string) => {
-    const index = parseInt(pubId) % dummyCoverImages.length;
-    return dummyCoverImages[index];
-  };
-
   const handleSave = () => {
     const publicationData = {
       title,
@@ -121,9 +117,7 @@ export function EditPublicationsModal({
     if (onClose) {
       onClose();
     }
-    // Reset to original mode when closing
     setCurrentMode(mode);
-    // Reset form values
     setTitle(publication.title);
     setAuthor(publication.author);
     setPublicationDate(publication.publicationDate);
@@ -132,7 +126,6 @@ export function EditPublicationsModal({
     setDescription(publication.description);
   };
 
-  // Don't render anything if not visible
   if (!isVisible) {
     return (
       <button
@@ -163,7 +156,6 @@ export function EditPublicationsModal({
         )}
       </button>
 
-      {/* Modal */}
       <div
         className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4 md:p-5"
         onClick={handleClose}
@@ -193,9 +185,7 @@ export function EditPublicationsModal({
           </div>
 
           {currentMode === "view" ? (
-            // VIEW MODE - Clean display without borders
             <div className="space-y-6">
-              {/* Header with Title and Status Badge */}
               <div className="flex justify-between items-start">
                 <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
                 <span
@@ -209,7 +199,6 @@ export function EditPublicationsModal({
                 </span>
               </div>
 
-              {/* Author and Date Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   <User className="w-5 h-5 text-gray-600" />
@@ -236,23 +225,20 @@ export function EditPublicationsModal({
                 </div>
               </div>
 
-              {/* Files Section - Show actual content */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Cover Image Preview */}
                 <div className="space-y-3">
                   <label className="text-sm font-poppins font-medium text-gray-700 block">
                     Cover Image
                   </label>
                   <div className="border border-gray-200 rounded-lg overflow-hidden">
                     <div className="aspect-video bg-gray-100 relative group">
-                      <img
-                        src={getDummyCoverImage(publication.id)}
+                      <Image
+                        src={videoEdit}
                         alt={publication.coverImage}
+                        width={800}
+                        height={600}
                         className="w-full h-full object-cover"
                       />
-                      {/* <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
-                        <ImageIcon className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                      </div> */}
                     </div>
                     <div className="p-3 bg-white">
                       <p className="text-sm font-medium text-gray-900 text-center">
@@ -265,7 +251,6 @@ export function EditPublicationsModal({
                   </div>
                 </div>
 
-                {/* Publication File */}
                 <div className="space-y-3">
                   <label className="text-sm font-poppins font-medium text-gray-700 block">
                     Publication File
@@ -287,7 +272,6 @@ export function EditPublicationsModal({
                 </div>
               </div>
 
-              {/* Description - Show as clean HTML content */}
               <div className="space-y-3">
                 <label className="text-sm font-poppins font-medium text-gray-700 block">
                   Description
@@ -297,7 +281,6 @@ export function EditPublicationsModal({
                 </div>
               </div>
 
-              {/* Action Buttons for View Mode */}
               <div className="flex justify-end pt-4 border-t border-gray-200">
                 <button
                   onClick={handleClose}
@@ -308,9 +291,7 @@ export function EditPublicationsModal({
               </div>
             </div>
           ) : (
-            // EDIT MODE - Original form with borders
             <div className="space-y-5">
-              {/* Title and Author Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-poppins font-medium text-gray-700 block">
@@ -391,7 +372,6 @@ export function EditPublicationsModal({
                 </div>
               </div>
 
-              {/* Files Section - With dummy image preview in edit mode too */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-poppins font-medium text-gray-700 block">
@@ -399,9 +379,11 @@ export function EditPublicationsModal({
                   </label>
                   <div className="border border-gray-300 rounded-lg overflow-hidden">
                     <div className="aspect-video bg-gray-100">
-                      <img
-                        src={getDummyCoverImage(publication.id)}
+                      <Image
+                        src={videoEdit}
                         alt={publication.coverImage}
+                        width={800}
+                        height={600}
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -433,7 +415,6 @@ export function EditPublicationsModal({
                 </div>
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <label className="text-sm font-poppins font-medium text-gray-700 block">
                   Description
@@ -443,13 +424,12 @@ export function EditPublicationsModal({
                     ref={editor}
                     value={description}
                     config={config}
-                    onBlur={(newContent) => setDescription(newContent)}
-                    onChange={(newContent) => {}}
+                    // onBlur={(newContent) => setDescription(newContent)}
+                    // onChange={(newContent) => {}}
                   />
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={handleClose}

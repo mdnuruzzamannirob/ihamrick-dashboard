@@ -1,8 +1,6 @@
 "use client";
-
 import { Eye, X, Calendar, User, Play, Download } from "lucide-react";
 import { useState } from "react";
-
 interface Podcast {
   id: string;
   title: string;

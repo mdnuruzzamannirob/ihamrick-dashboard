@@ -1,4 +1,3 @@
-"use client";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import AboutUsEditor from "@/components/ui/about-us-editor";

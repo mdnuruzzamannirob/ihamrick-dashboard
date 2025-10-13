@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, KeyboardEvent, ChangeEvent } from "react";
+import { useState, useRef, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 export default function OTPVerification() {
   const [otp, setOtp] = useState<string[]>(["", "", "", "", ""]);
@@ -96,7 +96,7 @@ export default function OTPVerification() {
 
           {/* Resend Link */}
           <div className="text-center font-poppins text-sm text-gray-600 sm:text-base">
-            Didn't receive the code?{" "}
+            Didn&apos;t receive the code?
             <button
               onClick={handleResend}
               className="font-semibold text-gray-900 transition-colors hover:text-blue-600 focus:outline-none focus:underline"

@@ -27,7 +27,14 @@ interface Publication {
   fileUrl: string;
   fileName: string;
 }
-
+interface PublicationData {
+  title: string;
+  author: string;
+  publicationDate: string;
+  publicationType: string;
+  status: "Published" | "Unpublished";
+  description: string;
+}
 const ITEMS_PER_PAGE = 10;
 
 // Sample data - 50 blog posts for pagination demo
@@ -111,10 +118,8 @@ export default function ManageBlogPage() {
     setPostToDelete(null);
   };
 
-  const handleSavePublication = (publicationData: any) => {
+  const handleSavePublication = (publicationData: PublicationData) => {
     console.log("Saving publication:", publicationData);
-    // Add your save logic here (API call, etc.)
-    // You can update the blogPosts state with the new data
   };
 
   const handleCloseEditModal = (postId: number) => {

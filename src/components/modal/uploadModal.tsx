@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import { X } from "lucide-react";
-import JoditEditor from "jodit-react";
+import dynamic from "next/dynamic";
 
 interface UploadModalProps {
   isOpen?: boolean;
@@ -28,41 +28,33 @@ const UploadModal: React.FC<UploadModalProps> = ({
 }) => {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("");
-  const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const editor = useRef(null);
-  // console.log("rasel", post);
-  const config = useMemo(
-    () =>
-      ({
-        readonly: false,
-        placeholder: "",
-        height: 200,
-        toolbar: true,
-        toolbarButtonSize: "small",
-        buttons: [
-          "bold",
-          "italic",
-          "underline",
-          "|",
-          "align",
-          "|",
-          "ul",
-          "ol",
-          "|",
-          "link",
-        ],
-        uploader: {
-          insertImageAsBase64URI: false,
-        },
-        removeButtons: ["brush", "file", "image", "video", "about"],
-        showCharsCounter: false,
-        showWordsCounter: false,
-        showXPathInStatusbar: false,
-      } as any),
-    []
-  );
+  // Dynamically import JoditEditor only on client side
+  const JoditEditor = dynamic(() => import("jodit-react"), {
+    ssr: false,
+  });
+
+  const config = {
+    readonly: false,
+    toolbar: true,
+    height: 200,
+    buttons: [
+      "bold",
+      "italic",
+      "underline",
+      "strikethrough",
+      "|",
+      "ul",
+      "ol",
+      "|",
+      "outdent",
+      "indent",
+      "|",
+      "link",
+    ],
+  };
 
   if (!isOpen) return null;
 
@@ -92,13 +84,17 @@ const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   const handleSave = () => {
-    onSave({ title, status, description, file: file || undefined });
+    onSave({
+      title,
+      status,
+      description: "", // Empty since we're not using description state
+      file: file || undefined,
+    });
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 font-poppins">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto relative">
-        {/* Header */}
         <button
           onClick={onClose}
           className="absolute right-3 top-3 sm:right-4 sm:top-4 text-gray-500 hover:text-gray-700 transition-colors z-10"
@@ -107,7 +103,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
         </button>
 
         <div className="p-4 sm:p-6">
-          {/* Title and Status Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 sm:mb-6">
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 font-poppins">
@@ -131,8 +126,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full text-neutral-800 px-3 py-2 text-xs sm:text-base border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent bg-white font-poppins"
                 >
-                  {/* <option value=""></option>
-                  <option value="draft">Draft</option> */}
                   <option value="Published">Published</option>
                   <option value="Unpublished">Unpublished</option>
                 </select>
@@ -151,7 +144,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
             </div>
           </div>
 
-          {/* Description with Jodit Editor */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 font-poppins">
               Description
@@ -161,17 +153,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
                 ref={editor}
                 value={
                   post?.id
-                    ? "A healthy life isn’t just about eating greens or hitting the gym — it’s about cultivating habits that nourish your body, mind, and soul. In this post, we explore how small lifestyle shifts can lead to lasting happiness. From mindful mornings to joyful movement, discover practical ways to feel more energized, balanced, and fulfilled every day. Because when you care for your health, happiness naturally follows."
-                    : description
+                    ? "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul. In this post, we explore how small lifestyle shifts can lead to lasting happiness. From mindful mornings to joyful movement, discover practical ways to feel more energized, balanced, and fulfilled every day. Because when you care for your health, happiness naturally follows."
+                    : ""
                 }
                 config={config}
-                onBlur={(newContent) => setDescription(newContent)}
-                onChange={(newContent) => {}}
               />
             </div>
           </div>
 
-          {/* Upload Cover */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center font-poppins">
               Upload Cover
@@ -225,7 +214,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
             </div>
           </div>
 
-          {/* Save Button */}
           <div className="flex justify-end">
             <button
               onClick={handleSave}

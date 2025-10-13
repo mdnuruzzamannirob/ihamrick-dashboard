@@ -2,9 +2,10 @@
 
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
-import JoditEditor from "jodit-react";
 import { Pencil } from "lucide-react";
 import Image from "next/image";
+import videoEdit from "@/assets/image/videoEdit.png";
+import dynamic from "next/dynamic";
 interface FormData {
   title: string;
   date: string;
@@ -66,13 +67,15 @@ Thank you for watching today's video on healthy living. Remember, your health is
   const [videoPreview, setVideoPreview] = useState<string>(
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
   );
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>(
-    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1820&q=80"
-  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const descriptionEditor = useRef(null);
   const transcriptionsEditor = useRef(null);
+
+  // Dynamically import JoditEditor only on client side
+  const JoditEditor = dynamic(() => import("jodit-react"), {
+    ssr: false,
+  });
 
   useEffect(() => {
     if (post && isModalOpen) {
@@ -84,8 +87,9 @@ Thank you for watching today's video on healthy living. Remember, your health is
     }
   }, [post, isModalOpen]);
 
-  const handleSave = (data: FormData) => {
+  const handleSave = (_data: FormData) => {
     setIsModalOpen(false);
+    console.log(_data);
   };
 
   const editorConfig = {
@@ -131,11 +135,6 @@ Thank you for watching today's video on healthy living. Remember, your health is
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
       setFormData((prev) => ({ ...prev, thumbnail: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setThumbnailPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -164,11 +163,6 @@ Thank you for watching today's video on healthy living. Remember, your health is
     const file = e.dataTransfer.files?.[0];
     if (file && file.type.startsWith("image/")) {
       setFormData((prev) => ({ ...prev, thumbnail: file }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setThumbnailPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -205,33 +199,25 @@ Thank you for watching today's video on healthy living. Remember, your health is
                 {/* Left Column */}
                 <div className="flex flex-col space-y-5">
                   <div>
-                    <label
-                      htmlFor="title"
-                      className="block text-sm font-poppins font-medium text-gray-700 mb-2"
-                    >
+                    <label className="block text-sm font-poppins font-medium text-gray-700 mb-2">
                       Title
                     </label>
                     <input
                       type="text"
-                      id="title"
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="Write the title..."
-                      className="w-full px-3 text-xs py-2 border text-neutral-800 placeholder:text-gray-400  border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                      className="w-full px-3 text-xs py-2 border text-neutral-800 placeholder:text-gray-400 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="date"
-                      className="block font-poppins text-sm font-medium text-gray-700 mb-2"
-                    >
+                    <label className="block font-poppins text-sm font-medium text-gray-700 mb-2">
                       Date
                     </label>
                     <input
                       type="date"
-                      id="date"
                       name="date"
                       value={formData.date}
                       onChange={handleInputChange}
@@ -240,14 +226,10 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="status"
-                      className="block text-sm font-poppins font-medium text-gray-700 mb-2"
-                    >
+                    <label className="block text-sm font-poppins font-medium text-gray-700 mb-2">
                       Status
                     </label>
                     <select
-                      id="status"
                       name="status"
                       value={formData.status}
                       onChange={handleInputChange}
@@ -349,10 +331,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                 >
                   <div className="relative w-full flex flex-col items-center">
                     <Image
-                      src={
-                        thumbnailPreview ||
-                        "https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
-                      }
+                      src={videoEdit}
                       alt="Thumbnail preview"
                       width={1074}
                       height={200}
@@ -363,10 +342,6 @@ Thank you for watching today's video on healthy living. Remember, your health is
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setThumbnailPreview(
-                            "https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
-                          );
-
                           setFormData((prev) => ({
                             ...prev,
                             thumbnail: null,
@@ -392,7 +367,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
               </div>
 
               {/* Description Editor */}
-              <div className="mb-5  text-xs placeholder:text-gray-400 font-poppins text-neutral-800 ">
+              <div className="mb-5 text-xs placeholder:text-gray-400 font-poppins text-neutral-800">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
                 </label>
@@ -400,7 +375,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   ref={descriptionEditor}
                   value={formData.description}
                   config={editorConfig}
-                  onBlur={(newContent) =>
+                  onBlur={(newContent: string) =>
                     setFormData((prev) => ({
                       ...prev,
                       description: newContent,
@@ -410,7 +385,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
               </div>
 
               {/* Transcriptions Editor */}
-              <div className="mb-6 text-xs placeholder:text-gray-400  font-poppins text-neutral-800 ">
+              <div className="mb-6 text-xs placeholder:text-gray-400 font-poppins text-neutral-800">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Transcriptions
                 </label>
@@ -418,7 +393,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                   ref={transcriptionsEditor}
                   value={formData.transcriptions}
                   config={editorConfig}
-                  onBlur={(newContent) =>
+                  onBlur={(newContent: string) =>
                     setFormData((prev) => ({
                       ...prev,
                       transcriptions: newContent,

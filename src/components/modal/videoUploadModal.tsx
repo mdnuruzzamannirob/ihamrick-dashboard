@@ -2,9 +2,10 @@
 
 import type React from "react";
 import { useState, useRef } from "react";
-import JoditEditor from "jodit-react";
 import { Upload } from "lucide-react";
-
+import Image from "next/image";
+import videoEdit from "@/assets/image/videoEdit.png";
+import dynamic from "next/dynamic";
 interface FormData {
   title: string;
   date: string;
@@ -15,7 +16,12 @@ interface FormData {
   thumbnail: File | null;
 }
 
-const videoUploadModal = () => {
+// Dynamically import JoditEditor only on client side
+const JoditEditor = dynamic(() => import("jodit-react"), {
+  ssr: false,
+});
+
+const VideoUploadModal = () => {
   const [formData, setFormData] = useState<FormData>({
     title: "",
     date: "",
@@ -33,9 +39,9 @@ const videoUploadModal = () => {
   const descriptionEditor = useRef(null);
   const transcriptionsEditor = useRef(null);
   const handleSave = (data: FormData) => {
-    // console.log("Form data:", data);
-    // console.log("Video file:", data.coverVideo);
-    // console.log("Thumbnail file:", data.thumbnail);
+    console.log("Form data:", data);
+    console.log("Video file:", data.coverVideo);
+    console.log("Thumbnail file:", data.thumbnail);
     setIsModalOpen(false);
   };
   const editorConfig = {
@@ -302,10 +308,12 @@ const videoUploadModal = () => {
                 >
                   {thumbnailPreview ? (
                     <div className="relative w-full flex flex-col items-center">
-                      <img
-                        src={thumbnailPreview || "/placeholder.svg"}
+                      <Image
+                        src={videoEdit}
                         alt="Thumbnail preview"
-                        className="max-w-full max-h-[140px] rounded object-contain"
+                        width={1074}
+                        height={200}
+                        className="w-full h-full max-h-[200px] rounded object-cover"
                       />
                       <button
                         onClick={(e) => {
@@ -410,4 +418,4 @@ const videoUploadModal = () => {
   );
 };
 
-export default videoUploadModal;
+export default VideoUploadModal;

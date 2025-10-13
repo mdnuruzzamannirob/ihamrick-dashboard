@@ -2,7 +2,7 @@
 
 import { X, Calendar, User, File, Eye, Clock, Tag } from "lucide-react";
 import Image from "next/image";
-
+import yoga from "@/assets/image/yoga.jpg";
 interface Blog {
   id: string | number;
   title: string;
@@ -178,7 +178,7 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
             </label>
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <Image
-                src={currentBlog.featuredImage}
+                src={yoga}
                 alt={currentBlog.title}
                 width={1280} // adjust based on layout
                 height={320} // matches h-80 (20rem)

@@ -15,7 +15,6 @@ import QualityOfLifeModal from "@/components/modal/qualityModal";
 import PodcastsUploadModal from "@/components/modal/padcastsUpload";
 import PodcastsEditModal from "@/components/modal/podcastsEdit";
 import { PodcastsViewModal } from "@/components/modal/podcastsViewModal";
-
 interface BlogPost {
   id: number;
   title: string;
