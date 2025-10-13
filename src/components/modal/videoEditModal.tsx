@@ -1,6 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+"use client";
+
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
 import JoditEditor from "jodit-react";
-import { Pencil, Upload } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 interface FormData {
   title: string;
@@ -9,6 +12,7 @@ interface FormData {
   description: string;
   transcriptions: string;
   coverVideo: File | null;
+  thumbnail: File | null;
 }
 
 interface BlogPost {
@@ -56,16 +60,20 @@ Conclusion [14:30]
 
 Thank you for watching today's video on healthy living. Remember, your health is your wealth. Start small, stay consistent, and watch how these changes compound over time. If you found this helpful, please like, subscribe, and hit the notification bell for more wellness content. Share your own healthy living tips in the comments below - I love hearing from you all. Until next time, take care of yourself!`,
     coverVideo: null,
+    thumbnail: null,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [videoPreview, setVideoPreview] = useState<string>(
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
   );
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>(
+    "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1820&q=80"
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const descriptionEditor = useRef(null);
   const transcriptionsEditor = useRef(null);
 
-  // Update formData when post prop changes
   useEffect(() => {
     if (post && isModalOpen) {
       setFormData((prev) => ({
@@ -77,10 +85,9 @@ Thank you for watching today's video on healthy living. Remember, your health is
   }, [post, isModalOpen]);
 
   const handleSave = (data: FormData) => {
-    // console.log("Form data:", data);
-    // console.log("Video file:", data.coverVideo);
     setIsModalOpen(false);
   };
+
   const editorConfig = {
     readonly: false,
     toolbar: true,
@@ -120,6 +127,18 @@ Thank you for watching today's video on healthy living. Remember, your health is
     }
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      setFormData((prev) => ({ ...prev, thumbnail: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -139,8 +158,26 @@ Thank you for watching today's video on healthy living. Remember, your health is
     }
   };
 
+  const handleThumbnailDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      setFormData((prev) => ({ ...prev, thumbnail: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleThumbnailBrowseClick = () => {
+    thumbnailInputRef.current?.click();
   };
 
   return (
@@ -244,7 +281,7 @@ Thank you for watching today's video on healthy living. Remember, your health is
                         <video
                           src={videoPreview}
                           controls
-                          className="max-w-full font-poppins max-h-[140px] rounded"
+                          className="w-full h-full max-h-[140px] rounded object-cover"
                         >
                           Your browser does not support the video tag.
                         </video>
@@ -297,6 +334,58 @@ Thank you for watching today's video on healthy living. Remember, your health is
                     className="hidden"
                   />
                 </div>
+              </div>
+
+              {/* Thumbnail Upload Section */}
+              <div className="mb-5">
+                <label className="block font-poppins text-sm font-medium text-gray-700 mb-2">
+                  Video Thumbnail
+                </label>
+                <div
+                  onDragOver={handleDragOver}
+                  onDrop={handleThumbnailDrop}
+                  onClick={handleThumbnailBrowseClick}
+                  className="border-2 border-dashed border-gray-300 rounded hover:border-gray-400 transition-colors cursor-pointer flex flex-col items-center justify-center p-6"
+                >
+                  <div className="relative w-full flex flex-col items-center">
+                    <img
+                      src={
+                        thumbnailPreview ||
+                        "https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
+                      }
+                      alt="Thumbnail preview"
+                      className="w-full h-full max-h-[200px] rounded object-cover"
+                    />
+                    {formData.thumbnail && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setThumbnailPreview(
+                            "https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1074&q=80"
+                          );
+
+                          setFormData((prev) => ({
+                            ...prev,
+                            thumbnail: null,
+                          }));
+                          if (thumbnailInputRef.current) {
+                            thumbnailInputRef.current.value = "";
+                          }
+                        }}
+                        className="mt-3 text-sm text-red-500 hover:text-red-700 font-poppins underline"
+                      >
+                        Remove Thumbnail
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <input
+                  ref={thumbnailInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  className="hidden"
+                />
               </div>
 
               {/* Description Editor */}

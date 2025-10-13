@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import BrandSection from "@/components/auth/Brand-section";
 import Header from "@/components/auth/Header";
 import EmailField from "@/components/auth/EmailField";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +58,13 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              onClick={() => router.replace("/dashboard")}
+              onClick={() => {
+                toast.success("Logout successful. See you soon!");
+
+                setTimeout(() => {
+                  router.replace("/dashboard");
+                }, 1200);
+              }}
               className="h-12 w-full rounded-lg bg-black font-poppins text-base font-medium text-white transition-colors hover:bg-black/90"
             >
               Login
@@ -72,6 +80,7 @@ export default function LoginPage() {
             </button>
           </div>
         </div>
+        <ToastContainer position="top-right" autoClose={1000} />
       </div>
     </div>
   );

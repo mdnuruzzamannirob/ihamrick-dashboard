@@ -1,4 +1,7 @@
-import React, { useState, useRef } from "react";
+"use client";
+
+import type React from "react";
+import { useState, useRef } from "react";
 import JoditEditor from "jodit-react";
 import { Upload } from "lucide-react";
 
@@ -9,6 +12,7 @@ interface FormData {
   description: string;
   transcriptions: string;
   coverVideo: File | null;
+  thumbnail: File | null;
 }
 
 const videoUploadModal = () => {
@@ -19,15 +23,19 @@ const videoUploadModal = () => {
     description: "",
     transcriptions: "",
     coverVideo: null,
+    thumbnail: null,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [videoPreview, setVideoPreview] = useState<string>("");
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
   const descriptionEditor = useRef(null);
   const transcriptionsEditor = useRef(null);
   const handleSave = (data: FormData) => {
     // console.log("Form data:", data);
     // console.log("Video file:", data.coverVideo);
+    // console.log("Thumbnail file:", data.thumbnail);
     setIsModalOpen(false);
   };
   const editorConfig = {
@@ -69,6 +77,18 @@ const videoUploadModal = () => {
     }
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, thumbnail: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -88,8 +108,26 @@ const videoUploadModal = () => {
     }
   };
 
+  const handleThumbnailDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      setFormData((prev) => ({ ...prev, thumbnail: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleThumbnailBrowseClick = () => {
+    thumbnailInputRef.current?.click();
   };
 
   return (
@@ -248,6 +286,75 @@ const videoUploadModal = () => {
                     className="hidden"
                   />
                 </div>
+              </div>
+
+              <div className="mb-5">
+                <label className="block font-poppins text-sm font-medium text-gray-700 mb-2">
+                  Upload Thumbnail
+                </label>
+                <div
+                  onDragOver={handleDragOver}
+                  onDrop={handleThumbnailDrop}
+                  onClick={() =>
+                    !thumbnailPreview && handleThumbnailBrowseClick()
+                  }
+                  className="border-2 border-dashed border-gray-300 rounded hover:border-gray-400 transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[140px] p-6"
+                >
+                  {thumbnailPreview ? (
+                    <div className="relative w-full flex flex-col items-center">
+                      <img
+                        src={thumbnailPreview || "/placeholder.svg"}
+                        alt="Thumbnail preview"
+                        className="max-w-full max-h-[140px] rounded object-contain"
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setThumbnailPreview("");
+                          setFormData((prev) => ({
+                            ...prev,
+                            thumbnail: null,
+                          }));
+                          if (thumbnailInputRef.current) {
+                            thumbnailInputRef.current.value = "";
+                          }
+                        }}
+                        className="mt-3 text-sm text-red-500 hover:text-red-700 font-poppins underline"
+                      >
+                        Remove Thumbnail
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-12 h-12 text-gray-400 mb-3"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p className="text-sm text-gray-600 text-center">
+                        Drag and Drop an image here, or{" "}
+                        <span className="text-red-400 font-poppins underline cursor-pointer hover:text-red-600">
+                          Browse
+                        </span>
+                      </p>
+                    </>
+                  )}
+                </div>
+                <input
+                  ref={thumbnailInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  className="hidden"
+                />
               </div>
 
               {/* Description Editor */}

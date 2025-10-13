@@ -7,7 +7,6 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Upload,
   Calendar,
   Clock,
 } from "lucide-react";
