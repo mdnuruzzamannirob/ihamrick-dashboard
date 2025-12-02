@@ -13,8 +13,7 @@ export default function MailCheck() {
         <div className=" max-w-md">
           <Header
             title="Check Your Email"
-            subtitle="We sent a reset link to contact@gmail.com
-            enter 5 digit code that mentioned in the email"
+            subtitle=""
           />
           <OTPVerification />
         </div>
