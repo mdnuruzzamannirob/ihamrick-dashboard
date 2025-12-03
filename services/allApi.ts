@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
+import Cookies from 'js-cookie';
 // Define the base URL (you can change this if needed)
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.20.73:5005/api/";
@@ -199,12 +199,51 @@ interface BlogResponse {
   data: Blog[];
 }
 
+// Life Suggestion related types
+interface LifeSuggestion {
+  _id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface LifeSuggestionsResponse {
+  success: boolean;
+  message: string;
+  data: {
+    increase: LifeSuggestion[];
+    decrease: LifeSuggestion[];
+  };
+}
+
+interface CreateLifeSuggestionRequest {
+  type: "increase" | "decrease";
+  content: string;
+}
+
+interface DeleteLifeSuggestionResponse {
+  success: boolean;
+  message: string;
+}
+
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
     baseUrl:
       process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.20.73:5005/api/",
+    prepareHeaders: (headers) => {
+      // Retrieve token from cookies
+      const token = Cookies.get("Ihamrickadmindashboardtoken");
+
+      // If the token is present, add it to the Authorization header
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+
+      return headers;
+    },
   }),
+
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
@@ -272,6 +311,32 @@ const allApi = createApi({
         method: "GET",
       }),
     }),
+    // Life Suggestions API Endpoints
+    createLifeSuggestion: builder.mutation<
+      LifeSuggestion,
+      CreateLifeSuggestionRequest
+    >({
+      query: (newLifeSuggestion) => ({
+        url: "/life-suggestions/create",
+        method: "POST",
+        body: newLifeSuggestion,
+      }),
+    }),
+    getLifeSuggestions: builder.query<LifeSuggestionsResponse, void>({
+      query: () => ({
+        url: "/life-suggestions/",
+        method: "GET",
+      }),
+    }),
+    deleteLifeSuggestion: builder.mutation<
+      DeleteLifeSuggestionResponse,
+      string
+    >({
+      query: (suggestionId) => ({
+        url: `/life-suggestions/${suggestionId}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -285,6 +350,9 @@ export const {
   useGetPodcastsQuery,
   useGetPublicationsQuery,
   useGetBlogsQuery,
+  useCreateLifeSuggestionMutation,
+  useGetLifeSuggestionsQuery,
+  useDeleteLifeSuggestionMutation,
 } = allApi;
 
 export default allApi;

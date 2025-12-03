@@ -1,66 +1,157 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Plus, Minus, Pencil } from "lucide-react";
+import {
+  useCreateLifeSuggestionMutation,
+  useGetLifeSuggestionsQuery,
+  useDeleteLifeSuggestionMutation,
+} from "../../../services/allApi";
 
 interface Item {
   id: string;
   text: string;
 }
 
+interface LifeSuggestion {
+  _id: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CreateLifeSuggestionRequest {
+  type: "decrease" | "increase";
+  content: string;
+}
+
 const QualityOfLifeModal: React.FC = () => {
-  const [decreaseItems, setDecreaseItems] = useState<Item[]>([
-    { id: "1", text: "Alcohol" },
-    { id: "2", text: "Smoking" },
-    { id: "3", text: "Stress" },
-  ]);
-
-  const [increaseItems, setIncreaseItems] = useState<Item[]>([
-    { id: "4", text: "Healthy Food" },
-    { id: "5", text: "Good Sleep" },
-    { id: "6", text: "Exercise" },
-  ]);
-
+  const [decreaseItems, setDecreaseItems] = useState<Item[]>([]);
+  const [increaseItems, setIncreaseItems] = useState<Item[]>([]);
   const [showDecreaseInput, setShowDecreaseInput] = useState(false);
   const [showIncreaseInput, setShowIncreaseInput] = useState(false);
   const [decreaseInput, setDecreaseInput] = useState("");
   const [increaseInput, setIncreaseInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const addDecreaseItem = () => {
+  const { data, isLoading, error } = useGetLifeSuggestionsQuery();
+  const [createLifeSuggestion, { isLoading: isCreating }] = useCreateLifeSuggestionMutation();
+  const [deleteLifeSuggestion] = useDeleteLifeSuggestionMutation();
+
+  useEffect(() => {
+    if (data) {
+      const decreaseItemsMapped = data.data.decrease.map((item: LifeSuggestion) => ({
+        id: item._id,
+        text: item.content,
+      }));
+      const increaseItemsMapped = data.data.increase.map((item: LifeSuggestion) => ({
+        id: item._id,
+        text: item.content,
+      }));
+
+      setDecreaseItems(decreaseItemsMapped);
+      setIncreaseItems(increaseItemsMapped);
+    }
+  }, [data]);
+
+  // Add Decrease Item with Optimistic Update
+  const addDecreaseItem = async () => {
     if (decreaseInput.trim()) {
-      setDecreaseItems([
-        ...decreaseItems,
-        { id: Date.now().toString(), text: decreaseInput.trim() },
-      ]);
-      setDecreaseInput("");
-      setShowDecreaseInput(false);
+      const newItem: CreateLifeSuggestionRequest = {
+        type: "decrease",
+        content: decreaseInput.trim(),
+      };
+
+      // Optimistically update the UI
+      const newItemData = { id: Date.now().toString(), text: decreaseInput.trim() };  // Temporary ID for optimistic update
+      setDecreaseItems((prevItems) => [...prevItems, newItemData]);
+
+      try {
+        const result = await createLifeSuggestion(newItem);
+        if (result?.data) {
+          // Replace the optimistic ID with the real one after API call success
+          setDecreaseItems((prevItems) =>
+            prevItems.map((item) =>
+              item.id === newItemData.id ? { ...item, id: result.data._id } : item
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error adding life suggestion:", error);
+        // Optionally, revert the optimistic update if the API fails
+        setDecreaseItems((prevItems) => prevItems.filter((item) => item.id !== newItemData.id));
+      }
+      
+      setDecreaseInput(""); // Clear input after submission
+      setShowDecreaseInput(false); // Hide input field
     }
   };
 
-  const addIncreaseItem = () => {
+  // Add Increase Item with Optimistic Update
+  const addIncreaseItem = async () => {
     if (increaseInput.trim()) {
-      setIncreaseItems([
-        ...increaseItems,
-        { id: Date.now().toString(), text: increaseInput.trim() },
-      ]);
-      setIncreaseInput("");
-      setShowIncreaseInput(false);
+      const newItem: CreateLifeSuggestionRequest = {
+        type: "increase",
+        content: increaseInput.trim(),
+      };
+
+      // Optimistically update the UI
+      const newItemData = { id: Date.now().toString(), text: increaseInput.trim() };  // Temporary ID for optimistic update
+      setIncreaseItems((prevItems) => [...prevItems, newItemData]);
+
+      try {
+        const result = await createLifeSuggestion(newItem);
+        if (result?.data) {
+          // Replace the optimistic ID with the real one after API call success
+          setIncreaseItems((prevItems) =>
+            prevItems.map((item) =>
+              item.id === newItemData.id ? { ...item, id: result.data._id } : item
+            )
+          );
+        }
+      } catch (error) {
+        console.error("Error adding life suggestion:", error);
+        // Optionally, revert the optimistic update if the API fails
+        setIncreaseItems((prevItems) => prevItems.filter((item) => item.id !== newItemData.id));
+      }
+
+      setIncreaseInput(""); // Clear input after submission
+      setShowIncreaseInput(false); // Hide input field
     }
   };
 
-  const deleteDecreaseItem = (id: string) => {
-    setDecreaseItems(decreaseItems.filter((item) => item.id !== id));
+  // Delete Decrease Item
+  const deleteDecreaseItem = async (id: string) => {
+    try {
+      const response = await deleteLifeSuggestion(id).unwrap();
+      console.log("Delete Success Response:", response);
+
+      // Dynamically update state after deletion
+      setDecreaseItems((prevItems) => prevItems.filter(item => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting life suggestion:", error);
+    }
   };
 
-  const deleteIncreaseItem = (id: string) => {
-    setIncreaseItems(increaseItems.filter((item) => item.id !== id));
+  // Delete Increase Item
+  const deleteIncreaseItem = async (id: string) => {
+    try {
+      const response = await deleteLifeSuggestion(id).unwrap();
+      console.log("Delete Success Response:", response);
+
+      // Dynamically update state after deletion
+      setIncreaseItems((prevItems) => prevItems.filter(item => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting life suggestion:", error);
+    }
   };
 
+  // Handle key press for Decrease Item input
   const handleDecreaseKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addDecreaseItem();
     }
   };
 
+  // Handle key press for Increase Item input
   const handleIncreaseKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       addIncreaseItem();
@@ -99,20 +190,26 @@ const QualityOfLifeModal: React.FC = () => {
                     Decrease
                   </div>
                   <div className="max-h-64 overflow-y-auto">
-                    {decreaseItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors"
-                      >
-                        <button
-                          onClick={() => deleteDecreaseItem(item.id)}
-                          className="mr-3 text-gray-600 hover:text-red-400 transition-colors flex-shrink-0"
+                    {isLoading ? (
+                      <div>Loading...</div>
+                    ) : error ? (
+                      <div>Error fetching suggestions</div>
+                    ) : (
+                      decreaseItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors"
                         >
-                          <Minus size={18} />
-                        </button>
-                        <span className="text-[#202020]">{item.text}</span>
-                      </div>
-                    ))}
+                          <button
+                            onClick={() => deleteDecreaseItem(item.id)}
+                            className="mr-3 text-gray-600 hover:text-red-400 transition-colors flex-shrink-0"
+                          >
+                            <Minus size={18} />
+                          </button>
+                          <span className="text-[#202020]">{item.text}</span>
+                        </div>
+                      ))
+                    )}
                     {showDecreaseInput && (
                       <div className="px-4 py-3 border-b border-gray-200">
                         <input
@@ -131,9 +228,10 @@ const QualityOfLifeModal: React.FC = () => {
                   <button
                     onClick={() => setShowDecreaseInput(true)}
                     className="w-full bg-[#202020] text-white py-2 flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
+                    disabled={isCreating} // Disable button during API call
                   >
                     <Plus size={18} />
-                    Add info
+                    {isCreating ? "Adding..." : "Add info"}
                   </button>
                 </div>
 
@@ -143,20 +241,26 @@ const QualityOfLifeModal: React.FC = () => {
                     Increase
                   </div>
                   <div className="max-h-64 overflow-y-auto">
-                    {increaseItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors"
-                      >
-                        <button
-                          onClick={() => deleteIncreaseItem(item.id)}
-                          className="mr-3 text-gray-600 hover:text-red-600 transition-colors flex-shrink-0"
+                    {isLoading ? (
+                      <div>Loading...</div>
+                    ) : error ? (
+                      <div>Error fetching suggestions</div>
+                    ) : (
+                      increaseItems.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors"
                         >
-                          <Minus size={18} />
-                        </button>
-                        <span className="text-[#202020]">{item.text}</span>
-                      </div>
-                    ))}
+                          <button
+                            onClick={() => deleteIncreaseItem(item.id)}
+                            className="mr-3 text-gray-600 hover:text-red-600 transition-colors flex-shrink-0"
+                          >
+                            <Minus size={18} />
+                          </button>
+                          <span className="text-[#202020]">{item.text}</span>
+                        </div>
+                      ))
+                    )}
                     {showIncreaseInput && (
                       <div className="px-4 py-3 border-b border-gray-200">
                         <input
@@ -175,9 +279,10 @@ const QualityOfLifeModal: React.FC = () => {
                   <button
                     onClick={() => setShowIncreaseInput(true)}
                     className="w-full bg-[#202020] text-white py-2 flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
+                    disabled={isCreating} // Disable button during API call
                   >
                     <Plus size={18} />
-                    Add info
+                    {isCreating ? "Adding..." : "Add info"}
                   </button>
                 </div>
               </div>

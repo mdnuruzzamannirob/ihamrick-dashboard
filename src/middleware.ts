@@ -6,7 +6,7 @@ export function middleware(req: NextRequest) {
   
   const token = req.cookies.get("Ihamrickadmindashboardtoken")?.value;
 
-
+console.log()
   const isAuthPage = req.nextUrl.pathname.startsWith("/login");
 
 
@@ -28,8 +28,6 @@ export function middleware(req: NextRequest) {
   console.log("User is authorized or on the login page. Proceeding...");
   return NextResponse.next();
 }
-
-// Middleware config to apply it globally to all routes except static files
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico).*)", 
