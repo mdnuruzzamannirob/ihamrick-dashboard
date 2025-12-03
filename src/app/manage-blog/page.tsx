@@ -184,7 +184,7 @@ export default function ManageBlogPage() {
 
           {/* Action Buttons */}
           <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
-            <QualityOfLifeModal />
+     
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"

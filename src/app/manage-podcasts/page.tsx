@@ -139,7 +139,7 @@ export default function ManagePodcasts() {
 
           {/* Action Buttons */}
           <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
-            <QualityOfLifeModal />
+
             <PodcastsUploadModal />
           </div>
 

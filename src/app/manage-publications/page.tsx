@@ -192,7 +192,7 @@ export default function ManageBlogPage() {
 
           {/* Action Buttons */}
           <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
-            <QualityOfLifeModal />
+  
             <PublicationModal />
           </div>
 

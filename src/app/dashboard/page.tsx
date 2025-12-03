@@ -22,7 +22,7 @@ import {
 } from "../../../services/allApi";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../services/store";
-
+import QualityOfLifeModal from "@/components/modal/qualityModal";
 const DashboardPage = () => {
   const dispatch = useDispatch();
 
@@ -64,6 +64,10 @@ const DashboardPage = () => {
             <UserProfile />
           </div>
           <StatCards />
+         {/* Centering the QualityOfLifeModal */}
+          <div className="flex items-center justify-center mt-6">
+            <QualityOfLifeModal />
+          </div>
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <ManageBlog />
             <ManageVideos />
