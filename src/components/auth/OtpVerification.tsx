@@ -2,25 +2,33 @@
 
 import { useState, useRef, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux"; // Import useDispatch
 import { useVerifyOtpMutation, useResendOtpMutation } from "../../../services/allApi"; // Import resendOtp mutation
 import { RootState } from "../../../services/store";
+import { setOtp } from "../../../services/slices/emailSlice"; // Import setOtp action
 
 export default function OTPVerification() {
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [otp, setOtpState] = useState<string[]>(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
+  const dispatch = useDispatch(); // Initialize dispatch
 
   const email = useSelector((state: RootState) => state.email.email);
   const [verifyOtp, { isLoading, isError, isSuccess }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: resendLoading, isError: resendError, isSuccess: resendSuccess }] = useResendOtpMutation();
 
   const handleChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return;
+    if (value && !/^\d$/.test(value)) return;  // Ensure value is a digit
 
     const newOtp = [...otp];
     newOtp[index] = value;
-    setOtp(newOtp);
+    setOtpState(newOtp);
+
+    // Join the array into a string, convert to a number, and dispatch
+    const otpValue = newOtp.join("");
+    if (otpValue.length === 6) {
+      dispatch(setOtp(Number(otpValue)));  // Convert to number before dispatching
+    }
 
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
@@ -44,7 +52,11 @@ export default function OTPVerification() {
       }
     }
 
-    setOtp(newOtp);
+    setOtpState(newOtp);
+    const otpValue = newOtp.join("");
+    if (otpValue.length === 6) {
+      dispatch(setOtp(Number(otpValue)));  // Convert to number before dispatching
+    }
 
     const nextIndex = Math.min(pastedData.length, 5);
     inputRefs.current[nextIndex]?.focus();
@@ -69,12 +81,11 @@ export default function OTPVerification() {
 
   // Handle resend OTP
   const handleResend = async () => {
-    console.log(email)
+    console.log(email);
     if (email) {
-      console.log(email)
       try {
-      const news =   await resendOtp({email:email} ).unwrap();
-        console.log("Resend OTP successful",news);
+        const news = await resendOtp({ email: email }).unwrap();
+        console.log("Resend OTP successful", news);
       } catch (error) {
         console.error("Error resending OTP:", error);
       }

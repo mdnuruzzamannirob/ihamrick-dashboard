@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState("");
 
   const router = useRouter();
-  const [login] = useLoginMutation();
+  const [login, { isLoading }] = useLoginMutation(); // Extract isLoading here
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +39,7 @@ export default function LoginPage() {
         toast.success("Login successful!");
 
         // Store token in cookie so middleware can check it
-        document.cookie = `token=${res.data.token}; path=/;`;
+        document.cookie = `Ihamrickadmindashboardtoken=${res.data.token}; path=/;`;
 
         setTimeout(() => {
           router.replace("/dashboard");
@@ -90,9 +90,10 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className="h-12 w-full rounded-lg bg-black text-white"
+              className={`h-12 w-full rounded-lg text-white ${isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-black hover:bg-gray-800"}`}
+              disabled={isLoading} // Disable the button when loading
             >
-              Login
+              {isLoading ? "Logging in..." : "Login"}
             </button>
           </form>
 

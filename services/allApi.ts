@@ -57,6 +57,18 @@ interface ResendOtpResponse {
   message: string;
 }
 
+interface ResetPasswordRequest {
+  email: string;
+  newPassword: string;
+  confirmPassword: string;
+  otp: string;
+}
+
+interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
@@ -92,6 +104,14 @@ const allApi = createApi({
         body: { email },
       }),
     }),
+    // Add the new resetPassword mutation
+    resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
+      query: ({ email, newPassword, confirmPassword, otp }) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body: { email, newPassword, confirmPassword, otp },
+      }),
+    }),
   }),
 });
 
@@ -99,7 +119,8 @@ export const {
   useLoginMutation,
   useForgotPasswordMutation,
   useVerifyOtpMutation,
-  useResendOtpMutation, // Export the new hook for `resendOtp`
+  useResendOtpMutation,
+  useResetPasswordMutation, // Export the new hook for `resetPassword`
 } = allApi;
 
 export default allApi;

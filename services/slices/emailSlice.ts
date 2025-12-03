@@ -1,33 +1,68 @@
 // src/services/emailSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// Define the initial state for the email slice
 interface EmailState {
   email: string | null;
+  newPassword: string | null;
+  confirmPassword: string | null;
+  otp: number | null;
 }
 
 const initialState: EmailState = {
   email: null,
+  newPassword: null,
+  confirmPassword: null,
+  otp: null,
 };
 
-// Create the slice
 const emailSlice = createSlice({
   name: "email",
   initialState,
   reducers: {
-    // Action to set the email
     setEmail(state, action: PayloadAction<string>) {
       state.email = action.payload;
     },
-    // Action to clear the email
     clearEmail(state) {
       state.email = null;
+    },
+
+    setNewPassword(state, action: PayloadAction<string>) {
+      state.newPassword = action.payload;
+    },
+    clearNewPassword(state) {
+      state.newPassword = null;
+    },
+
+    setConfirmPassword(state, action: PayloadAction<string>) {
+      state.confirmPassword = action.payload;
+    },
+    clearConfirmPassword(state) {
+      state.confirmPassword = null;
+    },
+
+    setOtp(state, action: PayloadAction<number>) {
+      state.otp = action.payload;
+    },
+    clearOtp(state) {
+      state.otp = null;
+    },
+
+    resetAll() {
+      return initialState;
     },
   },
 });
 
-// Export actions
-export const { setEmail, clearEmail } = emailSlice.actions;
+export const {
+  setEmail,
+  clearEmail,
+  setNewPassword,
+  clearNewPassword,
+  setConfirmPassword,
+  clearConfirmPassword,
+  setOtp,
+  clearOtp,
+  resetAll,
+} = emailSlice.actions;
 
-// Export reducer
 export default emailSlice.reducer;

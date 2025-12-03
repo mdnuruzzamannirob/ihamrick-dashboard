@@ -1,22 +1,56 @@
 "use client";
-
-import React from "react";
+import React, { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // ✅ REQUIRED
+import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux"; // Import useSelector for accessing Redux state
+import { useResetPasswordMutation } from "../../../../services/allApi";
 import BrandSection from "@/components/auth/Brand-section";
 import Header from "@/components/auth/Header";
 import PasswordField from "@/components/auth/PasswordField";
+import { RootState } from "../../../../services/store"; // Ensure this is the correct path
 
 export default function SetPassword() {
   const router = useRouter();
 
-  const handleReset = () => {
-    toast.success("Password reset successful!");
+  // Access email and OTP from Redux state
+  const { email, otp } = useSelector((state: RootState) => state.email);
 
-    setTimeout(() => {
-      router.replace("/");
-    }, 1200); // Wait before redirect
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // Call the resetPassword API hook
+  const [resetPassword, { isLoading, isSuccess, error }] = useResetPasswordMutation();
+
+  const handleReset = async () => {
+    try {
+      // Ensure email is a valid string (if it's null, set to an empty string)
+      const emailString = email ? email : "";
+
+      // Ensure otp is a string (if it's a number, convert to string)
+      const otpString = otp !== null && otp !== undefined ? String(otp) : "";
+
+      // Trigger the API call to reset password
+      console.log(email,newPassword,confirmPassword,otp)
+      const response = await resetPassword({
+        email: emailString,
+        newPassword,
+        confirmPassword,
+        otp: otpString, // Pass the stringified OTP here
+      }).unwrap();
+
+      if (response.success) {
+        toast.success("Password reset successful!");
+        setTimeout(() => {
+          router.replace("/"); // Redirect after successful reset
+        }, 1200);
+      } else {
+        toast.error(response.message); // Handle failure response
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error("An error occurred while resetting your password.");
+    }
   };
 
   return (
@@ -29,16 +63,25 @@ export default function SetPassword() {
             title="Set A New Password"
             subtitle="Your new password must be different from previously used passwords."
           />
-
           <div className="flex flex-col gap-y-4">
-            <PasswordField placeholder="New Password" />
-            <PasswordField placeholder="Confirm Password" />
+            <PasswordField
+              placeholder="New Password"
+              password={newPassword}
+              setPassword={setNewPassword}
+            />
+            <PasswordField
+              placeholder="Confirm Password"
+              password={confirmPassword}
+              setPassword={setConfirmPassword}
+              isConfirmPasswordField
+            />
 
             <button
               onClick={handleReset}
               className="mb-4 w-full rounded-lg bg-black py-3 font-poppins text-sm font-medium text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 sm:text-base"
+              disabled={isLoading}
             >
-              Reset Password
+              {isLoading ? "Resetting..." : "Reset Password"}
             </button>
           </div>
         </div>
