@@ -69,6 +69,136 @@ interface ResetPasswordResponse {
   message: string;
 }
 
+interface Video {
+  _id: string;
+  title: string;
+  description: string;
+  transcription: string;
+  videoUrl: string;
+  signedUrl: string;
+  thumbnailUrl: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+  duration: number;
+  uploadDate: string;
+  status: boolean;
+  views: number;
+  isDeleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  isNotified: boolean;
+  formattedFileSize: string;
+}
+
+interface Podcast {
+  _id: string;
+  title: string;
+  description: string;
+  coverImage: string;
+  transcription: string;
+  date: string;
+  status: string;
+  admin: {
+    _id: string;
+    email: string;
+  };
+  currentListeners: number;
+  peakListeners: number;
+  totalListeners: number;
+  audioFormat: string;
+  isRecording: boolean;
+  podcastListeners: Array<{
+    joinedAt: string;
+    sessionId: string;
+    leftAt: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  actualStart: string;
+  liveSessionId: string;
+  actualEnd: string;
+  duration: number;
+  activeListeners: number;
+  streamConfig: {
+    channelId: string;
+    sessionId: string | null;
+    socketNamespace: string;
+    socketEndpoint: string;
+    playbackMethod: string;
+    playbackUrl: string | null;
+    recordingBucket: string;
+    roomId: string;
+  };
+}
+
+interface Publication {
+  _id: string;
+  title: string;
+  author: string;
+  publicationDate: string;
+  fileType: string;
+  status: boolean;
+  description: string;
+  coverImage: string;
+  file: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Blog {
+  _id: string;
+  title: string;
+  description: string;
+  coverImage: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Define API Response Types
+interface VideoResponse {
+  success: boolean;
+  message: string;
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number | null;
+  };
+  data: Video[];
+}
+
+interface PodcastResponse {
+  success: boolean;
+  message: string;
+  results: number;
+  data: Podcast[];
+}
+
+interface PublicationResponse {
+  success: boolean;
+  message: string;
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number | null;
+  };
+  data: Publication[];
+}
+
+interface BlogResponse {
+  success: boolean;
+  message: string;
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number | null;
+  };
+  data: Blog[];
+}
+
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
@@ -83,7 +213,10 @@ const allApi = createApi({
         body: credentials,
       }),
     }),
-    forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
+    forgotPassword: builder.mutation<
+      ForgotPasswordResponse,
+      ForgotPasswordRequest
+    >({
       query: (email) => ({
         url: "/auth/forgot-password",
         method: "POST",
@@ -104,12 +237,39 @@ const allApi = createApi({
         body: { email },
       }),
     }),
-    // Add the new resetPassword mutation
-    resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
+    resetPassword: builder.mutation<
+      ResetPasswordResponse,
+      ResetPasswordRequest
+    >({
       query: ({ email, newPassword, confirmPassword, otp }) => ({
         url: "/auth/reset-password",
         method: "POST",
         body: { email, newPassword, confirmPassword, otp },
+      }),
+    }),
+
+    getVideos: builder.query<VideoResponse, void>({
+      query: () => ({
+        url: "/videos",
+        method: "GET",
+      }),
+    }),
+    getPodcasts: builder.query<PodcastResponse, void>({
+      query: () => ({
+        url: "/podcasts",
+        method: "GET",
+      }),
+    }),
+    getPublications: builder.query<PublicationResponse, void>({
+      query: () => ({
+        url: "/publications",
+        method: "GET",
+      }),
+    }),
+    getBlogs: builder.query<BlogResponse, void>({
+      query: () => ({
+        url: "/blog",
+        method: "GET",
       }),
     }),
   }),
@@ -120,7 +280,11 @@ export const {
   useForgotPasswordMutation,
   useVerifyOtpMutation,
   useResendOtpMutation,
-  useResetPasswordMutation, // Export the new hook for `resetPassword`
+  useResetPasswordMutation,
+  useGetVideosQuery,
+  useGetPodcastsQuery,
+  useGetPublicationsQuery,
+  useGetBlogsQuery,
 } = allApi;
 
 export default allApi;

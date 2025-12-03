@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
 import allApi from "./allApi";
-import emailSlice from "./slices/emailSlice"
+import emailSlice from "./slices/emailSlice";
+import mediaReducer from "./slices/mediaSlice";
 const store = configureStore({
   reducer: {
+    media: mediaReducer,
     email: emailSlice,
     [allApi.reducerPath]: allApi.reducer,
   },
