@@ -173,7 +173,7 @@ interface PodcastResponse {
   success: boolean;
   message: string;
   results: number;
-  data: Podcast[];
+  data: { podcasts: Podcast[] };
 }
 
 interface PublicationResponse {

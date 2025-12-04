@@ -105,7 +105,7 @@ interface MediaState {
     success: boolean;
     message: string;
     results: number;
-    data: Podcast[];
+    data: { podcasts: Podcast[] };
   };
   publications: {
     success: boolean;
@@ -132,7 +132,7 @@ const initialState: MediaState = {
     success: false,
     message: "",
     results: 0,
-    data: [],
+    data: { podcasts: [] },
   },
   publications: {
     success: false,

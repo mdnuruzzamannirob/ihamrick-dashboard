@@ -1,9 +1,14 @@
 import { useSelector } from "react-redux";
 import { RootState } from "../../services/store";
+
 export function ManagePodcasts() {
-  const podcasts = useSelector((state: RootState) => state.media.podcasts.data);
-  const newPodcast = podcasts;
-  console.log(newPodcast);
+  // Access podcasts directly from state.media.podcasts.data.podcasts
+  const podcasts = useSelector((state: RootState) => state.media.podcasts?.data?.podcasts);
+
+  // Log the podcasts to inspect the data
+  console.log("Podcas:", podcasts);
+
+  // Limit the number of podcasts to display (first 5)
   const limitedPodcasts = Array.isArray(podcasts) ? podcasts.slice(0, 5) : [];
 
   return (
