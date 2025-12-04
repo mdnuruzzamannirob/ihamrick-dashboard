@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 // Define the base URL (you can change this if needed)
 const baseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.20.73:5005/api/";
@@ -153,6 +153,7 @@ interface Blog {
   coverImage: string;
   createdAt: string;
   updatedAt: string;
+  status: string;
 }
 
 // Define API Response Types

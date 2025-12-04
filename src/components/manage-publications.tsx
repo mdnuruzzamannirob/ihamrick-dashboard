@@ -1,29 +1,12 @@
-import { Calendar } from "lucide-react";
-
-const publications = [
-  {
-    title: "Healthy Living Happier Life",
-    date: "Feb 2, 2025",
-    author: "Robert Frost",
-  },
-  {
-    title: "Small Habits Big Health",
-    date: "Feb 2, 2025",
-    author: "Paulo David",
-  },
-  {
-    title: "Small Habits Big Health",
-    date: "Feb 2, 2025",
-    author: "Henry John",
-  },
-  {
-    title: "Healthy Living Happier Life",
-    date: "Feb 2, 2025",
-    author: "Robert Frost",
-  },
-];
+import { useSelector } from "react-redux";
+import { RootState } from "../../services/store"; // Adjust path if necessary
 
 export function ManagePublications() {
+  // Fetch publications from Redux state
+  const publications = useSelector(
+    (state: RootState) => state.media.publications.data
+  );
+
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-6">
       <h2 className="mb-4 text-2xl font-poppins font-semibold text-black">
@@ -36,31 +19,49 @@ export function ManagePublications() {
               <th className="pb-3 text-left font-poppins font-bold text-base text-[#383232]">
                 Title
               </th>
-              <th className="hidden pb-3 text-center font-poppins font-bold text-base text-[#383232] sm:table-cell">
-                Date
+              <th className="pb-3 text-center font-poppins font-bold text-base text-[#383232]">
+                Cover Image
               </th>
-              <th className="hidden pb-3 text-right font-poppins font-bold text-base text-[#383232] md:table-cell">
+              <th className="pb-3 text-right font-poppins font-bold text-base text-[#383232]">
                 Author
+              </th>
+              <th className="pb-3 text-center font-poppins font-bold text-base text-[#383232]">
+                Status
               </th>
             </tr>
           </thead>
           <tbody>
-            {publications.map((publication, index) => (
+            {publications.slice(0, 5).map((publication, index) => (
               <tr
                 key={index}
                 className="border-b border-neutral-100 last:border-0"
               >
-                <td className="py-3 font-poppins font-normal text-base text-[#333]">
+                <td className="py-3 text-left font-poppins font-normal text-base text-[#333]">
                   {publication.title}
                 </td>
-                <td className="hidden py-3 text-center text-sm text-neutral-700 sm:table-cell">
-                  <div className="flex items-center font-poppins font-normal text-base text-[#333] justify-center gap-2">
-                    <Calendar className="h-4 w-4 text-black" />
-                    {publication.date}
-                  </div>
+                <td className="py-3 text-center font-poppins font-normal text-base text-[#333]">
+                  <img
+                    src={publication.coverImage}
+                    alt={publication.title}
+                    width={50}
+                    height={50}
+                    className="object-cover rounded-lg"
+                  />
                 </td>
-                <td className="hidden py-3 text-right font-poppins font-normal text-base text-[#333] md:table-cell">
+                <td className="py-3 text-right font-poppins font-normal text-base text-[#333]">
                   {publication.author}
+                </td>
+
+                <td className="py-3 text-center font-poppins font-normal text-base text-[#333]">
+                  <span
+                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                      publication.status
+                        ? "bg-[#D75757] text-white"
+                        : "bg-[#262626] text-white"
+                    }`}
+                  >
+                    {publication.status ? "  Published" : "  Unpublished"}
+                  </span>
                 </td>
               </tr>
             ))}

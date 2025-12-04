@@ -1,25 +1,11 @@
 import Image from "next/image";
-import videos_thumb from "@/assets/svg/videos_thumb.svg";
-const videos = [
-  {
-    title: "Healthy Living Happier Life",
-    duration: "5 mins",
-    status: "published",
-  },
-  { title: "Small Habits Big Health", duration: "5 mins", status: "published" },
-  {
-    title: "Small Habits Big Health",
-    duration: "5 mins",
-    status: "unpublished",
-  },
-  {
-    title: "Healthy Living Happier Life",
-    duration: "5 mins",
-    status: "unpublished",
-  },
-];
+import { useSelector } from 'react-redux';
+import { RootState } from "../../services/store";
 
 export function ManageVideos() {
+  // Fetch the videos from the Redux state
+  const videos = useSelector((state: RootState) => state.media.videos.data);
+
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-6">
       <h2 className="mb-4 text-2xl font-poppins font-semibold text-black">
@@ -32,57 +18,46 @@ export function ManageVideos() {
               <th className="pb-3 text-left font-poppins font-bold text-base text-[#383232]">
                 Title
               </th>
-              <th className="hidden pb-3 text-center font-poppins font-bold text-base text-[#383232] sm:table-cell">
-                Duration
+              <th className="pb-3 text-left font-poppins font-bold text-base text-[#383232]">
+                Thumbnail
               </th>
-              <th className="pb-3 text-right font-poppins font-bold text-base text-[#383232]">
+              <th className="hidden pb-3 text-center font-poppins font-bold text-base text-[#383232] sm:table-cell">
+                Views
+              </th>
+              <th className="pb-3 text-center font-poppins font-bold text-base text-[#383232]">
                 Status
               </th>
             </tr>
           </thead>
           <tbody>
-            {videos.map((video, index) => (
-              <tr
-                key={index}
-                className="border-b border-neutral-100 last:border-0"
-              >
+            {videos.slice(0, 5).map((video, index) => (
+              <tr key={index} className="border-b border-neutral-100 last:border-0">
                 <td className="py-3">
                   <div className="flex items-center gap-3">
-                    <div className="relative items-center justify-center h-8 w-8 flex-shrink-0 overflow-hidden rounded-lg ">
-                      <Image
-                        src={videos_thumb}
-                        alt={video.title}
-                        width={33}
-                        height={32}
-                        className="object-cover"
-                      />
-                    </div>
                     <span className="font-poppins font-normal text-base text-[#333]">
                       {video.title}
                     </span>
                   </div>
                 </td>
-                <td className="hidden py-3 font-poppins text-center text-base font-medium text-black sm:table-cell">
-                  {video.duration}
+                <td className="py-3 font-poppins text-left text-base text-[#333]">
+                  <Image
+                    src={video.thumbnailUrl || "/path/to/default/thumbnail"} // Use fallback image if no thumbnail URL is provided
+                    alt={video.title}
+                    width={50}
+                    height={50}
+                    className="object-cover rounded-lg"
+                  />
                 </td>
-                <td className="py-3 text-right">
-                  {/* <span
-                    className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                      video.status === "published"
-                        ? "bg-red-500 text-white"
-                        : "bg-neutral-800 text-white"
-                    }`}
-                  >
-                    {video.status === "published" ? "Published" : "Unpublished"}
-                  </span> */}
+                <td className="hidden py-3 font-poppins text-center text-base font-medium text-black sm:table-cell">
+                  {video.views}
+                </td>
+                <td className="py-3 text-center font-poppins font-normal text-base text-[#333]">
                   <span
-                    className={`inline-block rounded-full px-3 font-poppins py-1 text-xs font-semibold ${
-                      video.status === "published"
-                        ? "bg-[#D75757] text-white"
-                        : "bg-[#262626] text-white"
+                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                      video.status ? 'bg-[#D75757] text-white' : 'bg-[#262626] text-white'
                     }`}
                   >
-                    {video.status === "published" ? "Published" : "Unpublished"}
+                    {video.status ? 'Published' : 'Unpublished'}
                   </span>
                 </td>
               </tr>
