@@ -1,6 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Define the types for Video, Podcast, Publication, and Blog
 interface Video {
   _id: string;
   title: string;
@@ -14,7 +13,7 @@ interface Video {
   contentType: string;
   duration: number;
   uploadDate: string;
-  status: boolean; // added status
+  status: boolean;
   views: number;
   isDeleted: boolean;
   createdAt: string;
@@ -70,7 +69,7 @@ interface Publication {
   author: string;
   publicationDate: string;
   fileType: string;
-  status: boolean; // status field for publication
+  status: boolean;
   description: string;
   coverImage: string;
   file: string;
@@ -82,10 +81,11 @@ interface Blog {
   _id: string;
   title: string;
   description: string;
+
   coverImage: string;
   createdAt: string;
   updatedAt: string;
-  status: string; // status field for blog (string, can be 'published' or 'unpublished')
+    status: string;
 }
 
 interface Meta {
@@ -122,37 +122,35 @@ interface MediaState {
   };
 }
 
-// Define the initial state
 const initialState: MediaState = {
   videos: {
     success: false,
-    message: "",
+    message: '',
     meta: { page: 0, limit: 0, total: 0, totalPages: null },
     data: [],
   },
   podcasts: {
     success: false,
-    message: "",
+    message: '',
     results: 0,
     data: [],
   },
   publications: {
     success: false,
-    message: "",
+    message: '',
     meta: { page: 0, limit: 0, total: 0, totalPages: null },
     data: [],
   },
   blogs: {
     success: false,
-    message: "",
+    message: '',
     meta: { page: 0, limit: 0, total: 0, totalPages: null },
     data: [],
   },
 };
 
-// Create the slice for the media data
 const mediaSlice = createSlice({
-  name: "media",
+  name: 'media',
   initialState,
   reducers: {
     setVideos: (state, action: PayloadAction<typeof initialState.videos>) => {
@@ -161,10 +159,7 @@ const mediaSlice = createSlice({
     setPodcasts: (state, action: PayloadAction<typeof initialState.podcasts>) => {
       state.podcasts = action.payload;
     },
-    setPublications: (
-      state,
-      action: PayloadAction<typeof initialState.publications>
-    ) => {
+    setPublications: (state, action: PayloadAction<typeof initialState.publications>) => {
       state.publications = action.payload;
     },
     setBlogs: (state, action: PayloadAction<typeof initialState.blogs>) => {
@@ -174,7 +169,6 @@ const mediaSlice = createSlice({
   },
 });
 
-// Export actions and reducer
 export const { setVideos, setPodcasts, setPublications, setBlogs, resetState } = mediaSlice.actions;
 
 export default mediaSlice.reducer;

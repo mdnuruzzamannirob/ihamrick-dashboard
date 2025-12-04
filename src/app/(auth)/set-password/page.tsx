@@ -24,14 +24,8 @@ export default function SetPassword() {
 
   const handleReset = async () => {
     try {
-      // Ensure email is a valid string (if it's null, set to an empty string)
       const emailString = email ? email : "";
-
-      // Ensure otp is a string (if it's a number, convert to string)
       const otpString = otp !== null && otp !== undefined ? String(otp) : "";
-
-      // Trigger the API call to reset password
-      console.log(email,newPassword,confirmPassword,otp)
       const response = await resetPassword({
         email: emailString,
         newPassword,

@@ -51,7 +51,7 @@ const DashboardPage = () => {
       !isPublicationsLoading &&
       !isBlogsLoading
     ) {
-      console.log("Current Media State after all data is saved:", mediaState);
+
     }
   }, [mediaState, isVideosLoading, isPodcastsLoading, isPublicationsLoading, isBlogsLoading]);
 

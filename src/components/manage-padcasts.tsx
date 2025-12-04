@@ -1,24 +1,17 @@
-import { Calendar } from "lucide-react";
-
-const podcasts = [
-  {
-    title: "Healthy Living Happier Life",
-    date: "Feb 2, 2025",
-    duration: "5 mins",
-  },
-  { title: "Small Habits Big Health", date: "Feb 2, 2025", duration: "5 mins" },
-  { title: "Small Habits Big Health", date: "Feb 2, 2025", duration: "5 mins" },
-  {
-    title: "Healthy Living Happier Life",
-    date: "Feb 2, 2025",
-    duration: "5 mins",
-  },
-];
+import { useSelector } from "react-redux";
+import { RootState } from "../../services/store"; // Adjust the path if necessary
+import { Calendar } from "lucide-react"; // Used for the Calendar icon if you need it
 
 export function ManagePodcasts() {
+  // Fetch the podcasts from Redux state
+  const podcasts = useSelector((state: RootState) => state.media.podcasts.data);
+  
+  // Ensure podcasts is an array before calling slice (to handle cases when it's undefined or empty)
+  const limitedPodcasts = Array.isArray(podcasts) ? podcasts.slice(0, 5) : [];
+
   return (
     <div className="rounded-xl border border-neutral-200 bg-white p-6">
-      <h2 className="mb-4  text-2xl font-poppins font-semibold text-black">
+      <h2 className="mb-4 text-2xl font-poppins font-semibold text-black">
         Manage Podcasts
       </h2>
       <div className="overflow-x-auto">
@@ -28,34 +21,57 @@ export function ManagePodcasts() {
               <th className="pb-3 text-left font-poppins font-bold text-base text-[#383232]">
                 Title
               </th>
-              <th className="hidden pb-3 text-center font-poppins font-bold text-base text-[#383232] sm:table-cell">
-                Date
+              <th className="pb-3 text-left font-poppins font-bold text-base text-[#383232]">
+                Cover Image
               </th>
-              <th className="hidden pb-3 text-right font-poppins font-bold text-base text-[#383232] md:table-cell">
-                Duration
+              <th className="pb-3 text-center font-poppins font-bold text-base text-[#383232]">
+                Total Listeners
+              </th>
+              <th className="pb-3 text-center font-poppins font-bold text-base text-[#383232]">
+                Status
               </th>
             </tr>
           </thead>
           <tbody>
-            {podcasts.map((podcast, index) => (
-              <tr
-                key={index}
-                className="border-b border-neutral-100 last:border-0"
-              >
-                <td className="py-3 font-poppins font-normal text-base text-[#333]">
-                  {podcast.title}
-                </td>
-                <td className="hidden py-3 text-center text-sm text-neutral-700 sm:table-cell">
-                  <div className="flex items-center justify-center gap-2 font-poppins font-normal text-base text-[#333]">
-                    <Calendar className="h-4 w-4 text-black" />
-                    {podcast.date}
-                  </div>
-                </td>
-                <td className="hidden py-3 text-right font-poppins font-medium text-base text-black md:table-cell">
-                  {podcast.duration}
-                </td>
-              </tr>
-            ))}
+            {limitedPodcasts.map((podcast, index) => {
+              console.log("Podcast Data:", podcast); // This will log each podcast's data
+              return (
+                <tr key={index} className="border-b border-neutral-100 last:border-0">
+                  <td className="py-3 font-poppins font-normal text-base text-[#333333]">
+                    {podcast.title}
+                  </td>
+                  <td className="py-3 font-poppins text-left text-base text-[#333333]">
+                    <img
+                      src={podcast.coverImage || "/path/to/default/thumbnail"} // Fallback image if no coverImage URL is provided
+                      alt={podcast.title}
+                      width={50}
+                      height={50}
+                      className="object-cover rounded-lg"
+                    />
+                  </td>
+                  <td className="py-3 text-center font-poppins font-normal text-base text-[#333333]">
+                    {podcast.totalListeners}
+                  </td>
+                  <td className="py-3 text-center font-poppins font-normal text-base text-[#333333]">
+                    <span
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                        podcast.status === "live"
+                          ? "bg-[#D75757] text-white" // Red for live
+                          : podcast.status === "ended"
+                          ? "bg-[#9E9E9E] text-white" // Gray for ended
+                          : "bg-[#3B82F6] text-white" // Blue for scheduled
+                      }`}
+                    >
+                      {podcast.status === "live"
+                        ? "Live"
+                        : podcast.status === "ended"
+                        ? "Ended"
+                        : "Scheduled"}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

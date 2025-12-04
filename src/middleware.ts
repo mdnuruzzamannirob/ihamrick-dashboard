@@ -6,26 +6,20 @@ export function middleware(req: NextRequest) {
   
   const token = req.cookies.get("Ihamrickadmindashboardtoken")?.value;
 
-console.log()
   const isAuthPage = req.nextUrl.pathname.startsWith("/login");
 
-
-  console.log("Middleware triggered for path:", req.nextUrl.pathname);
-  console.log("Token found:", token);
-
   if (!token && !isAuthPage) {
-    console.log("No token found. Redirecting to login...");
+
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
 
   if (token && isAuthPage) {
-    console.log("User is logged in. Redirecting from login to dashboard...");
+
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
 
-  console.log("User is authorized or on the login page. Proceeding...");
   return NextResponse.next();
 }
 export const config = {

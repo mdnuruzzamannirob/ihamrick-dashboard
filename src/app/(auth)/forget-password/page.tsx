@@ -31,9 +31,7 @@ export default function ForgetPassword() {
     dispatch(setEmail(email));
 
     try {
-      console.log(email)
       await forgotPassword({ email }).unwrap();
-      console.log("dsl")
       router.replace("/mail-check");
     } catch (error) {
       // Handle API error (show message)
