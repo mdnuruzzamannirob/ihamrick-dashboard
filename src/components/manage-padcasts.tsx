@@ -1,12 +1,9 @@
 import { useSelector } from "react-redux";
-import { RootState } from "../../services/store"; // Adjust the path if necessary
-import { Calendar } from "lucide-react"; // Used for the Calendar icon if you need it
-
+import { RootState } from "../../services/store";
 export function ManagePodcasts() {
-  // Fetch the podcasts from Redux state
   const podcasts = useSelector((state: RootState) => state.media.podcasts.data);
-  
-  // Ensure podcasts is an array before calling slice (to handle cases when it's undefined or empty)
+  const newPodcast = podcasts;
+  console.log(newPodcast);
   const limitedPodcasts = Array.isArray(podcasts) ? podcasts.slice(0, 5) : [];
 
   return (
@@ -36,7 +33,10 @@ export function ManagePodcasts() {
             {limitedPodcasts.map((podcast, index) => {
               console.log("Podcast Data:", podcast); // This will log each podcast's data
               return (
-                <tr key={index} className="border-b border-neutral-100 last:border-0">
+                <tr
+                  key={index}
+                  className="border-b border-neutral-100 last:border-0"
+                >
                   <td className="py-3 font-poppins font-normal text-base text-[#333333]">
                     {podcast.title}
                   </td>

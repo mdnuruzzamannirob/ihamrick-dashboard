@@ -51,7 +51,6 @@ const DashboardPage = () => {
       !isPublicationsLoading &&
       !isBlogsLoading
     ) {
-
     }
   }, [mediaState, isVideosLoading, isPodcastsLoading, isPublicationsLoading, isBlogsLoading]);
 

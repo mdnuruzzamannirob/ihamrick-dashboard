@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface Video {
   _id: string;
@@ -81,11 +81,10 @@ interface Blog {
   _id: string;
   title: string;
   description: string;
-
+  status: string;
   coverImage: string;
   createdAt: string;
   updatedAt: string;
-    status: string;
 }
 
 interface Meta {
@@ -125,41 +124,47 @@ interface MediaState {
 const initialState: MediaState = {
   videos: {
     success: false,
-    message: '',
+    message: "",
     meta: { page: 0, limit: 0, total: 0, totalPages: null },
     data: [],
   },
   podcasts: {
     success: false,
-    message: '',
+    message: "",
     results: 0,
     data: [],
   },
   publications: {
     success: false,
-    message: '',
+    message: "",
     meta: { page: 0, limit: 0, total: 0, totalPages: null },
     data: [],
   },
   blogs: {
     success: false,
-    message: '',
+    message: "",
     meta: { page: 0, limit: 0, total: 0, totalPages: null },
     data: [],
   },
 };
 
 const mediaSlice = createSlice({
-  name: 'media',
+  name: "media",
   initialState,
   reducers: {
     setVideos: (state, action: PayloadAction<typeof initialState.videos>) => {
       state.videos = action.payload;
     },
-    setPodcasts: (state, action: PayloadAction<typeof initialState.podcasts>) => {
+    setPodcasts: (
+      state,
+      action: PayloadAction<typeof initialState.podcasts>
+    ) => {
       state.podcasts = action.payload;
     },
-    setPublications: (state, action: PayloadAction<typeof initialState.publications>) => {
+    setPublications: (
+      state,
+      action: PayloadAction<typeof initialState.publications>
+    ) => {
       state.publications = action.payload;
     },
     setBlogs: (state, action: PayloadAction<typeof initialState.blogs>) => {
@@ -169,6 +174,7 @@ const mediaSlice = createSlice({
   },
 });
 
-export const { setVideos, setPodcasts, setPublications, setBlogs, resetState } = mediaSlice.actions;
+export const { setVideos, setPodcasts, setPublications, setBlogs, resetState } =
+  mediaSlice.actions;
 
 export default mediaSlice.reducer;
