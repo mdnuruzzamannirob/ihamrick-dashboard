@@ -5,8 +5,7 @@ export function ManagePodcasts() {
   // Access podcasts directly from state.media.podcasts.data.podcasts
   const podcasts = useSelector((state: RootState) => state.media.podcasts?.data?.podcasts);
 
-  // Log the podcasts to inspect the data
-  console.log("Podcas:", podcasts);
+
 
   // Limit the number of podcasts to display (first 5)
   const limitedPodcasts = Array.isArray(podcasts) ? podcasts.slice(0, 5) : [];
@@ -36,7 +35,7 @@ export function ManagePodcasts() {
           </thead>
           <tbody>
             {limitedPodcasts.map((podcast, index) => {
-              console.log("Podcast Data:", podcast); // This will log each podcast's data
+      // This will log each podcast's data
               return (
                 <tr
                   key={index}
