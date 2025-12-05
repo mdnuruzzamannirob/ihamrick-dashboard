@@ -153,7 +153,7 @@ interface Blog {
   coverImage: string;
   createdAt: string;
   updatedAt: string;
-  status: string;
+  status: boolean;
 }
 
 // Define API Response Types
@@ -198,6 +198,22 @@ interface BlogResponse {
     totalPages: number | null;
   };
   data: Blog[];
+}
+
+interface BlogDeleteResponse {
+  success: boolean;
+  message: string;
+  data: {
+    _id: string;
+    title: string;
+    status: boolean;
+    description: string;
+    isNotified: boolean;
+    createdAt: string;
+    updatedAt: string;
+    __v: number;
+    coverImage: string;
+  };
 }
 
 // Life Suggestion related types
@@ -338,6 +354,18 @@ const allApi = createApi({
         method: "DELETE",
       }),
     }),
+    deleteBlog: builder.mutation<BlogResponse, string>({
+      query: (blogId) => ({
+        url: `/blog/delete/${blogId}`,
+        method: "DELETE",
+      }),
+    }),
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: "/auth/logout",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -354,6 +382,8 @@ export const {
   useCreateLifeSuggestionMutation,
   useGetLifeSuggestionsQuery,
   useDeleteLifeSuggestionMutation,
+  useDeleteBlogMutation,
+  useLogoutMutation,
 } = allApi;
 
 export default allApi;

@@ -1,30 +1,33 @@
 "use client";
-
 import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
-import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Loader } from "lucide-react";  // Import the Loader icon
 import UploadModal from "@/components/modal/uploadModal";
 import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import { ViewBlogModal } from "@/components/modal/viewModal";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../../services/store";
+import { useDeleteBlogMutation } from "../../../services/allApi";
+import { setBlogs } from "../../../services/slices/mediaSlice";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function ManageBlogPage() {
-  // Get the blogs from Redux state
   const blogs = useSelector((state: RootState) => state.media.blogs.data);
-  console.log(blogs)
+  const dispatch = useDispatch();  // Dispatch to Redux store
+
+  // Hook for deleting a blog
+  const [deleteBlog, { isLoading, isError, error }] = useDeleteBlogMutation();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [selectedBlog, setSelectedBlog] = useState<any | null>(null); // selected blog for edit
+  const [selectedBlog, setSelectedBlog] = useState<any | null>(null);  // selected blog for edit
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [blogToDelete, setBlogToDelete] = useState<number | null>(null);
-  const [blogToView, setBlogToView] = useState<any | null>(null); // blog to view in view modal
+  const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
+  const [blogToView, setBlogToView] = useState<any | null>(null);  // blog to view in view modal
 
   // Calculations for pagination
   const totalPages = Math.ceil(blogs.length / ITEMS_PER_PAGE);
@@ -47,11 +50,24 @@ export default function ManageBlogPage() {
     setDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (blogToDelete !== null) {
-      // Remove post from the list
-      setBlogToDelete(null);
-      setDeleteModalOpen(false);
+      try {
+        // Call the delete API
+        await deleteBlog(blogToDelete).unwrap();
+
+        // Remove the deleted blog from the local blogs list (state)
+        const updatedBlogs = blogs.filter((blog) => blog._id !== blogToDelete);
+
+        // Dispatch the updated blogs list to Redux
+        dispatch(setBlogs({ success: true, message: "", meta: { page: 1, limit: 10, total: updatedBlogs.length, totalPages: 1 }, data: updatedBlogs }));
+
+        setBlogToDelete(null);
+        setDeleteModalOpen(false);
+      } catch (err) {
+        console.error("Failed to delete the blog:", err);
+        // Handle error feedback to the user here
+      }
     }
   };
 
@@ -61,17 +77,16 @@ export default function ManageBlogPage() {
   };
 
   const handleEdit = (blog: any) => {
-    setSelectedBlog(blog); // Set the blog data for editing
+    setSelectedBlog(blog);  // Set the blog data for editing
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedBlog(null); // Reset selected blog when closing modal
+    setSelectedBlog(null);  // Reset selected blog when closing modal
   };
 
   const handleSaveChanges = (updatedBlog: any) => {
-    console.log("Saving updated blog:", updatedBlog);
     setIsModalOpen(false);
   };
 
@@ -116,6 +131,13 @@ export default function ManageBlogPage() {
 
   return (
     <div className="flex min-h-screen bg-white">
+      {/* Full-Screen Loader (Overlay) */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+          <Loader className="text-white w-16 h-16 animate-spin" />
+        </div>
+      )}
+
       {/* Sidebar */}
       <Sidebar />
 
@@ -182,9 +204,7 @@ export default function ManageBlogPage() {
                       <td className="px-4 py-4 md:px-6 text-center">
                         <span
                           className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
-                            blog.status === true
-                              ? "bg-red-400"
-                              : "bg-black"
+                            blog.status === true ? "bg-red-400" : "bg-black"
                           }`}
                         >
                           {blog.status === true ? "Published" : "Unpublished"}
@@ -203,8 +223,13 @@ export default function ManageBlogPage() {
                             onClick={() => handleDeleteClick(blog._id)}
                             className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
                             aria-label="Delete"
+                            disabled={isLoading}  // Disable button when loading
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {isLoading ? (
+                              <Loader className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
                           </button>
                           <button
                             onClick={() => handleViewClick(blog)}

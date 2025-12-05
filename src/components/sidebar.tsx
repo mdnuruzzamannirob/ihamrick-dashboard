@@ -22,6 +22,8 @@ import {
   Info,
   Shield,
 } from "lucide-react";
+import { useLogoutMutation } from "../../services/allApi";
+import Cookies from "js-cookie"; // For cookie management
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -47,13 +49,30 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  function handleLogout() {
-    toast.success("Logout successful. See you soon!");
+  // Use the logout mutation
+  const [logout, { isLoading }] = useLogoutMutation(); // use the logout mutation
 
-    setTimeout(() => {
-      router.replace("/");
-    }, 1200);
-  }
+  const handleLogout = async () => {
+    try {
+      // Call the logout API
+      await logout().unwrap(); // Call the logout mutation (no need to catch the response)
+console.log("dls")
+      // Remove the authentication token from cookies
+      Cookies.remove("Ihamrickadmindashboardtoken");
+
+      // Show success toast
+      toast.success("Logout successful. See you soon!");
+
+      // Redirect to login page after logout
+      setTimeout(() => {
+        router.replace("/login"); // Adjust the route to your login page
+      }, 1200); // Wait for toast to show before redirecting
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Show error toast if logout fails
+      toast.error("Logout failed. Please try again.");
+    }
+  };
 
   return (
     <div>
@@ -159,6 +178,7 @@ export function Sidebar() {
           </button>
         </div>
       </aside>
+
       <ToastContainer position="top-right" autoClose={1000} />
     </div>
   );
