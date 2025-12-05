@@ -81,7 +81,7 @@ interface Blog {
   _id: string;
   title: string;
   description: string;
-  status: string;
+  status: boolean;
   coverImage: string;
   createdAt: string;
   updatedAt: string;

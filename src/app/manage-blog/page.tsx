@@ -7,130 +7,82 @@ import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import UploadModal from "@/components/modal/uploadModal";
 import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import { ViewBlogModal } from "@/components/modal/viewModal";
-import QualityOfLifeModal from "@/components/modal/qualityModal";
-
-// Updated interface to match ViewBlogModal expectations
-interface BlogPost {
-  id: number;
-  title: string;
-  author: string;
-  publishDate: string;
-  status: "Published" | "Unpublished";
-  description: string;
-  featuredImage: string;
-  readTime: string;
-  category: string;
-  tags: string[];
-  views: number;
-}
+import { useSelector } from "react-redux";
+import { RootState } from "../../../services/store";
 
 const ITEMS_PER_PAGE = 10;
 
-// Sample data - updated to match the new interface
-const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
-  id: i + 1,
-  title:
-    i % 2 === 0 ? "Healthy Living Happier Life" : "Small Habits Big Health",
-  author: i % 2 === 0 ? "Dr. Sarah Johnson" : "Dr. Michael Chen",
-  publishDate: "2025-10-11",
-  status: i % 3 === 0 ? "Unpublished" : "Published",
-  description:
-    "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul.",
-  featuredImage:
-    "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80",
-  readTime: "5 min read",
-  category: i % 2 === 0 ? "Health & Wellness" : "Lifestyle",
-  tags: ["Wellness", "Lifestyle", "Mindfulness", "Health"],
-  views: Math.floor(Math.random() * 1000) + 500,
-}));
-
 export default function ManageBlogPage() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
+  // Get the blogs from Redux state
+  const blogs = useSelector((state: RootState) => state.media.blogs.data);
+  console.log(blogs)
+
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [selectedBlog, setSelectedBlog] = useState<any | null>(null); // selected blog for edit
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<number | null>(null);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [postToView, setPostToView] = useState<BlogPost | null>(null);
+  const [blogToDelete, setBlogToDelete] = useState<number | null>(null);
+  const [blogToView, setBlogToView] = useState<any | null>(null); // blog to view in view modal
 
-  // Calculations
-  const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
+  // Calculations for pagination
+  const totalPages = Math.ceil(blogs.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentPosts = blogPosts.slice(startIndex, endIndex);
+  const currentBlogs = blogs.slice(startIndex, endIndex);
 
-  const handleViewClick = (post: BlogPost) => {
-    setPostToView(post);
-    setViewModalOpen(true);
+  const handleViewClick = (blog: any) => {
+    setBlogToView(blog);
+    setIsViewModalOpen(true);  // Open the ViewModal with the blog's details
   };
 
   const closeViewModal = () => {
-    setViewModalOpen(false);
-    setPostToView(null);
+    setIsViewModalOpen(false);
+    setBlogToView(null);  // Reset blog data when closing the modal
   };
 
-  const handleDeleteClick = (id: number) => {
-    setPostToDelete(id);
+  const handleDeleteClick = (id: any) => {
+    setBlogToDelete(id);
     setDeleteModalOpen(true);
   };
 
   const confirmDelete = () => {
-    if (postToDelete !== null) {
-      setBlogPosts((prev) => {
-        const updatedPosts = prev.filter((post) => post.id !== postToDelete);
-
-        // Recalculate total pages based on updated posts
-        const newTotalPages = Math.ceil(updatedPosts.length / ITEMS_PER_PAGE);
-
-        // Adjust current page if needed after deletion
-        if (currentPage > newTotalPages && newTotalPages > 0) {
-          setCurrentPage(newTotalPages);
-        }
-
-        return updatedPosts;
-      });
+    if (blogToDelete !== null) {
+      // Remove post from the list
+      setBlogToDelete(null);
+      setDeleteModalOpen(false);
     }
-    setDeleteModalOpen(false);
-    setPostToDelete(null);
   };
 
   const cancelDelete = () => {
     setDeleteModalOpen(false);
-    setPostToDelete(null);
+    setBlogToDelete(null);
   };
 
-  const handleEdit = (post: BlogPost) => {
-    setSelectedPost(post);
+  const handleEdit = (blog: any) => {
+    setSelectedBlog(blog); // Set the blog data for editing
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedPost(null);
+    setSelectedBlog(null); // Reset selected blog when closing modal
   };
 
-  const handleSave = (data: {
-    title: string;
-    status: string;
-    description: string;
-    file?: File;
-  }) => {
-    console.log("Saving:", data);
-    console.log("For post:", selectedPost);
-    // Add your save logic here (API call, etc.)
+  const handleSaveChanges = (updatedBlog: any) => {
+    console.log("Saving updated blog:", updatedBlog);
     setIsModalOpen(false);
   };
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: any) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
   const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-
+    const pages = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -159,7 +111,6 @@ export default function ManageBlogPage() {
         );
       }
     }
-
     return pages;
   };
 
@@ -176,7 +127,6 @@ export default function ManageBlogPage() {
             <h1 className="text-2xl font-poppins font-semibold text-black md:text-3xl">
               Manage Blog
             </h1>
-
             <div className="flex items-center gap-3">
               <UserProfile />
             </div>
@@ -184,7 +134,6 @@ export default function ManageBlogPage() {
 
           {/* Action Buttons */}
           <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
-     
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"
@@ -203,14 +152,11 @@ export default function ManageBlogPage() {
                     <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
                       Title
                     </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Author
+                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
+                      Image
                     </th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
                       Status
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Views
                     </th>
                     <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
                       Action
@@ -218,49 +164,50 @@ export default function ManageBlogPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
-                  {currentPosts.map((post) => (
+                  {currentBlogs.map((blog) => (
                     <tr
-                      key={post.id}
+                      key={blog._id}
                       className="transition-colors hover:bg-neutral-50"
                     >
                       <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
-                        {post.title}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
-                        {post.author}
+                        {blog.title}
                       </td>
                       <td className="px-4 py-4 text-center md:px-6">
+                        <img
+                          src={blog.coverImage}
+                          alt={blog.title}
+                          className="w-16 h-16 object-cover rounded mx-auto"
+                        />
+                      </td>
+                      <td className="px-4 py-4 md:px-6 text-center">
                         <span
                           className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
-                            post.status === "Published"
+                            blog.status === true
                               ? "bg-red-400"
-                              : "bg-neutral-800"
+                              : "bg-black"
                           }`}
                         >
-                          {post.status}
+                          {blog.status === true ? "Published" : "Unpublished"}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center text-sm text-neutral-900 md:px-6">
-                        {post.views.toLocaleString()}
-                      </td>
-                      <td className="px-4 py-4 md:px-6">
+                      <td className="px-4 py-4 md:px-6 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => handleEdit(post)}
+                            onClick={() => handleEdit(blog)}
                             className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
                             aria-label="Edit"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteClick(post.id)}
+                            onClick={() => handleDeleteClick(blog._id)}
                             className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
                             aria-label="Delete"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleViewClick(post)}
+                            onClick={() => handleViewClick(blog)}
                             className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
                             aria-label="View"
                           >
@@ -321,23 +268,22 @@ export default function ManageBlogPage() {
           </div>
         </div>
       </div>
-      {/* Add Modal Here */}
+      {/* Modals */}
       <UploadModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onSave={handleSave}
-        post={selectedPost}
+        onSave={handleSaveChanges}
+        post={selectedBlog}
       />
-      {/* Delete Confirmation Modal */}
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
       />
       <ViewBlogModal
-        isOpen={viewModalOpen}
+        isOpen={isViewModalOpen}
         onClose={closeViewModal}
-        blog={postToView}
+        blog={blogToView}
       />
     </div>
   );

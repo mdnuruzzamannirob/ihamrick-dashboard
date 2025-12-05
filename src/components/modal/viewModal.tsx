@@ -7,13 +7,14 @@ interface Blog {
   id: string | number;
   title: string;
   author: string;
-  publishDate: string;
-  status: "Published" | "Unpublished";
+  updatedAt: string;
+  status: boolean;
   description: string;
   featuredImage: string;
   readTime: string;
   category: string;
   tags: string[];
+  coverImage: string;
   views: number;
 }
 
@@ -26,24 +27,7 @@ interface ViewBlogModalProps {
 export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
   if (!isOpen || !blog) return null;
 
-  // Default blog data with enhanced fields
-  const defaultBlog: Blog = {
-    id: "1",
-    title: "Healthy Living Happier Life",
-    author: "Dr. Sarah Johnson",
-    publishDate: "2025-10-11",
-    status: "Published",
-    description:
-      "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul. In this post, we explore how small lifestyle shifts can lead to lasting happiness. From mindful mornings to joyful movement, discover practical ways to feel more energized, balanced, and fulfilled every day. Because when you care for your health, happiness naturally follows.",
-    featuredImage:
-      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80",
-    readTime: "5 min read",
-    category: "Health & Wellness",
-    tags: ["Wellness", "Lifestyle", "Mindfulness", "Health"],
-    views: 1247,
-  };
-
-  const currentBlog = blog || defaultBlog;
+  const currentBlog = blog;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -86,13 +70,11 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
               {currentBlog.title}
             </h1>
             <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                currentBlog.status === "Published"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
+              className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
+                currentBlog.status === true ? "bg-red-400" : "bg-black"
               }`}
             >
-              {currentBlog.status}
+              {currentBlog.status === true ? "Published" : "Unpublished"}
             </span>
           </div>
 
@@ -115,7 +97,10 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
                   Publish Date
                 </p>
                 <p className="text-gray-900 font-medium">
-                  {formatDate(currentBlog.publishDate)}
+                  {currentBlog.status === true
+                    ? formatDate(currentBlog.updatedAt) // Show updated date if status is "Published"
+                    : "Not Published"}{" "}
+                  {/* Show "Not Published" if status is not "Published" */}
                 </p>
               </div>
             </div>
@@ -135,12 +120,6 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
 
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
               <Eye className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-500">Views</p>
-                <p className="text-gray-900 font-medium">
-                  {currentBlog.views.toLocaleString()}
-                </p>
-              </div>
             </div>
 
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
@@ -154,23 +133,6 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
             </div>
           </div>
 
-          {/* Tags */}
-          <div className="space-y-3">
-            <label className="text-sm font-poppins font-medium text-gray-700 block">
-              Tags
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {currentBlog.tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
           {/* Featured Image */}
           <div className="space-y-3">
             <label className="text-sm font-poppins font-medium text-gray-700 block">
@@ -178,11 +140,12 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
             </label>
             <div className="border border-gray-200 rounded-lg overflow-hidden">
               <Image
-                src={yoga}
+                src={currentBlog.coverImage}
                 alt={currentBlog.title}
                 width={1280} // adjust based on layout
                 height={320} // matches h-80 (20rem)
-                className="w-full h-64 md:h-80 object-cover"
+                className="w-full h-64 md:h-80 object-cover" // maintain aspect ratio using the parent container
+                layout="responsive" // Ensures the aspect ratio is preserved
               />
 
               <div className="p-3 bg-gray-50 border-t border-gray-200">
@@ -201,22 +164,6 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
             </label>
             <div className="prose prose-sm max-w-none text-gray-700 bg-gray-50 rounded-lg p-6">
               <p className="leading-relaxed mb-4">{currentBlog.description}</p>
-
-              <h4 className="font-semibold text-gray-900 mb-2">
-                Key Takeaways:
-              </h4>
-              <ul className="list-disc list-inside space-y-1 text-gray-700">
-                <li>Cultivate daily habits that nourish body and mind</li>
-                <li>Incorporate mindful practices into your routine</li>
-                <li>Find joy in movement and physical activity</li>
-                <li>Create balance for long-term well-being</li>
-              </ul>
-
-              <p className="leading-relaxed mt-4">
-                Remember that small, consistent changes often lead to the most
-                significant improvements in overall health and happiness. Start
-                with one habit today and build from there.
-              </p>
             </div>
           </div>
 

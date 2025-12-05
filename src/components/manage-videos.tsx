@@ -46,6 +46,7 @@ export function ManageVideos() {
                     width={50}
                     height={50}
                     className="object-cover rounded-lg"
+                    
                   />
                 </td>
                 <td className="hidden py-3 font-poppins text-center text-base font-medium text-black sm:table-cell">
