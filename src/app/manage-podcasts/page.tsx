@@ -10,7 +10,7 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
-import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
+// import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
 import PodcastsUploadModal from "@/components/modal/padcastsUpload";
 import PodcastsEditModal from "@/components/modal/podcastsEdit";
@@ -269,11 +269,11 @@ export default function ManagePodcasts() {
         </div>
       </div>
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
+      {/* <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-      />
+      /> */}
     </div>
   );
 }

@@ -242,6 +242,17 @@ interface DeleteLifeSuggestionResponse {
   success: boolean;
   message: string;
 }
+interface BlogUpdateRequest {
+  title: string;
+  description: string;
+  coverImage: string;
+  status: boolean;
+}
+interface BlogUpdateResponse {
+  success: boolean;
+  message: string;
+  data: Blog;
+}
 
 const allApi = createApi({
   reducerPath: "allApi",
@@ -360,6 +371,17 @@ const allApi = createApi({
         method: "DELETE",
       }),
     }),
+    updateBlog: builder.mutation<
+      BlogUpdateResponse,
+      { id: string; data: FormData }
+    >({
+      query: ({ id, data }) => ({
+        url: `/blog/update/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
+
     logout: builder.mutation<void, void>({
       query: () => ({
         url: "/auth/logout",
@@ -384,6 +406,7 @@ export const {
   useDeleteLifeSuggestionMutation,
   useDeleteBlogMutation,
   useLogoutMutation,
+  useUpdateBlogMutation,
 } = allApi;
 
 export default allApi;

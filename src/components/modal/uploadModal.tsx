@@ -1,22 +1,25 @@
 "use client";
-
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
 import dynamic from "next/dynamic";
+
+// Dynamically import JoditEditor only on the client side (no SSR)
+const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 interface UploadModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onSave?: (data: {
     title: string;
-    status: string;
+    status: boolean;
     description: string;
     file?: File;
   }) => void;
   post: {
     id: number;
     title: string;
-    status: "Published" | "Unpublished";
+    status: boolean;
+    description: string;
   } | null;
 }
 
@@ -26,15 +29,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onSave = () => {},
   post,
 }) => {
-  const [title, setTitle] = useState("");
-  const [status, setStatus] = useState("");
+  const [title, setTitle] = useState(post?.title || ""); // Default to post title
+  const [status, setStatus] = useState(post?.status || false); // Default to post status (boolean)
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const editor = useRef(null);
-  // Dynamically import JoditEditor only on client side
-  const JoditEditor = dynamic(() => import("jodit-react"), {
-    ssr: false,
-  });
+
+  const editor = useRef<any>(null); // Ref to access JoditEditor
 
   const config = {
     readonly: false,
@@ -54,6 +54,35 @@ const UploadModal: React.FC<UploadModalProps> = ({
       "|",
       "link",
     ],
+  };
+
+  const descriptionRef = useRef(post?.description || ""); // Reference to hold description value
+
+  useEffect(() => {
+    if (post) {
+      setTitle(post.title);
+      setStatus(post.status);
+      descriptionRef.current = post.description; // Initialize description state with post value
+    }
+  }, [post]);
+
+  // Handle description changes in the editor
+  const handleDescriptionChange = useCallback(() => {
+    if (editor.current) {
+      // Store the editor's content in the ref without causing re-renders
+      descriptionRef.current = editor.current.getEditorValue();
+    }
+  }, []);
+
+  // Save the data when the user clicks save
+  const handleSave = () => {
+    // Save the data
+    onSave({
+      title,
+      status,
+      description: descriptionRef.current, // Use the ref value for description
+      file: file || undefined,
+    });
   };
 
   if (!isOpen) return null;
@@ -83,15 +112,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
     }
   };
 
-  const handleSave = () => {
-    onSave({
-      title,
-      status,
-      description: "", // Empty since we're not using description state
-      file: file || undefined,
-    });
-  };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 font-poppins">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto relative">
@@ -101,8 +121,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
         >
           <X size={20} className="sm:w-6 sm:h-6" />
         </button>
-
         <div className="p-4 sm:p-6">
+          {/* Title and Status */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 sm:mb-6">
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 font-poppins">
@@ -110,7 +130,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </label>
               <input
                 type="text"
-                value={post?.title || ""}
+                value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Write the title.."
                 className="w-full text-neutral-800 px-3 py-2 text-xs sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent font-poppins"
@@ -122,8 +142,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </label>
               <div className="relative">
                 <select
-                  value={post?.status || status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  value={status ? "Published" : "Unpublished"}
+                  onChange={(e) => setStatus(e.target.value === "Published")}
                   className="w-full text-neutral-800 px-3 py-2 text-xs sm:text-base border border-gray-300 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent bg-white font-poppins"
                 >
                   <option value="Published">Published</option>
@@ -143,24 +163,21 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </div>
             </div>
           </div>
-
+          {/* Description Editor */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 font-poppins">
               Description
             </label>
             <div className="border font-poppins text-xs text-neutral-800 border-gray-300 rounded-md overflow-hidden">
               <JoditEditor
-                ref={editor}
-                value={
-                  post?.id
-                    ? "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul. In this post, we explore how small lifestyle shifts can lead to lasting happiness. From mindful mornings to joyful movement, discover practical ways to feel more energized, balanced, and fulfilled every day. Because when you care for your health, happiness naturally follows."
-                    : ""
-                }
+                ref={editor} // Ref to interact with JoditEditor
+                value={descriptionRef.current} // Bind value for initial loading
                 config={config}
+                onChange={handleDescriptionChange} // Capture changes without triggering re-renders
               />
             </div>
           </div>
-
+          {/* File Upload */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center font-poppins">
               Upload Cover
@@ -213,7 +230,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </label>
             </div>
           </div>
-
+          {/* Save Button */}
           <div className="flex justify-end">
             <button
               onClick={handleSave}

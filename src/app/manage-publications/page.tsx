@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import { Trash2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
-import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
+// import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
 import { PublicationModal } from "@/components/modal/publication-modal";
 import { EditPublicationsModal } from "@/components/modal/edit-publications";
@@ -335,11 +335,11 @@ export default function ManageBlogPage() {
 
       {/* Other Modals */}
 
-      <DeleteConfirmationModal
+      {/* <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
-      />
+      /> */}
     </div>
   );
 }

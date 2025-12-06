@@ -9,7 +9,7 @@ import {
   Calendar,
   Clock,
 } from "lucide-react";
-import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
+import DeleteConfirmationModal from "@/components/modal/deleteModal";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
 import VideoUploadModal from "@/components/modal/videoUploadModal";
 import { VideoViewModal } from "@/components/modal/videoViewModal";
@@ -268,11 +268,12 @@ export default function ManageVideos() {
         </div>
       </div>
       {/* Delete Confirmation Modal */}
-      <DeleteConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={cancelDelete}
-        onConfirm={confirmDelete}
-      />
+  {/* <DeleteConfirmationModal
+    isOpen={deleteModalOpen}
+    onClose={cancelDelete}
+    onConfirm={confirmDelete}
+    isLoading={deleteLoading}  // Pass the loading state here
+  /> */}
     </div>
   );
 }
