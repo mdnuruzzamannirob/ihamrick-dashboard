@@ -254,6 +254,58 @@ interface BlogUpdateResponse {
   data: Blog;
 }
 
+interface SendNotifications {
+  success: boolean;
+  message: string;
+  data?: {
+    subscribersNotified: number;
+    contentCounts: {
+      blogs: number;
+      publications: number;
+      videos: number;
+      podcasts: number;
+      lifeSuggestions: number;
+    };
+    livePodcasts: number;
+    emailsSent: number;
+    emailsFailed: number;
+  };
+  errorSources?: {
+    type: string;
+    details: string;
+  }[];
+  err?: {
+    statusCode: number;
+    stack?: string;
+  };
+}
+
+// Define the API response types for social links
+interface SocialLink {
+  _id: string;
+  name: string;
+  url: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SocialLinkResponse {
+  success: boolean;
+  message: string;
+  data: SocialLink[];
+}
+
+interface UpdateSocialLinkRequest {
+  name: string;
+  url: string;
+}
+
+interface UpdateSocialLinkResponse {
+  success: boolean;
+  message: string;
+  data: SocialLink;
+}
+
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
@@ -262,8 +314,7 @@ const allApi = createApi({
     prepareHeaders: (headers) => {
       // Retrieve token from cookies
       const token = Cookies.get("Ihamrickadmindashboardtoken");
-
-      // If the token is present, add it to the Authorization header
+      console.log(token)
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -388,6 +439,31 @@ const allApi = createApi({
         method: "POST",
       }),
     }),
+    sentNotifications: builder.mutation<SendNotifications, void>({
+      query: () => ({
+        url: "/notifications/send-notifications",
+        method: "POST",
+      }),
+    }),
+    // Get all social links
+    getSocialLinks: builder.query<SocialLinkResponse, void>({
+      query: () => ({
+        url: "/social-links",
+        method: "GET",
+      }),
+    }),
+
+    // Update a social link by ID
+    updateSocialLink: builder.mutation<
+      UpdateSocialLinkResponse,
+      { id: string; data: UpdateSocialLinkRequest }
+    >({
+      query: ({ id, data }) => ({
+        url: `/social-links/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+    }),
   }),
 });
 
@@ -407,6 +483,9 @@ export const {
   useDeleteBlogMutation,
   useLogoutMutation,
   useUpdateBlogMutation,
+  useSentNotificationsMutation,
+  useGetSocialLinksQuery,
+  useUpdateSocialLinkMutation,
 } = allApi;
 
 export default allApi;
