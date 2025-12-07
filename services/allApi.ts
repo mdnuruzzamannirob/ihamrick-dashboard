@@ -466,7 +466,6 @@ const allApi = createApi({
     }),
   }),
 });
-
 export const {
   useLoginMutation,
   useForgotPasswordMutation,
