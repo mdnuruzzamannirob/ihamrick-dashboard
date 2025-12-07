@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
@@ -16,8 +16,10 @@ import { ViewBlogModal } from "@/components/modal/viewModal";
 import {
   useGetBlogsQuery,
   useDeleteBlogMutation,
-  useUpdateBlogMutation
+  useUpdateBlogMutation,
 } from "../../../services/allApi";
+import { json } from "stream/consumers";
+import { stringify } from "querystring";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -65,7 +67,7 @@ export default function ManageBlogPage() {
     if (blogToDelete !== null) {
       try {
         await deleteBlog(blogToDelete).unwrap();
-        console.log(blogToDelete)
+        console.log(blogToDelete);
         refetch();
         setBlogToDelete(null);
         setDeleteModalOpen(false);
@@ -81,6 +83,7 @@ export default function ManageBlogPage() {
   };
 
   const handleEdit = (blog: any) => {
+    console.log("Selected Blog:", blog);
     setSelectedBlog(blog);
     setIsModalOpen(true);
   };
@@ -89,41 +92,44 @@ export default function ManageBlogPage() {
     setIsModalOpen(false);
     setSelectedBlog(null);
   };
-const handleSaveChanges = async (updatedBlog: any) => {
-  setIsModalOpen(false);
+  const handleSaveChanges = async (updatedBlog: any) => {
+    setIsModalOpen(false);
 
-  // Log the ID to check if it's valid
-  console.log("Blog ID for Update:", updatedBlog._id);
+    // Log the ID to check if it's valid
+    console.log("Blog ID for Update:", updatedBlog.id);
 
-  if (!updatedBlog._id) {
-    console.error("Invalid blog ID, cannot proceed with update.");
-    return; // Exit early if the ID is invalid
-  }
+    if (!updatedBlog.id) {
+      console.error("Invalid blog ID, cannot proceed with update.");
+      return; // Exit early if the ID is invalid
+    }
 
-  // Prepare the FormData object for the API call
-  const formData = new FormData();
-  formData.append("title", updatedBlog.title);
-  formData.append("description", updatedBlog.description);
-  formData.append("status", updatedBlog.status.toString());
+    // Prepare the FormData object for the API call
+    const formData = new FormData();
+    formData.append("title", updatedBlog.title);
+    formData.append("description", updatedBlog.description);
+    formData.append("status", updatedBlog.status.toString());
+      console.log(updatedBlog.coverImage);
+    if (updatedBlog.coverImage) {
 
-  if (updatedBlog.coverImage) {
-    formData.append("coverImage", updatedBlog.coverImage);
-  }
+      formData.append("coverImage", updatedBlog.coverImage);
+    }
 
-  try {
-    // Call the updateBlog mutation with the updated data
-    const response = await updateBlog({ id: updatedBlog._id, data: formData }).unwrap();
+    try {
+      console.log(formData);
+      const response = await updateBlog({
+        id: updatedBlog.id,
+        data: formData,
+      }).unwrap();
 
-    // Log the response from the API
-    console.log("API Response for Blog Update:", response);
+      // Log the response from the API
+      console.log("API Response for Blog Update:", response);
 
-    // Refetch blogs to update the list
-    refetch();
-  } catch (error) {
-    console.error("Failed to update the blog:", error);
-  }
-};
-
+      // Refetch blogs to update the list
+      refetch();
+    } catch (error) {
+      console.error("Failed to update the blog:", error);
+    }
+  };
 
   const handlePageChange = (page: any) => {
     if (page >= 1 && page <= totalPages) {
@@ -212,19 +218,36 @@ const handleSaveChanges = async (updatedBlog: any) => {
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
                   {currentBlogs.map((blog) => (
-                    <tr key={blog._id} className="transition-colors hover:bg-neutral-50">
-                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">{blog.title}</td>
+                    <tr
+                      key={blog._id}
+                      className="transition-colors hover:bg-neutral-50"
+                    >
+                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
+                        {blog.title}
+                      </td>
                       <td className="px-4 py-4 text-center md:px-6">
-                        <img src={blog.coverImage} alt={blog.title} className="w-16 h-16 object-cover rounded mx-auto" />
+                        <img
+                          src={blog.coverImage}
+                          alt={blog.title}
+                          className="w-16 h-16 object-cover rounded mx-auto"
+                        />
                       </td>
                       <td className="px-4 py-4 md:px-6 text-center">
-                        <span className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${blog.status ? "bg-red-400" : "bg-black"}`}>
+                        <span
+                          className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
+                            blog.status ? "bg-red-400" : "bg-black"
+                          }`}
+                        >
                           {blog.status ? "Published" : "Unpublished"}
                         </span>
                       </td>
                       <td className="px-4 py-4 md:px-6 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => handleEdit(blog)} className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700" aria-label="Edit">
+                          <button
+                            onClick={() => handleEdit(blog)}
+                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
+                            aria-label="Edit"
+                          >
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
@@ -233,9 +256,13 @@ const handleSaveChanges = async (updatedBlog: any) => {
                             aria-label="Delete"
                             disabled={deleteLoading}
                           >
-                            {deleteLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                            <Trash2 className="h-4 w-4" />
                           </button>
-                          <button onClick={() => handleViewClick(blog)} className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700" aria-label="View">
+                          <button
+                            onClick={() => handleViewClick(blog)}
+                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
+                            aria-label="View"
+                          >
                             <Eye className="h-4 w-4" />
                           </button>
                         </div>
@@ -247,7 +274,11 @@ const handleSaveChanges = async (updatedBlog: any) => {
             </div>
             <div className="border-t border-neutral-200 bg-white px-4 py-4 md:px-6">
               <div className="flex items-center justify-center gap-1">
-                <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
                 {getPageNumbers().map((page, index) => (
@@ -257,14 +288,22 @@ const handleSaveChanges = async (updatedBlog: any) => {
                     ) : (
                       <button
                         onClick={() => handlePageChange(page as number)}
-                        className={`min-w-[40px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${currentPage === page ? "bg-red-500 text-white" : "text-neutral-600 hover:bg-neutral-100"}`}
+                        className={`min-w-[40px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                          currentPage === page
+                            ? "bg-red-500 text-white"
+                            : "text-neutral-600 hover:bg-neutral-100"
+                        }`}
                       >
                         {page}
                       </button>
                     )}
                   </div>
                 ))}
-                <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50">
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
                   <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
@@ -273,9 +312,23 @@ const handleSaveChanges = async (updatedBlog: any) => {
         </div>
       </div>
 
-      <UploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveChanges} post={selectedBlog} />
-      <DeleteConfirmationModal isOpen={deleteModalOpen} onClose={cancelDelete} onConfirm={confirmDelete} isLoading={deleteLoading} />
-      <ViewBlogModal isOpen={isViewModalOpen} onClose={closeViewModal} blog={blogToView} />
+      <UploadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveChanges}
+        post={selectedBlog}
+      />
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        isLoading={deleteLoading}
+      />
+      <ViewBlogModal
+        isOpen={isViewModalOpen}
+        onClose={closeViewModal}
+        blog={blogToView}
+      />
     </div>
   );
 }

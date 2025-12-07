@@ -1,25 +1,24 @@
-"use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
 import dynamic from "next/dynamic";
-
-// Dynamically import JoditEditor only on the client side (no SSR)
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 interface UploadModalProps {
   isOpen?: boolean;
   onClose?: () => void;
   onSave?: (data: {
-    title: string;
-    status: boolean;
-    description: string;
-    file?: File;
-  }) => void;
-  post: {
     id: number;
     title: string;
     status: boolean;
     description: string;
+    coverImage?: File;
+  }) => void;
+  post: {
+    _id: number;
+    title: string;
+    status: boolean;
+    description: string;
+    coverImage: File;
   } | null;
 }
 
@@ -29,12 +28,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onSave = () => {},
   post,
 }) => {
-  const [title, setTitle] = useState(post?.title || ""); // Default to post title
-  const [status, setStatus] = useState(post?.status || false); // Default to post status (boolean)
-  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState(post?.title || "");
+  const [id, setId] = useState(post?._id || 1);
+  const [status, setStatus] = useState(post?.status || false);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null); // To display image preview
   const [isDragging, setIsDragging] = useState(false);
 
-  const editor = useRef<any>(null); // Ref to access JoditEditor
+  const editor = useRef<any>(null);
 
   const config = {
     readonly: false,
@@ -56,36 +57,45 @@ const UploadModal: React.FC<UploadModalProps> = ({
     ],
   };
 
-  const descriptionRef = useRef(post?.description || ""); // Reference to hold description value
+  const descriptionRef = useRef(post?.description || "");
 
   useEffect(() => {
     if (post) {
-      setTitle(post.title);
-      setStatus(post.status);
-      descriptionRef.current = post.description; // Initialize description state with post value
+      console.log("Post ID:", post?._id, post.title);
+      setId(post?._id);
+      setTitle(post?.title);
+      setStatus(post?.status);
+      setCoverImage(post?.coverImage)
+      descriptionRef.current = post?.description;
     }
   }, [post]);
 
-  // Handle description changes in the editor
   const handleDescriptionChange = useCallback(() => {
     if (editor.current) {
-      // Store the editor's content in the ref without causing re-renders
       descriptionRef.current = editor.current.getEditorValue();
     }
   }, []);
 
-  // Save the data when the user clicks save
   const handleSave = () => {
-    // Save the data
+    console.log(title, status, descriptionRef.current);
     onSave({
+      id,
       title,
       status,
-      description: descriptionRef.current, // Use the ref value for description
-      file: file || undefined,
+      description: descriptionRef.current,
+      coverImage: coverImage || undefined, // Send the file if it's selected
     });
   };
 
-  if (!isOpen) return null;
+  // Handle file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      console.log(selectedFile);
+      setCoverImage(selectedFile);
+      setFilePreview(URL.createObjectURL(selectedFile)); // Create a preview of the selected file
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -101,16 +111,12 @@ const UploadModal: React.FC<UploadModalProps> = ({
     setIsDragging(false);
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-      setFile(droppedFile);
+      setCoverImage(droppedFile);
+      setFilePreview(URL.createObjectURL(droppedFile)); // Preview the dropped file
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setFile(selectedFile);
-    }
-  };
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 font-poppins">
@@ -215,8 +221,8 @@ const UploadModal: React.FC<UploadModalProps> = ({
                     </svg>
                   </div>
                   <p className="text-xs sm:text-sm text-gray-600 font-poppins">
-                    {file ? (
-                      <span className="text-blue-600">{file.name}</span>
+                    {coverImage ? (
+                      <span className="text-blue-600">{coverImage.name}</span>
                     ) : (
                       <>
                         Drag and Drop a file here, or{" "}
@@ -226,6 +232,16 @@ const UploadModal: React.FC<UploadModalProps> = ({
                       </>
                     )}
                   </p>
+                  {/* Image Preview */}
+                  {filePreview && (
+                    <div className="mt-4">
+                      <img
+                        src={filePreview}
+                        alt="Preview"
+                        className="max-w-full h-auto rounded-lg"
+                      />
+                    </div>
+                  )}
                 </div>
               </label>
             </div>

@@ -18,7 +18,7 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white rounded-lg shadow-xl w-96 p-6">
-        <h2 className="text-xl font-semibold mb-4">Are you sure you want to delete this blog?</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-600">Are you sure you want to delete this blog?</h2>
         <p className="text-sm text-gray-600 mb-4">This action cannot be undone.</p>
         
         {/* Modal Actions */}
