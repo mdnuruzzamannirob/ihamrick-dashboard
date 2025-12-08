@@ -14,11 +14,14 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../../services/store";
 import QualityOfLifeModal from "@/components/modal/qualityModal";
 import { useGetSocialLinksQuery, useUpdateSocialLinkMutation } from "../../../services/allApi";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const DashboardPage = () => {
   const dispatch = useDispatch();
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
+
   
   // Fetch data using RTK Query hooks
   const { data: videos, isLoading: isVideosLoading } = useGetVideosQuery();
@@ -62,25 +65,26 @@ const DashboardPage = () => {
         setShowResponseModal(true);
       });
   };
-
-  // Function to handle saving the updated social link
-  const handleSaveLink = async (id: string, updatedLink: string, platformName: string) => {
-    try {
-      const response = await updateSocialLink({
-        id,
-        data: {
-          url: updatedLink, // Updated URL
-          name: platformName, // Send the platform name along with the URL
-        },
-      }).unwrap();
-      alert(`Link updated successfully: ${response.data.url}`);
-      setEditableLinks((prev) => ({ ...prev, [id]: false })); // Set the link to non-editable after saving
-    } catch (err) {
-      console.log(err)
-      console.log("Error updating link:", err);
-      alert("Failed to update the link");
-    }
-  };
+const handleSaveLink = async (id: string, updatedLink: string, platformName: string) => {
+  try {
+    const response = await updateSocialLink({
+      id,
+      data: {
+        url: updatedLink, // Updated URL
+        name: platformName, // Send the platform name along with the URL
+      },
+    }).unwrap();
+    
+    // Show a success toast
+    toast.success(`${platformName} Link updated successfully`);
+    setEditableLinks((prev) => ({ ...prev, [id]: false })); // Set the link to non-editable after saving
+  } catch (err) {
+    console.log(err);
+    console.log("Error updating link:", err);
+    // Show an error toast
+    toast.error("Failed to update the link");
+  }
+};
 
   // Function to handle editing the social link
   const handleEditLink = (id: string) => {
@@ -101,8 +105,6 @@ const DashboardPage = () => {
           <div className="flex items-center justify-center mt-6">
             <QualityOfLifeModal />
           </div>
-
-          {/* Notify All Button */}
           <div className="flex justify-center mt-4">
             <button
               onClick={handleNotifyAll}

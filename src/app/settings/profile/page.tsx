@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Camera, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
@@ -8,9 +8,17 @@ import { UserProfile } from "@/components/user-profile";
 import Avatar from "@/assets/svg/Avatar.svg";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import Button from "@/components/ui/button";
+import { ToastContainer, toast } from "react-toastify";
+import {
+  useGetCurrentUserQuery,
+  useUpdateProfileMutation,
+} from "../../../../services/allApi";
+import "react-toastify/dist/ReactToastify.css";
+
 export default function ProfilePage() {
   const router = useRouter();
+
+  // Initialize formData state with default values
   const [formData, setFormData] = useState({
     firstName: "Hamrick",
     location: "New York",
@@ -18,8 +26,32 @@ export default function ProfilePage() {
     phoneNumber: "866 12 346 0780",
   });
 
+  // Fetch current user data
+  const {
+    data: userData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useGetCurrentUserQuery();
+
+  // Mutation hook to update profile
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
+
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (userData) {
+      console.log("Current User Data: ", userData);
+      setFormData({
+        firstName: userData?.data?.userName,
+        location: userData.data.location || "New York", // Provide default if not available
+        email: userData.data.email,
+        phoneNumber: userData.data.phoneNumber || "866 12 346 0780", // Provide default if not available
+      });
+      setProfileImage(userData.data.profilePicture);
+    }
+  }, [userData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -47,6 +79,49 @@ export default function ProfilePage() {
   const handleChangePassword = () => {
     router.push("/change-password");
   };
+  const handleSaveChanges = async () => {
+    const formDataToUpdate = new FormData();
+    formDataToUpdate.append("userName", formData.firstName);
+    formDataToUpdate.append("email", formData.email);
+    formDataToUpdate.append("phoneNumber", formData.phoneNumber);
+    formDataToUpdate.append("location", formData.location);
+
+    if (profileImage) {
+      formDataToUpdate.append("profilePicture", profileImage);
+    }
+
+    try {
+      const response = await updateProfile(formDataToUpdate).unwrap();
+      console.log(response);
+      refetch();
+      toast.success("Changes saved successfully!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      // Redirect to dashboard after success
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
+    } catch (error) {
+      toast.error("Failed to save changes. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -108,17 +183,17 @@ export default function ProfilePage() {
                 />
                 <div>
                   <h2 className="font-poppins text-xl font-semibold text-gray-900 sm:text-2xl">
-                    Hamrick
+                    {userData?.data?.userName || "User Name"}
                   </h2>
                   <p className="font-poppins text-sm text-gray-500 sm:text-base">
-                    hamrick@gmail.com
+                    {userData?.data?.email || "Email not available"}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={handleChangePassword}
-                className="rounded-lg gap-x-1   flex flex-row items-center bg-black px-4 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-6 sm:py-2.5"
+                className="rounded-lg gap-x-1 flex flex-row items-center bg-black px-4 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-6 sm:py-2.5"
               >
                 Change Password
                 <ArrowRight className="h-4 text-white w-4" />
@@ -133,7 +208,7 @@ export default function ProfilePage() {
 
               <div className="space-y-6">
                 {/* First Row: First Name & Location */}
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4">
                   <div>
                     <label
                       htmlFor="firstName"
@@ -145,80 +220,95 @@ export default function ProfilePage() {
                       type="text"
                       id="firstName"
                       name="firstName"
-                      value={formData.firstName}
+                      value={formData.firstName} // Use formData for input
                       onChange={handleChange}
                       placeholder="Write your full name"
-                      className="w-full placeholder:text-gray-400 text-xs rounded-lg border border-gray-300 px-4 py-2.5 font-poppins  text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="location"
-                      className="mb-2 block font-poppins text-sm font-medium text-gray-700"
-                    >
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      id="location"
-                      name="location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      placeholder="Write your location"
-                      className="w-full  placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                      className="w-full placeholder:text-gray-400 text-xs rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
                     />
                   </div>
                 </div>
 
-                {/* Second Row: Email & Phone Number */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="mb-2 block font-poppins text-sm font-medium text-gray-700"
-                    >
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="hamrick@gmail.com"
-                      className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-                    />
-                  </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                  >
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email} // Use formData for input
+                    onChange={handleChange}
+                    placeholder="hamrick@gmail.com"
+                    className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                  />
+                </div>
 
-                  <div>
-                    <label
-                      htmlFor="phoneNumber"
-                      className="mb-2 block font-poppins text-sm font-medium text-gray-700"
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      placeholder="+42"
-                      onChange={handleChange}
-                      className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-                    />
-                  </div>
+                <div>
+                  <label
+                    htmlFor="phoneNumber"
+                    className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                  >
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={formData.phoneNumber} // Use formData for input
+                    placeholder="+42"
+                    onChange={handleChange}
+                    className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                  />
                 </div>
               </div>
 
               {/* Save Button */}
               <div className="mt-8 flex justify-end">
-                <Button />
+                <button
+                  type="button"
+                  onClick={handleSaveChanges}
+                  disabled={isUpdating}
+                  className="rounded-md bg-black px-6 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isUpdating ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Toast notifications */}
+      <ToastContainer />
     </div>
   );
 }

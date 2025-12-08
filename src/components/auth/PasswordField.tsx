@@ -1,26 +1,22 @@
-"use client"
+"use client";
 // src/components/auth/PasswordField.tsx
 import { Eye, EyeOff, Lock } from "lucide-react";
 import React, { useState } from "react";
 
 interface PasswordFieldProps {
   placeholder: string;
-  password: string;
-  setPassword: React.Dispatch<React.SetStateAction<string>>;
-  isConfirmPasswordField?: boolean;
+  value: string; // Renamed from `password` to `value` for better clarity
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; // This is the handler from the parent
+  isConfirmPasswordField?: boolean; // Optional prop to check if this is the confirm password field
 }
 
 export default function PasswordField({
   placeholder,
-  password,
-  setPassword,
+  value,
+  onChange,
   isConfirmPasswordField = false,
 }: PasswordFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value); // Pass the updated password back to the parent
-  };
 
   return (
     <div className="relative">
@@ -28,8 +24,8 @@ export default function PasswordField({
       <input
         type={showPassword ? "text" : "password"}
         placeholder={placeholder}
-        value={password}
-        onChange={handlePasswordChange}
+        value={value}
+        onChange={onChange} // Call the `onChange` function from the parent
         className="h-12 text-xs font-normal w-full font-poppins rounded-lg border border-gray-300 bg-white pl-10 pr-12 text-black placeholder:text-gray-400 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
         required
       />

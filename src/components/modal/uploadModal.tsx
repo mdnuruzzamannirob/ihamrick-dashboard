@@ -32,7 +32,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
   const [id, setId] = useState(post?._id || 1);
   const [status, setStatus] = useState(post?.status || false);
   const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [filePreview, setFilePreview] = useState<string | null>(null); // To display image preview
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const editor = useRef<any>(null);

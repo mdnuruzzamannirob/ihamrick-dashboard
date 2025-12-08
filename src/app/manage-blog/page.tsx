@@ -34,7 +34,7 @@ export default function ManageBlogPage() {
   const [blogToView, setBlogToView] = useState<any | null>(null);
   const { data, isLoading, error, refetch } = useGetBlogsQuery();
   const [deleteBlog, { isLoading: deleteLoading }] = useDeleteBlogMutation();
-  const [updateBlog, { isLoading: updateLoading }] = useUpdateBlogMutation(); // Added update mutation
+  const [updateBlog, { isLoading: updateLoading }] = useUpdateBlogMutation();
 
   useEffect(() => {
     if (data?.data) {

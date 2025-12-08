@@ -9,12 +9,7 @@ export default function Button() {
     setIsSaving(true);
     console.log("firing...");
     try {
-      // Simulate API call - replace with your actual save logic
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // // console.log("Saving content:", content);
-      // // Add your actual save API call here
-      // await saveAboutUsContent(content);
 
       toast.success("Changes saved successfully!", {
         position: "top-right",

@@ -1,11 +1,63 @@
 "use client";
 
+import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { UserProfile } from "@/components/user-profile";
 import PasswordField from "@/components/auth/PasswordField";
+import { useChangePasswordMutation } from "../../../../services/allApi"; // Import your mutation hook
 import "react-toastify/dist/ReactToastify.css";
-import Button from "@/components/ui/button";
+import { ToastContainer, toast } from "react-toastify"; // For notifications
+
 export default function ChangePasswordPage() {
+  // State to manage form values
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSaving, setIsSaving] = useState(false); // Track the loading state
+
+  // Mutation hook for change password
+  const [changePassword, { isLoading, isError, error, isSuccess }] = useChangePasswordMutation();
+
+  // Handle form submission
+  const handleChangePassword = async () => {
+    // Check if new password and confirm password match
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirm password do not match.");
+      return;
+    }
+
+    setIsSaving(true); // Start loading
+
+    try {
+      const response = await changePassword({
+        oldPassword: currentPassword,
+        newPassword,
+      }).unwrap();
+      console.log(response)
+
+      // Show success notification
+      toast.success("Password changed successfully!", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } catch (err) {
+      toast.error("Failed to change password. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    } finally {
+      setIsSaving(false); // Stop loading
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
@@ -18,7 +70,7 @@ export default function ChangePasswordPage() {
           </div>
 
           {/* Profile Card */}
-          <div className=" rounded-xl jusitfy-center items-center  bg-white p-6 shadow-sm sm:p-8">
+          <div className="rounded-xl justify-center items-center bg-white p-6 shadow-sm sm:p-8">
             {/* Profile Header */}
 
             {/* Personal Information Form */}
@@ -28,47 +80,96 @@ export default function ChangePasswordPage() {
               </h3>
 
               <div className="space-y-6">
-                {/* First Row: First Name & Location */}
+                {/* First Row: Current, New, and Confirm Password Fields */}
                 <div className="flex flex-col gap-y-3 sm:grid-cols-2">
                   <div>
                     <label
-                      htmlFor="firstName"
+                      htmlFor="currentPassword"
                       className="mb-2 block font-poppins text-sm font-medium text-gray-700"
                     >
                       Current Password
                     </label>
-                    <PasswordField placeholder="Type current password" />
+                    <PasswordField
+                      placeholder="Type current password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
                   </div>
 
                   <div>
                     <label
-                      htmlFor="location"
+                      htmlFor="newPassword"
                       className="mb-2 block font-poppins text-sm font-medium text-gray-700"
                     >
                       New Password
                     </label>
-                    <PasswordField placeholder="Type new password" />
+                    <PasswordField
+                      placeholder="Type new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
                   </div>
+
                   <div>
                     <label
-                      htmlFor="location"
+                      htmlFor="confirmPassword"
                       className="mb-2 block font-poppins text-sm font-medium text-gray-700"
                     >
                       Confirm Password
                     </label>
-                    <PasswordField placeholder="Type confirm password" />
+                    <PasswordField
+                      placeholder="Type confirm password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Save Button */}
               <div className="mt-8 flex justify-end">
-                <Button />
+                <button
+                  type="button"
+                  onClick={handleChangePassword}
+                  disabled={isSaving || isLoading}
+                  className="rounded-md bg-black px-6 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isSaving || isLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Changing...
+                    </>
+                  ) : (
+                    "Change Password"
+                  )}
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Toast notifications */}
+      <ToastContainer />
     </div>
   );
 }

@@ -288,6 +288,9 @@ interface SocialLink {
   createdAt: string;
   updatedAt: string;
 }
+interface content {
+  content: string;
+}
 
 interface SocialLinkResponse {
   success: boolean;
@@ -305,7 +308,53 @@ interface UpdateSocialLinkResponse {
   message: string;
   data: SocialLink;
 }
+interface updateAboutUsRequest {
+  content: content;
+}
 
+interface User {
+  _id: string;
+  email: string;
+  role: string;
+  location: string;
+  phoneNumber: string;
+  userName: string;
+  profilePicture: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface MeResponse {
+  success: boolean;
+  message: string;
+  data: User;
+}
+
+// Define the API types and response structures
+interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
+interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+interface UpdateProfileRequest {
+  userName: string;
+  email: string;
+  phoneNumber: string;
+  location: string;
+  profilePicture: File | null;
+}
+
+interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  data: User; // Assuming the response contains user data
+}
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
@@ -314,7 +363,7 @@ const allApi = createApi({
     prepareHeaders: (headers) => {
       // Retrieve token from cookies
       const token = Cookies.get("Ihamrickadmindashboardtoken");
-      console.log(token)
+      console.log(token);
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -464,6 +513,57 @@ const allApi = createApi({
         body: data,
       }),
     }),
+    updateAboutUs: builder.mutation<void, { content: content }>({
+      query: ({ content }) => ({
+        url: "website-content/about-us",
+        method: "PATCH",
+        body: content,
+      }),
+    }),
+    // Mutation for updating the 'Privacy Policy' content
+    updatePrivacyPolicy: builder.mutation<void, { content: content }>({
+      query: ({ content }) => ({
+        url: "website-content/privacy-policy",
+        method: "PATCH",
+        body: content,
+      }),
+    }),
+
+    // New query to get the current authenticated user
+    getCurrentUser: builder.query<MeResponse, void>({
+      query: () => ({
+        url: "/auth/me",
+        method: "GET",
+      }),
+    }),
+    updateProfile: builder.mutation({
+      query: (formData: FormData) => {
+        // const formData = new FormData();
+        // formData.append("userName", profileData.userName);
+        // formData.append("email", profileData.email);
+        // formData.append("phoneNumber", profileData.phoneNumber);
+        // formData.append("location", profileData.location);
+        // if (profileData.profilePicture) {
+        //   formData.append("profilePicture", profileData.profilePicture);
+        // }
+
+        return {
+          url: "/auth/update-profile",
+          method: "PATCH",
+          body: formData,
+        };
+      },
+    }),
+    changePassword: builder.mutation<
+      ChangePasswordResponse,
+      ChangePasswordRequest
+    >({
+      query: ({ oldPassword, newPassword }) => ({
+        url: "/auth/change-password",
+        method: "PUT",
+        body: { oldPassword, newPassword },
+      }),
+    }),
   }),
 });
 export const {
@@ -485,6 +585,11 @@ export const {
   useSentNotificationsMutation,
   useGetSocialLinksQuery,
   useUpdateSocialLinkMutation,
+  useUpdateAboutUsMutation,
+  useUpdatePrivacyPolicyMutation,
+  useGetCurrentUserQuery,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
 } = allApi;
 
 export default allApi;
