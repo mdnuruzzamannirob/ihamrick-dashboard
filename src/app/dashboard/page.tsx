@@ -57,7 +57,7 @@ const DashboardPage = () => {
       .then((response) => {
         setResponseMessage(response?.message);
         setShowResponseModal(true);
-        console.log(response);
+
       })
       .catch((error) => {
         console.log(error);

@@ -9,7 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader,
-} from "lucide-react"; // Import the Loader icon
+} from "lucide-react";
 import UploadModal from "@/components/modal/uploadModal";
 import DeleteConfirmationModal from "../../components/modal/deleteModal";
 import { ViewBlogModal } from "@/components/modal/viewModal";
@@ -17,13 +17,15 @@ import {
   useGetBlogsQuery,
   useDeleteBlogMutation,
   useUpdateBlogMutation,
+  useCreateBlogMutation, // Import the createBlog mutation
 } from "../../../services/allApi";
 import { json } from "stream/consumers";
-import { stringify } from "querystring";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function ManageBlogPage() {
+  const [isNewBlog, setIsNewBlog] = useState(true); // Initially set to true to show add blog
+
   const [blogs, setBlogs] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,6 +37,7 @@ export default function ManageBlogPage() {
   const { data, isLoading, error, refetch } = useGetBlogsQuery();
   const [deleteBlog, { isLoading: deleteLoading }] = useDeleteBlogMutation();
   const [updateBlog, { isLoading: updateLoading }] = useUpdateBlogMutation();
+  const [createBlog, { isLoading: createLoading }] = useCreateBlogMutation(); // Add createBlog hook
 
   useEffect(() => {
     if (data?.data) {
@@ -67,7 +70,6 @@ export default function ManageBlogPage() {
     if (blogToDelete !== null) {
       try {
         await deleteBlog(blogToDelete).unwrap();
-        console.log(blogToDelete);
         refetch();
         setBlogToDelete(null);
         setDeleteModalOpen(false);
@@ -83,8 +85,8 @@ export default function ManageBlogPage() {
   };
 
   const handleEdit = (blog: any) => {
-    console.log("Selected Blog:", blog);
     setSelectedBlog(blog);
+    setIsNewBlog(false);
     setIsModalOpen(true);
   };
 
@@ -92,43 +94,46 @@ export default function ManageBlogPage() {
     setIsModalOpen(false);
     setSelectedBlog(null);
   };
+
   const handleSaveChanges = async (updatedBlog: any) => {
     setIsModalOpen(false);
-
-    // Log the ID to check if it's valid
-    console.log("Blog ID for Update:", updatedBlog.id);
-
-    if (!updatedBlog.id) {
-      console.error("Invalid blog ID, cannot proceed with update.");
-      return; // Exit early if the ID is invalid
-    }
-
-    // Prepare the FormData object for the API call
     const formData = new FormData();
     formData.append("title", updatedBlog.title);
     formData.append("description", updatedBlog.description);
-    formData.append("status", updatedBlog.status.toString());
-      console.log(updatedBlog.coverImage);
+    formData.append("status", updatedBlog.status);
     if (updatedBlog.coverImage) {
-
       formData.append("coverImage", updatedBlog.coverImage);
     }
 
     try {
-      console.log(formData);
       const response = await updateBlog({
         id: updatedBlog.id,
         data: formData,
       }).unwrap();
-
-      // Log the response from the API
-      console.log("API Response for Blog Update:", response);
-
-      // Refetch blogs to update the list
       refetch();
     } catch (error) {
       console.error("Failed to update the blog:", error);
     }
+
+  };
+
+  // New logic for creating a blog
+  const handleCreateBlog = async (newBlog: any) => {
+
+    const formData = new FormData();
+    formData.append("title", newBlog.title);
+    formData.append("description", newBlog.description);
+
+    formData.append("status", newBlog.status);
+    if (newBlog.coverImage) {
+      formData.append("coverImage", newBlog.coverImage);
+    }
+
+    try {
+      const response = await createBlog({ data: formData }).unwrap();
+      refetch();
+      setIsModalOpen(false); // Close modal after successful creation
+    } catch (error) {console.log(formData.get("coverImage"))}
   };
 
   const handlePageChange = (page: any) => {
@@ -190,7 +195,12 @@ export default function ManageBlogPage() {
           </div>
           <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setSelectedBlog(null);
+                setIsNewBlog(true);
+
+                setIsModalOpen(true);
+              }}
               className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"
             >
               <span className="text-base">+</span>
@@ -315,9 +325,11 @@ export default function ManageBlogPage() {
       <UploadModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveChanges}
-        post={selectedBlog}
+        onSave={selectedBlog ? handleSaveChanges : handleCreateBlog}
+        isNewBlog={isNewBlog}
+        post={selectedBlog || null}
       />
+
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
         onClose={cancelDelete}

@@ -33,7 +33,7 @@ export default function ChangePasswordPage() {
         oldPassword: currentPassword,
         newPassword,
       }).unwrap();
-      console.log(response)
+
 
       // Show success notification
       toast.success("Password changed successfully!", {

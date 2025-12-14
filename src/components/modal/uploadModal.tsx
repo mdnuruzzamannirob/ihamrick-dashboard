@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
 import dynamic from "next/dynamic";
+
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 interface UploadModalProps {
@@ -18,8 +19,9 @@ interface UploadModalProps {
     title: string;
     status: boolean;
     description: string;
-    coverImage: File;
+    coverImage: File | null;
   } | null;
+  isNewBlog: boolean; // Pass `isNewBlog` prop to indicate whether it's a new blog or update
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({
@@ -27,15 +29,17 @@ const UploadModal: React.FC<UploadModalProps> = ({
   onClose = () => {},
   onSave = () => {},
   post,
+  isNewBlog,
 }) => {
-  const [title, setTitle] = useState(post?.title || "");
-  const [id, setId] = useState(post?._id || 1);
-  const [status, setStatus] = useState(post?.status || false);
+  const [title, setTitle] = useState("");
+  const [id, setId] = useState(0);
+  const [status, setStatus] = useState(false);
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const editor = useRef<any>(null);
+  const descriptionRef = useRef("");
 
   const config = {
     readonly: false,
@@ -57,43 +61,52 @@ const UploadModal: React.FC<UploadModalProps> = ({
     ],
   };
 
-  const descriptionRef = useRef(post?.description || "");
-
+  // Reset or load data based on whether it's a new blog or editing an existing one
   useEffect(() => {
-    if (post) {
-      console.log("Post ID:", post?._id, post.title);
-      setId(post?._id);
-      setTitle(post?.title);
-      setStatus(post?.status);
-      setCoverImage(post?.coverImage)
-      descriptionRef.current = post?.description;
-    }
-  }, [post]);
+    if (isOpen) {
+      if (isNewBlog) {
+        // Reset form when adding a new blog
+        setId(0);
+        setTitle("");
+        setStatus(false);
+        setCoverImage(null);
+        descriptionRef.current = "";
+        setFilePreview(null);
+      } else {
+        // Load data when editing an existing blog
+        if (post) {
+          setId(post._id);
+          setTitle(post.title);
+          setStatus(post.status);
+          setCoverImage(post.coverImage);
+          descriptionRef.current = post.description;
 
-  const handleDescriptionChange = useCallback(() => {
-    if (editor.current) {
-      descriptionRef.current = editor.current.getEditorValue();
+          // Check if coverImage exists and is a valid File object before creating an object URL
+          if (post.coverImage && post.coverImage instanceof File) {
+            setFilePreview(URL.createObjectURL(post.coverImage));
+          } else {
+            setFilePreview(null);
+          }
+        }
+      }
     }
-  }, []);
+  }, [isOpen, post, isNewBlog]);
 
   const handleSave = () => {
-    console.log(title, status, descriptionRef.current);
     onSave({
       id,
       title,
       status,
       description: descriptionRef.current,
-      coverImage: coverImage || undefined, // Send the file if it's selected
+      coverImage: coverImage || undefined, 
     });
   };
 
-  // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      console.log(selectedFile);
       setCoverImage(selectedFile);
-      setFilePreview(URL.createObjectURL(selectedFile)); // Create a preview of the selected file
+      setFilePreview(URL.createObjectURL(selectedFile)); // Preview the selected file
     }
   };
 
@@ -169,6 +182,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </div>
             </div>
           </div>
+
           {/* Description Editor */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2 font-poppins">
@@ -176,13 +190,16 @@ const UploadModal: React.FC<UploadModalProps> = ({
             </label>
             <div className="border font-poppins text-xs text-neutral-800 border-gray-300 rounded-md overflow-hidden">
               <JoditEditor
-                ref={editor} // Ref to interact with JoditEditor
-                value={descriptionRef.current} // Bind value for initial loading
+                ref={editor}
+                value={descriptionRef.current}
                 config={config}
-                onChange={handleDescriptionChange} // Capture changes without triggering re-renders
+                onChange={(value) => {
+                  descriptionRef.current = value;
+                }}
               />
             </div>
           </div>
+
           {/* File Upload */}
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-3 sm:mb-4 text-center font-poppins">
@@ -246,13 +263,14 @@ const UploadModal: React.FC<UploadModalProps> = ({
               </label>
             </div>
           </div>
+
           {/* Save Button */}
           <div className="flex justify-end">
             <button
               onClick={handleSave}
               className="px-4 sm:px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition-colors text-xs sm:text-sm font-medium font-poppins"
             >
-              Save Changes
+              {isNewBlog ? "Create Blog" : "Save Changes"}
             </button>
           </div>
         </div>

@@ -18,7 +18,6 @@ export function UserProfile() {
   }, [userData]);
   // Log the user data to the console when available
   if (userData) {
-    console.log(userData);
   }
 
   if (isLoading) {

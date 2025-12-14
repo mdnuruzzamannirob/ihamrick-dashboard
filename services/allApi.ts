@@ -355,6 +355,19 @@ interface UpdateProfileResponse {
   message: string;
   data: User; // Assuming the response contains user data
 }
+interface CreateBlogRequest {
+  title: string;
+  status: boolean;
+  description: string;
+  coverImage: File | null;
+}
+
+interface CreateBlogResponse {
+  success: boolean;
+  message: string;
+  data: Blog;
+}
+
 const allApi = createApi({
   reducerPath: "allApi",
   baseQuery: fetchBaseQuery({
@@ -363,7 +376,7 @@ const allApi = createApi({
     prepareHeaders: (headers) => {
       // Retrieve token from cookies
       const token = Cookies.get("Ihamrickadmindashboardtoken");
-      console.log(token);
+
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
@@ -564,6 +577,28 @@ const allApi = createApi({
         body: { oldPassword, newPassword },
       }),
     }),
+    createBlog: builder.mutation<void, { data: FormData }>({
+      query: ({ data }) => {
+        // Log FormData contents and their types
+        for (let pair of data.entries()) {
+          const key = pair[0];
+          const value = pair[1];
+
+     
+
+          // Special handling for File objects (e.g., coverImage)
+          if (value instanceof File) {
+      
+          }
+        }
+
+        return {
+          url: "/blog/create-blog", // Adjust this URL to your endpoint
+          method: "POST",
+          body: data,
+        };
+      },
+    }),
   }),
 });
 export const {
@@ -590,6 +625,7 @@ export const {
   useGetCurrentUserQuery,
   useUpdateProfileMutation,
   useChangePasswordMutation,
+  useCreateBlogMutation,
 } = allApi;
 
 export default allApi;
