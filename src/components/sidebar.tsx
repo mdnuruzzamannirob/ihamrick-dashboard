@@ -56,7 +56,6 @@ export function Sidebar() {
     try {
       // Call the logout API
       await logout().unwrap(); // Call the logout mutation (no need to catch the response)
-console.log("dls")
       // Remove the authentication token from cookies
       Cookies.remove("Ihamrickadmindashboardtoken");
 

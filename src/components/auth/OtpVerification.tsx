@@ -81,7 +81,6 @@ export default function OTPVerification() {
 
   // Handle resend OTP
   const handleResend = async () => {
-    console.log(email);
     if (email) {
       try {
         const news = await resendOtp({ email: email }).unwrap();

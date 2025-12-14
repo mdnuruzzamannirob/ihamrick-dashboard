@@ -131,7 +131,6 @@ export default function ManageBlogPage() {
       refetch();
       setIsModalOpen(false); // Close modal after successful creation
     } catch (error) {
-      console.log(formData.get("coverImage"));
     }
   };
 

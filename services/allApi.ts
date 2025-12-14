@@ -428,7 +428,7 @@ const allApi = createApi({
       }),
     }),
 
-    getVideos: builder.query<VideoResponse, void>({
+    getVideos: builder.query<void, void>({
       query: () => ({
         url: "/videos",
         method: "GET",
@@ -551,15 +551,6 @@ const allApi = createApi({
     }),
     updateProfile: builder.mutation({
       query: (formData: FormData) => {
-        // const formData = new FormData();
-        // formData.append("userName", profileData.userName);
-        // formData.append("email", profileData.email);
-        // formData.append("phoneNumber", profileData.phoneNumber);
-        // formData.append("location", profileData.location);
-        // if (profileData.profilePicture) {
-        //   formData.append("profilePicture", profileData.profilePicture);
-        // }
-
         return {
           url: "/auth/update-profile",
           method: "PATCH",
@@ -579,19 +570,6 @@ const allApi = createApi({
     }),
     createBlog: builder.mutation<void, { data: FormData }>({
       query: ({ data }) => {
-        // Log FormData contents and their types
-        for (let pair of data.entries()) {
-          const key = pair[0];
-          const value = pair[1];
-
-     
-
-          // Special handling for File objects (e.g., coverImage)
-          if (value instanceof File) {
-      
-          }
-        }
-
         return {
           url: "/blog/create-blog", // Adjust this URL to your endpoint
           method: "POST",
