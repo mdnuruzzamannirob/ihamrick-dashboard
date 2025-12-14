@@ -114,16 +114,13 @@ export default function ManageBlogPage() {
     } catch (error) {
       console.error("Failed to update the blog:", error);
     }
-
   };
 
   // New logic for creating a blog
   const handleCreateBlog = async (newBlog: any) => {
-
     const formData = new FormData();
     formData.append("title", newBlog.title);
     formData.append("description", newBlog.description);
-
     formData.append("status", newBlog.status);
     if (newBlog.coverImage) {
       formData.append("coverImage", newBlog.coverImage);
@@ -133,7 +130,9 @@ export default function ManageBlogPage() {
       const response = await createBlog({ data: formData }).unwrap();
       refetch();
       setIsModalOpen(false); // Close modal after successful creation
-    } catch (error) {console.log(formData.get("coverImage"))}
+    } catch (error) {
+      console.log(formData.get("coverImage"));
+    }
   };
 
   const handlePageChange = (page: any) => {
@@ -198,7 +197,6 @@ export default function ManageBlogPage() {
               onClick={() => {
                 setSelectedBlog(null);
                 setIsNewBlog(true);
-
                 setIsModalOpen(true);
               }}
               className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"

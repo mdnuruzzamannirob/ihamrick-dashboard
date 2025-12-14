@@ -28,7 +28,7 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
   if (!isOpen || !blog) return null;
 
   const currentBlog = blog;
-
+  console.log(currentBlog);
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -156,14 +156,16 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
               </div>
             </div>
           </div>
-
-          {/* Description */}
           <div className="space-y-3">
             <label className="text-sm font-poppins font-medium text-gray-700 block">
               Blog Content
             </label>
             <div className="prose prose-sm max-w-none text-gray-700 bg-gray-50 rounded-lg p-6">
-              <p className="leading-relaxed mb-4">{currentBlog.description}</p>
+              {/* Render HTML content using dangerouslySetInnerHTML */}
+              <div
+                className="leading-relaxed mb-4"
+                dangerouslySetInnerHTML={{ __html: currentBlog.description }}
+              />
             </div>
           </div>
 
