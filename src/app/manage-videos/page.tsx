@@ -1,279 +1,189 @@
-"use client";
-import { useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { UserProfile } from "@/components/user-profile";
-import {
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Clock,
-} from "lucide-react";
-import DeleteConfirmationModal from "@/components/modal/deleteModal";
-import QualityOfLifeModal from "@/components/modal/qualityModal";
-import VideoUploadModal from "@/components/modal/videoUploadModal";
-import { VideoViewModal } from "@/components/modal/videoViewModal";
-import VideoEditModal from "@/components/modal/videoEditModal";
-
-interface BlogPost {
-  id: number;
-  title: string;
-  status: "Published" | "Unpublished";
-  date?: string;
-  duration?: string;
-}
+'use client';
+import { useState } from 'react';
+import { Sidebar } from '@/components/sidebar';
+import { UserProfile } from '@/components/user-profile';
+import { Trash2, ChevronLeft, ChevronRight, Calendar, Clock } from 'lucide-react';
+import VideoUploadModal from '@/components/modal/videoUploadModal';
+import { toast } from 'react-toastify';
+import { useDeleteVideoMutation, useGetVideosQuery } from '../../../services/allApi';
+import { VideoViewModal } from '@/components/modal/videoViewModal';
+import VideoEditModal from '@/components/modal/videoEditModal';
 
 const ITEMS_PER_PAGE = 10;
 
-// Sample data - 50 blog posts for pagination demo
-const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
-  id: i + 1,
-  title:
-    i % 2 === 0 ? "Healthy Living Happier Life" : "Small Habits Big Health",
-  status: i % 3 === 0 ? "Unpublished" : "Published",
-  date: "2024-01-15",
-  duration: "12:45",
-}));
-
 export default function ManageVideos() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
 
-  //calculations
-  const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentPosts = blogPosts.slice(startIndex, endIndex);
+  const { data, isLoading } = useGetVideosQuery({
+    page,
+    limit: ITEMS_PER_PAGE,
+  });
 
-  const handleDeleteClick = (id: number) => {
-    setPostToDelete(id);
-    setDeleteModalOpen(true);
-  };
+  const [deleteVideo, { isLoading: deleting }] = useDeleteVideoMutation();
 
-  const confirmDelete = () => {
-    if (postToDelete !== null) {
-      setBlogPosts((prev) => {
-        const updatedPosts = prev.filter((post) => post.id !== postToDelete);
+  const videos = data?.data ?? [];
+  const totalPages = data?.meta?.totalPages ?? 1;
 
-        // Recalculate total pages based on updated posts
-        const newTotalPages = Math.ceil(updatedPosts.length / ITEMS_PER_PAGE);
-
-        // Adjust current page if needed after deletion
-        if (currentPage > newTotalPages && newTotalPages > 0) {
-          setCurrentPage(newTotalPages);
-        }
-
-        return updatedPosts;
-      });
+  const renderPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setPage(i)}
+          className={`h-10 w-10 rounded-lg text-sm font-medium transition-colors ${
+            page === i
+              ? 'bg-blue-600 text-white'
+              : 'text-gray-600 hover:bg-gray-100 hover:text-blue-600'
+          }`}
+        >
+          {i}
+        </button>,
+      );
     }
-    setDeleteModalOpen(false);
-    setPostToDelete(null);
-  };
-
-  const cancelDelete = () => {
-    setDeleteModalOpen(false);
-    setPostToDelete(null);
-  };
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, "...", totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(
-          1,
-          "...",
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages
-        );
-      } else {
-        pages.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages
-        );
-      }
-    }
-
     return pages;
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this video?')) return;
+    try {
+      await deleteVideo(id).unwrap();
+      toast.success('Video deleted successfully');
+    } catch {
+      toast.error('Failed to delete video');
+    }
   };
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
-        <div className="p-4 md:p-6 lg:p-8">
-          {/* Header */}
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h1 className="text-2xl font-poppins font-semibold text-black md:text-3xl">
-              Manage Videos
-            </h1>
+      <div className="flex-1 p-6 lg:ml-64">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-semibold text-gray-800">Manage Videos</h1>
+          <UserProfile />
+        </div>
 
-            <div className="flex items-center gap-3">
-              <UserProfile />
-            </div>
-          </div>
+        {/* Actions */}
+        <div className="mb-6 flex justify-end">
+          <VideoUploadModal />
+        </div>
 
-          {/* Action Buttons */}
-          <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
-            <VideoUploadModal />
-          </div>
+        {/* Table Section */}
+        <div className="overflow-hidden rounded-xl border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="border-b border-gray-200 bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Title</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Date</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Duration</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                    Action
+                  </th>
+                </tr>
+              </thead>
 
-          {/* Table */}
-          <div className="overflow-hidden rounded-lg border border-neutral-200">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {isLoading ? (
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Title
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Date
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Duration
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Action
-                    </th>
+                    <td colSpan={5} className="py-10 text-center text-gray-500">
+                      Loading videos...
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200">
-                  {currentPosts.map((post) => (
-                    <tr
-                      key={post.id}
-                      className="transition-colors hover:bg-neutral-50"
-                    >
-                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
-                        {post.title}
-                      </td>
-                      <td className="px-4 py-4 md:px-6">
-                        <div className="flex items-center gap-2 text-sm text-neutral-700">
-                          <Calendar className="h-4 w-4 text-neutral-500" />
-                          <span>
-                            {post.date
-                              ? new Date(post.date).toLocaleDateString()
-                              : "2024-01-15"}
-                          </span>
+                ) : videos.length > 0 ? (
+                  videos.map((video: any) => (
+                    <tr key={video.id} className="transition-colors hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-900">{video.title}</td>
+                      <td className="px-6 py-4 text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(video.uploadDate).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-4 py-4 md:px-6">
-                        <div className="flex items-center gap-2 text-sm text-neutral-700">
-                          <Clock className="h-4 w-4 text-neutral-500" />
-                          <span>{post.duration || "12:45"}</span>
+                      <td className="px-6 py-4 text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          {video.duration || '—'}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center md:px-6">
+                      <td className="px-6 py-4">
                         <span
-                          className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
-                            post.status === "Published"
-                              ? "bg-red-400"
-                              : "bg-neutral-800"
+                          className={`inline-flex rounded-full px-3 py-1 text-xs leading-5 font-semibold ${
+                            video.status
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-600'
                           }`}
                         >
-                          {post.status}
+                          {video.status ? 'Published' : 'Unpublished'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 md:px-6">
-                        <div className="flex items-center justify-center gap-2">
-                          <VideoEditModal post={post} />
+                      <td className="px-6 py-4">
+                        <div className="flex justify-center gap-3">
+                          <VideoEditModal video={video} />
+                          <VideoViewModal video={video} />
                           <button
-                            onClick={() => handleDeleteClick(post.id)}
-                            className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
-                            aria-label="Delete"
+                            disabled={deleting}
+                            onClick={() => handleDelete(video.id)}
+                            className="rounded-lg bg-red-50 p-2 text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 size={18} />
                           </button>
-                          <VideoViewModal />
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-10 text-center text-gray-500">
+                      No videos found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-            {/* Pagination */}
-            <div className="border-t border-neutral-200 bg-white px-4 py-4 md:px-6">
-              <div className="flex items-center justify-center gap-1">
-                {/* Previous Button */}
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="border-t border-gray-200 bg-white px-6 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="text-sm text-gray-600">
+                  Showing page <span className="font-semibold text-gray-900">{page}</span> of{' '}
+                  <span className="font-semibold text-gray-900">{totalPages}</span>
+                </p>
 
-                {/* Page Numbers */}
-                {getPageNumbers().map((page, index) => (
-                  <div key={index}>
-                    {page === "..." ? (
-                      <span className="px-3 py-2 text-neutral-600">...</span>
-                    ) : (
-                      <button
-                        onClick={() => handlePageChange(page as number)}
-                        className={`min-w-[40px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                          currentPage === page
-                            ? "bg-red-500 text-white"
-                            : "text-neutral-600 hover:bg-neutral-100"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )}
-                  </div>
-                ))}
+                <div className="flex items-center gap-2">
+                  {/* Previous Button */}
+                  <button
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-300 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Prev
+                  </button>
 
-                {/* Next Button */}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Next page"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
+                  {/* Numeric Buttons */}
+                  <div className="hidden items-center gap-1 md:flex">{renderPageNumbers()}</div>
+
+                  {/* Next Button */}
+                  <button
+                    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={page === totalPages}
+                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-300 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
-      {/* Delete Confirmation Modal */}
-  {/* <DeleteConfirmationModal
-    isOpen={deleteModalOpen}
-    onClose={cancelDelete}
-    onConfirm={confirmDelete}
-    isLoading={deleteLoading}  // Pass the loading state here
-  /> */}
     </div>
   );
 }

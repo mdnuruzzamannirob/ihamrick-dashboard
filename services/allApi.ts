@@ -1,8 +1,7 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import Cookies from "js-cookie";
-// Define the base URL (you can change this if needed)
-const baseUrl =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.pg-65.com//api/";
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import Cookies from 'js-cookie';
+
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.pg-65.com//api/';
 
 // Define the API types and response structures
 interface LoginRequest {
@@ -157,17 +156,6 @@ interface Blog {
 }
 
 // Define API Response Types
-interface VideoResponse {
-  success: boolean;
-  message: string;
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number | null;
-  };
-  data: Video[];
-}
 
 interface PodcastResponse {
   success: boolean;
@@ -200,22 +188,6 @@ interface BlogResponse {
   data: Blog[];
 }
 
-interface BlogDeleteResponse {
-  success: boolean;
-  message: string;
-  data: {
-    _id: string;
-    title: string;
-    status: boolean;
-    description: string;
-    isNotified: boolean;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-    coverImage: string;
-  };
-}
-
 // Life Suggestion related types
 interface LifeSuggestion {
   _id: string;
@@ -234,7 +206,7 @@ interface LifeSuggestionsResponse {
 }
 
 interface CreateLifeSuggestionRequest {
-  type: "increase" | "decrease";
+  type: 'increase' | 'decrease';
   content: string;
 }
 
@@ -242,12 +214,7 @@ interface DeleteLifeSuggestionResponse {
   success: boolean;
   message: string;
 }
-interface BlogUpdateRequest {
-  title: string;
-  description: string;
-  coverImage: string;
-  status: boolean;
-}
+
 interface BlogUpdateResponse {
   success: boolean;
   message: string;
@@ -308,9 +275,6 @@ interface UpdateSocialLinkResponse {
   message: string;
   data: SocialLink;
 }
-interface updateAboutUsRequest {
-  content: content;
-}
 
 interface User {
   _id: string;
@@ -342,43 +306,16 @@ interface ChangePasswordResponse {
   message: string;
 }
 
-interface UpdateProfileRequest {
-  userName: string;
-  email: string;
-  phoneNumber: string;
-  location: string;
-  profilePicture: File | null;
-}
-
-interface UpdateProfileResponse {
-  success: boolean;
-  message: string;
-  data: User; // Assuming the response contains user data
-}
-interface CreateBlogRequest {
-  title: string;
-  status: boolean;
-  description: string;
-  coverImage: File | null;
-}
-
-interface CreateBlogResponse {
-  success: boolean;
-  message: string;
-  data: Blog;
-}
-
 const allApi = createApi({
-  reducerPath: "allApi",
+  reducerPath: 'allApi',
   baseQuery: fetchBaseQuery({
-    baseUrl:
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://10.10.20.73:5005/api/",
+    baseUrl,
     prepareHeaders: (headers) => {
       // Retrieve token from cookies
-      const token = Cookies.get("Ihamrickadmindashboardtoken");
+      const token = Cookies.get('Ihamrickadmindashboardtoken');
 
       if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+        headers.set('Authorization', `Bearer ${token}`);
       }
 
       return headers;
@@ -388,130 +325,109 @@ const allApi = createApi({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
-        url: "/auth/login",
-        method: "POST",
+        url: '/auth/login',
+        method: 'POST',
         body: credentials,
       }),
     }),
-    forgotPassword: builder.mutation<
-      ForgotPasswordResponse,
-      ForgotPasswordRequest
-    >({
+    forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
       query: (email) => ({
-        url: "/auth/forgot-password",
-        method: "POST",
+        url: '/auth/forgot-password',
+        method: 'POST',
         body: email,
       }),
     }),
     verifyOtp: builder.mutation<VerifyOtpResponse, VerifyOtpRequest>({
       query: ({ email, otp }) => ({
-        url: "/auth/verify-otp",
-        method: "POST",
+        url: '/auth/verify-otp',
+        method: 'POST',
         body: { email, otp },
       }),
     }),
     resendOtp: builder.mutation<ResendOtpResponse, ResendOtpRequest>({
       query: ({ email }) => ({
-        url: "/auth/resend-otp",
-        method: "POST",
+        url: '/auth/resend-otp',
+        method: 'POST',
         body: { email },
       }),
     }),
-    resetPassword: builder.mutation<
-      ResetPasswordResponse,
-      ResetPasswordRequest
-    >({
+    resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
       query: ({ email, newPassword, confirmPassword, otp }) => ({
-        url: "/auth/reset-password",
-        method: "POST",
+        url: '/auth/reset-password',
+        method: 'POST',
         body: { email, newPassword, confirmPassword, otp },
       }),
     }),
 
-    getVideos: builder.query<void, void>({
-      query: () => ({
-        url: "/videos",
-        method: "GET",
-      }),
-    }),
     getPodcasts: builder.query<PodcastResponse, void>({
       query: () => ({
-        url: "/podcasts",
-        method: "GET",
+        url: '/podcasts',
+        method: 'GET',
       }),
     }),
     getPublications: builder.query<PublicationResponse, void>({
       query: () => ({
-        url: "/publications",
-        method: "GET",
+        url: '/publications',
+        method: 'GET',
       }),
     }),
     getBlogs: builder.query<BlogResponse, void>({
       query: () => ({
-        url: "/blog",
-        method: "GET",
+        url: '/blog',
+        method: 'GET',
       }),
     }),
     // Life Suggestions API Endpoints
-    createLifeSuggestion: builder.mutation<
-      LifeSuggestion,
-      CreateLifeSuggestionRequest
-    >({
+    createLifeSuggestion: builder.mutation<LifeSuggestion, CreateLifeSuggestionRequest>({
       query: (newLifeSuggestion) => ({
-        url: "/life-suggestions/create",
-        method: "POST",
+        url: '/life-suggestions/create',
+        method: 'POST',
         body: newLifeSuggestion,
       }),
     }),
     getLifeSuggestions: builder.query<LifeSuggestionsResponse, void>({
       query: () => ({
-        url: "/life-suggestions/",
-        method: "GET",
+        url: '/life-suggestions/',
+        method: 'GET',
       }),
     }),
-    deleteLifeSuggestion: builder.mutation<
-      DeleteLifeSuggestionResponse,
-      string
-    >({
+    deleteLifeSuggestion: builder.mutation<DeleteLifeSuggestionResponse, string>({
       query: (suggestionId) => ({
         url: `/life-suggestions/${suggestionId}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
     }),
     deleteBlog: builder.mutation<BlogResponse, string>({
       query: (blogId) => ({
         url: `/blog/delete/${blogId}`,
-        method: "DELETE",
+        method: 'DELETE',
       }),
     }),
-    updateBlog: builder.mutation<
-      BlogUpdateResponse,
-      { id: string; data: FormData }
-    >({
+    updateBlog: builder.mutation<BlogUpdateResponse, { id: string; data: FormData }>({
       query: ({ id, data }) => ({
         url: `/blog/update/${id}`,
-        method: "PUT",
+        method: 'PUT',
         body: data,
       }),
     }),
 
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: "/auth/logout",
-        method: "POST",
+        url: '/auth/logout',
+        method: 'POST',
       }),
     }),
     sentNotifications: builder.mutation<SendNotifications, void>({
       query: () => ({
-        url: "/notifications/send-notifications",
-        method: "POST",
+        url: '/notifications/send-notifications',
+        method: 'POST',
       }),
     }),
     // Get all social links
     getSocialLinks: builder.query<SocialLinkResponse, void>({
       query: () => ({
-        url: "/social-links",
-        method: "GET",
+        url: '/social-links',
+        method: 'GET',
       }),
     }),
 
@@ -522,22 +438,22 @@ const allApi = createApi({
     >({
       query: ({ id, data }) => ({
         url: `/social-links/${id}`,
-        method: "PUT",
+        method: 'PUT',
         body: data,
       }),
     }),
     updateAboutUs: builder.mutation<void, { content: content }>({
       query: ({ content }) => ({
-        url: "website-content/about-us",
-        method: "PATCH",
+        url: 'website-content/about-us',
+        method: 'PATCH',
         body: content,
       }),
     }),
     // Mutation for updating the 'Privacy Policy' content
     updatePrivacyPolicy: builder.mutation<void, { content: content }>({
       query: ({ content }) => ({
-        url: "website-content/privacy-policy",
-        method: "PATCH",
+        url: 'website-content/privacy-policy',
+        method: 'PATCH',
         body: content,
       }),
     }),
@@ -545,40 +461,83 @@ const allApi = createApi({
     // New query to get the current authenticated user
     getCurrentUser: builder.query<MeResponse, void>({
       query: () => ({
-        url: "/auth/me",
-        method: "GET",
+        url: '/auth/me',
+        method: 'GET',
       }),
     }),
     updateProfile: builder.mutation({
       query: (formData: FormData) => {
         return {
-          url: "/auth/update-profile",
-          method: "PATCH",
+          url: '/auth/update-profile',
+          method: 'PATCH',
           body: formData,
         };
       },
     }),
-    changePassword: builder.mutation<
-      ChangePasswordResponse,
-      ChangePasswordRequest
-    >({
+    changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
       query: ({ oldPassword, newPassword }) => ({
-        url: "/auth/change-password",
-        method: "PUT",
+        url: '/auth/change-password',
+        method: 'PUT',
         body: { oldPassword, newPassword },
       }),
     }),
     createBlog: builder.mutation<void, { data: FormData }>({
       query: ({ data }) => {
         return {
-          url: "/blog/create-blog", // Adjust this URL to your endpoint
-          method: "POST",
+          url: '/blog/create-blog', // Adjust this URL to your endpoint
+          method: 'POST',
           body: data,
         };
       },
     }),
+
+    // upload video
+    uploadVideo: builder.mutation<{ success: boolean; message: string; data: Video }, FormData>({
+      query: (formData) => ({
+        url: '/videos/upload',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
+
+    // update video by id
+    updateVideo: builder.mutation<
+      { success: boolean; message: string; data: Video },
+      { id: string; data: FormData }
+    >({
+      query: ({ id, data }) => ({
+        url: `/videos/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+    }),
+
+    //  get videos
+    getVideos: builder.query<any, { page: number; limit: number }>({
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/videos?page=${page}&limit=${limit}`,
+        method: 'GET',
+      }),
+    }),
+
+    // get single video by id
+    getVideoById: builder.query<Video, string>({
+      query: (videoId) => ({
+        url: `/videos/${videoId}`,
+        method: 'GET',
+      }),
+    }),
+
+    // delete video
+    deleteVideo: builder.mutation<{ success: boolean; message: string; data: Video }, string>({
+      query: (videoId) => ({
+        url: `/videos/${videoId}`,
+        method: 'DELETE',
+      }),
+    }),
   }),
 });
+
 export const {
   useLoginMutation,
   useForgotPasswordMutation,
@@ -604,6 +563,10 @@ export const {
   useUpdateProfileMutation,
   useChangePasswordMutation,
   useCreateBlogMutation,
+  useUploadVideoMutation,
+  useDeleteVideoMutation,
+  useGetVideoByIdQuery,
+  useUpdateVideoMutation,
 } = allApi;
 
 export default allApi;
