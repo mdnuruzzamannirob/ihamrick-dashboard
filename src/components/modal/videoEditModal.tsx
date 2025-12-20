@@ -150,9 +150,10 @@ const VideoEditModal = ({ video }: { video: any }) => {
                     <input
                       name="uploadDate"
                       type="date"
+                      disabled
                       value={formData.uploadDate}
                       onChange={handleInputChange}
-                      className="w-full rounded border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-black"
+                      className="w-full rounded border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:opacity-50"
                     />
                   </div>
 
