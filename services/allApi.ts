@@ -535,6 +535,17 @@ const allApi = createApi({
         method: 'DELETE',
       }),
     }),
+
+    // create Podcast
+    createPodcast: builder.mutation<void, FormData>({
+      query: (data) => {
+        return {
+          url: '/podcasts',
+          method: 'POST',
+          body: data,
+        };
+      },
+    }),
   }),
 });
 
@@ -567,6 +578,7 @@ export const {
   useDeleteVideoMutation,
   useGetVideoByIdQuery,
   useUpdateVideoMutation,
+  useCreatePodcastMutation,
 } = allApi;
 
 export default allApi;
