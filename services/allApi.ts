@@ -352,12 +352,6 @@ const allApi = createApi({
       }),
     }),
 
-    getPublications: builder.query<PublicationResponse, void>({
-      query: () => ({
-        url: '/publications',
-        method: 'GET',
-      }),
-    }),
     getBlogs: builder.query<BlogResponse, void>({
       query: () => ({
         url: '/blog',
@@ -561,6 +555,48 @@ const allApi = createApi({
         method: 'DELETE',
       }),
     }),
+
+    // get publications
+    getPublications: builder.query<PublicationResponse, { page?: number; limit?: number }>({
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/publications?page=${page}&limit=${limit}`,
+        method: 'GET',
+      }),
+    }),
+
+    // create publication
+    createPublication: builder.mutation<void, FormData>({
+      query: (data) => {
+        return {
+          url: '/publications/create',
+          method: 'POST',
+          body: data,
+        };
+      },
+    }),
+
+    // update publication by id
+    updatePublication: builder.mutation<
+      { success: boolean; message: string; data: Publication },
+      { id: string; data: FormData }
+    >({
+      query: ({ id, data }) => ({
+        url: `/publications/update/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+    }),
+
+    // delete publication
+    deletePublication: builder.mutation<
+      { success: boolean; message: string; data: Publication },
+      string
+    >({
+      query: (publicationId) => ({
+        url: `/publications/delete/${publicationId}`,
+        method: 'DELETE',
+      }),
+    }),
   }),
 });
 
@@ -596,6 +632,9 @@ export const {
   useCreatePodcastMutation,
   useDeletePodcastMutation,
   useUpdatePodcastMutation,
+  useCreatePublicationMutation,
+  useUpdatePublicationMutation,
+  useDeletePublicationMutation,
 } = allApi;
 
 export default allApi;

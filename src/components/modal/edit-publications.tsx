@@ -1,453 +1,278 @@
-"use client";
-import type React from "react";
-import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
+'use client';
+import React, { useState } from 'react';
+import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import {
-  ChevronDown,
   X,
-  File,
-  Eye,
+  FileText,
+  Loader2,
   Pencil,
-  Calendar,
-  User,
-} from "lucide-react";
-import videoEdit from "@/assets/image/videoEdit.png";
-import dynamic from "next/dynamic";
+  ChevronDown,
+  Image as ImageIcon,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
+import { toast } from 'react-toastify';
+import { useUpdatePublicationMutation } from '../../../services/allApi';
 
-interface Publication {
-  id: string;
-  title: string;
-  author: string;
-  publicationDate: string;
-  publicationType: string;
-  status: "Published" | "Unpublished";
-  description: string;
-  coverImage: string;
-  fileUrl: string;
-  fileName: string;
-}
-interface SaveData {
-  title: string;
-  author: string;
-  publicationDate: string;
-  publicationType: string;
-  status: "Published" | "Unpublished";
-  description: string;
-}
+const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-interface EditPublicationsModalProps {
-  publication: Publication;
-  mode?: "edit" | "view";
-  onSave?: (data: SaveData) => void;
-  onClose?: () => void;
-  visible?: boolean;
-}
-
-export function EditPublicationsModal({
-  publication,
-  mode = "view",
-  onSave,
-  onClose,
-  visible = false,
-}: EditPublicationsModalProps) {
-  const [title, setTitle] = useState(publication.title);
-  const [author, setAuthor] = useState(publication.author);
-  const [publicationDate, setPublicationDate] = useState(
-    publication.publicationDate
-  );
-  const [publicationType, setPublicationType] = useState(
-    publication.publicationType
-  );
-  const [status, setStatus] = useState<"Published" | "Unpublished">(
-    publication.status
-  );
-  const [description, setDescription] = useState(publication.description);
+export function EditPublicationModal({ publication }: { publication: any }) {
+  const [isOpen, setIsOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(visible);
-  // Dynamically import JoditEditor only on client side
-  const JoditEditor = dynamic(() => import("jodit-react"), {
-    ssr: false,
+  const [updatePublication, { isLoading }] = useUpdatePublicationMutation();
+
+  const [formData, setFormData] = useState({
+    title: publication.title,
+    author: publication.author,
+    publicationDate: publication.publicationDate,
+    status: publication.status ? 'Published' : 'Unpublished',
+    description: publication.description,
   });
 
-  const editor = useRef(null);
-  const [currentMode, setCurrentMode] = useState<"edit" | "view">(mode);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [pubFile, setPubFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState(publication.coverImage);
 
-  useEffect(() => {
-    setIsVisible(visible);
-  }, [visible]);
-
-  const config = {
-    readonly: currentMode === "view",
-    toolbar: currentMode === "edit",
-    height: 150,
-    buttons: [
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "outdent",
-      "indent",
-      "|",
-      "link",
-    ],
+  const getExistingFileName = (url: string) => {
+    if (!url) return 'No file attached';
+    const parts = url.split('/');
+    return parts[parts.length - 1].split('_').pop();
   };
 
-  const handleSave = () => {
-    const publicationData = {
-      title,
-      author,
-      publicationDate,
-      publicationType,
-      status,
-      description,
-    };
+  const handleUpdate = async () => {
+    const payload = new FormData();
+    payload.append('title', formData.title);
+    payload.append('author', formData.author);
+    payload.append('publicationDate', formData.publicationDate);
+    payload.append('description', formData.description);
+    payload.append('status', String(formData.status === 'Published'));
 
-    if (onSave) {
-      onSave(publicationData);
+    if (coverImage) payload.append('coverImage', coverImage);
+    if (pubFile) payload.append('file', pubFile);
+
+    try {
+      await updatePublication({ id: publication._id, data: payload }).unwrap();
+      toast.success('Publication updated successfully!');
+      setIsOpen(false);
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Update failed');
     }
-    handleClose();
   };
-
-  const handleClose = () => {
-    setIsVisible(false);
-    if (onClose) {
-      onClose();
-    }
-    setCurrentMode(mode);
-    setTitle(publication.title);
-    setAuthor(publication.author);
-    setPublicationDate(publication.publicationDate);
-    setPublicationType(publication.publicationType);
-    setStatus(publication.status);
-    setDescription(publication.description);
-  };
-
-  if (!isVisible) {
-    return (
-      <button
-        onClick={() => setIsVisible(true)}
-        className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-        aria-label={mode === "view" ? "View Details" : "Edit"}
-      >
-        {mode === "view" ? (
-          <Eye className="h-4 w-4" />
-        ) : (
-          <Pencil className="h-4 w-4" />
-        )}
-      </button>
-    );
-  }
 
   return (
     <>
       <button
-        onClick={() => setIsVisible(true)}
-        className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-        aria-label={mode === "view" ? "View Details" : "Edit"}
+        onClick={() => setIsOpen(true)}
+        className="rounded-xl bg-neutral-900 p-2.5 text-white transition-all hover:bg-black"
       >
-        {mode === "view" ? (
-          <Eye className="h-4 w-4" />
-        ) : (
-          <Pencil className="h-4 w-4" />
-        )}
+        <Pencil size={16} />
       </button>
 
-      <div
-        className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4 md:p-5"
-        onClick={handleClose}
-      >
+      {isOpen && (
         <div
-          className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-8 font-poppins relative overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
         >
-          <button
-            onClick={handleClose}
-            className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors"
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="animate-in zoom-in flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-[2.5rem] bg-white shadow-2xl duration-300"
           >
-            <X className="w-5 h-5" />
-          </button>
-
-          <div className="mb-6">
-            <h2 className="text-xl font-poppins font-semibold text-gray-900">
-              {currentMode === "view"
-                ? "Publication Details"
-                : "Edit Publication"}
-            </h2>
-            <p className="text-sm font-poppins text-gray-500 mt-1">
-              {currentMode === "view"
-                ? "View publication information"
-                : "Modify the details below"}
-            </p>
-          </div>
-
-          {currentMode === "view" ? (
-            <div className="space-y-6">
-              <div className="flex justify-between items-start">
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    status === "Published"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {status}
-                </span>
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-gray-50 px-10 py-6">
+              <div>
+                <h2 className="text-2xl font-black tracking-tight text-gray-900">
+                  Update Publication
+                </h2>
+                <p className="text-xs font-medium text-gray-400">
+                  Refine your content and media assets
+                </p>
               </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="rounded-full bg-gray-50 p-2 text-gray-400 transition-all hover:text-black"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <User className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Author</p>
-                    <p className="text-gray-900 font-medium">{author}</p>
+            <div className="flex-1 space-y-10 overflow-y-auto px-10 py-8">
+              {/* Media Section: Cover and PDF Side by Side */}
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                {/* Left: Cover Image Upload */}
+                <div className="space-y-3">
+                  <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                    Cover Preview
+                  </label>
+                  <div className="group relative h-48 w-full overflow-hidden rounded-3xl border border-gray-100 bg-gray-50 shadow-sm transition-all hover:shadow-md">
+                    <Image src={preview} alt="cover" fill className="object-cover" />
+                    <label className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center rounded-3xl bg-black/50 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
+                      <ImageIcon size={24} className="mb-2 text-white" />
+                      <span className="text-xs font-bold tracking-tighter text-white uppercase">
+                        Change Cover
+                      </span>
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setCoverImage(file);
+                            setPreview(URL.createObjectURL(file));
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
+                {/* Right: PDF Upload & Name Display */}
+                <div className="space-y-3">
+                  <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                    Attached Document
+                  </label>
+                  <div className="group flex h-48 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 transition-all hover:border-blue-300">
+                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded bg-blue-50 text-blue-600 shadow-sm transition-all group-hover:bg-blue-600 group-hover:text-white">
+                      <FileText size={28} />
+                    </div>
+                    <div className="mb-4 w-full px-4 text-center">
+                      <p className="truncate text-xs font-bold text-gray-800">
+                        {pubFile ? pubFile.name : getExistingFileName(publication.file)}
+                      </p>
+                      <p className="mt-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                        {pubFile ? 'Newly Selected' : 'Current Resource'}
+                      </p>
+                    </div>
+                    <label className="cursor-pointer rounded-xl border border-gray-100 bg-white px-6 py-2 text-[10px] font-black tracking-wider text-gray-900 uppercase shadow-sm transition-all hover:bg-gray-100">
+                      Upload New PDF
+                      <input
+                        type="file"
+                        hidden
+                        accept=".pdf"
+                        onChange={(e) => setPubFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <hr className="border-gray-50" />
+
+              {/* Form Section */}
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                      Title
+                    </label>
+                    <input
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full rounded bg-gray-50 px-5 py-4 text-sm font-bold transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                      Author
+                    </label>
+                    <input
+                      value={formData.author}
+                      onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                      className="w-full rounded bg-gray-50 px-5 py-4 text-sm font-bold transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                       Publication Date
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {new Date(publicationDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
+                    </label>
+                    <input
+                      disabled
+                      value={formData.publicationDate}
+                      onChange={(e) =>
+                        setFormData({ ...formData, publicationDate: e.target.value })
+                      }
+                      className="w-full rounded bg-gray-50 px-5 py-4 text-sm font-bold transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                      Status
+                    </label>
+                    <div className="relative">
+                      <button
+                        onClick={() => setStatusOpen(!statusOpen)}
+                        className="flex w-full items-center justify-between rounded bg-gray-50 px-5 py-4 text-sm font-bold"
+                      >
+                        <span className="flex items-center gap-2">
+                          {formData.status === 'Published' ? (
+                            <CheckCircle2 size={16} className="text-green-500" />
+                          ) : (
+                            <AlertCircle size={16} className="text-amber-500" />
+                          )}
+                          {formData.status}
+                        </span>
+                        <ChevronDown
+                          size={16}
+                          className={`${statusOpen ? 'rotate-180' : ''} transition-transform`}
+                        />
+                      </button>
+                      {statusOpen && (
+                        <div className="absolute z-30 mt-2 w-full overflow-hidden rounded bg-white shadow-2xl ring-1 ring-black/5">
+                          {['Published', 'Unpublished'].map((s) => (
+                            <button
+                              key={s}
+                              className="w-full px-5 py-4 text-left text-sm font-bold transition-all hover:bg-black hover:text-white"
+                              onClick={() => {
+                                setFormData({ ...formData, status: s as any });
+                                setStatusOpen(false);
+                              }}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Cover Image
+                <div className="space-y-2">
+                  <label className="ml-1 text-[11px] font-black tracking-widest text-gray-400 uppercase">
+                    Detailed Description
                   </label>
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    <div className="aspect-video bg-gray-100 relative group">
-                      <Image
-                        src={videoEdit}
-                        alt={publication.coverImage}
-                        width={800}
-                        height={600}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-3 bg-white">
-                      <p className="text-sm font-medium text-gray-900 text-center">
-                        {publication.coverImage}
-                      </p>
-                      <p className="text-xs text-gray-500 text-center mt-1">
-                        Cover Image
-                      </p>
-                    </div>
+                  <div className="overflow-hidden rounded bg-gray-50 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-black">
+                    <JoditEditor
+                      value={formData.description}
+                      onBlur={(val) => setFormData({ ...formData, description: val })}
+                    />
                   </div>
                 </div>
-
-                <div className="space-y-3">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Publication File
-                  </label>
-                  <div className="border border-gray-200 rounded-lg p-4 flex items-center space-x-3 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                    <File className="w-10 h-10 text-blue-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {publication.fileName}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        PDF Document • 2.4 MB
-                      </p>
-                      <p className="text-xs text-blue-600 font-medium mt-2">
-                        Click to download
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label className="text-sm font-poppins font-medium text-gray-700 block">
-                  Description
-                </label>
-                <div className="prose prose-sm max-w-none text-gray-700 bg-gray-50 rounded-lg p-6">
-                  <div dangerouslySetInnerHTML={{ __html: description }} />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleClose}
-                  className="px-5 py-2 font-poppins rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  Close
-                </button>
               </div>
             </div>
-          ) : (
-            <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter title"
-                    className="w-full h-10 px-3 text-neutral-800 placeholder:text-gray-400 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Author
-                  </label>
-                  <input
-                    type="text"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
-                    placeholder="Enter author"
-                    className="w-full h-10 px-3 text-neutral-800 placeholder:text-gray-400 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Publication Date
-                  </label>
-                  <input
-                    type="date"
-                    value={publicationDate}
-                    onChange={(e) => setPublicationDate(e.target.value)}
-                    className="w-full h-10 px-3 text-sm border border-gray-300 text-neutral-800 placeholder:text-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-poppins font-medium text-gray-700 block">
-                  Status
-                </label>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setStatusOpen(!statusOpen)}
-                    className="w-full h-10 px-3 font-poppins text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent flex items-center justify-between bg-white transition-shadow"
-                  >
-                    <span
-                      className={status ? "text-gray-900" : "text-gray-400"}
-                    >
-                      {status || "Select status"}
-                    </span>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
-                  </button>
-                  {statusOpen && (
-                    <div className="absolute z-10 w-full mt-1 font-poppins border border-gray-200 rounded-lg shadow-lg bg-white">
-                      {["Published", "Unpublished"].map((statusOption) => (
-                        <button
-                          key={statusOption}
-                          type="button"
-                          onClick={() => {
-                            setStatus(
-                              statusOption as "Published" | "Unpublished"
-                            );
-                            setStatusOpen(false);
-                          }}
-                          className="w-full px-3 font-poppins bg-white py-2 text-black hover:text-white text-sm text-left hover:bg-black first:rounded-t-lg last:rounded-b-lg transition-colors"
-                        >
-                          {statusOption}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Cover Image
-                  </label>
-                  <div className="border border-gray-300 rounded-lg overflow-hidden">
-                    <div className="aspect-video bg-gray-100">
-                      <Image
-                        src={videoEdit}
-                        alt={publication.coverImage}
-                        width={800}
-                        height={600}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-3 border-t border-gray-300 flex items-center space-x-3 bg-white">
-                      <File className="w-6 h-6 text-green-600" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {publication.coverImage}
-                        </p>
-                        <p className="text-xs text-gray-500">Cover Image</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Publication File
-                  </label>
-                  <div className="border border-gray-300 rounded-lg p-4 flex items-center space-x-3 bg-gray-50">
-                    <File className="w-8 h-8 text-blue-600" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {publication.fileName}
-                      </p>
-                      <p className="text-xs text-gray-500">Document</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-poppins font-medium text-gray-700 block">
-                  Description
-                </label>
-                <div className="border text-neutral-800 placeholder:text-gray-400  border-gray-300 rounded-lg overflow-hidden [&_.jodit-container]:border-0 [&_.jodit-workplace]:text-sm [&_.jodit-toolbar-button]:text-xs">
-                  <JoditEditor
-                    ref={editor}
-                    value={description}
-                    config={config}
-                    // onBlur={(newContent) => setDescription(newContent)}
-                    // onChange={(newContent) => {}}
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleClose}
-                  className="px-5 py-2 font-poppins rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="bg-black font-poppins text-white hover:bg-gray-800 px-6 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
-                >
-                  Save Changes
-                </button>
-              </div>
+            {/* Footer */}
+            <div className="flex justify-end gap-4 border-t border-gray-50 bg-gray-50/30 px-10 py-6">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="rounded px-8 py-3.5 text-sm font-bold text-gray-400 transition-all hover:text-black"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdate}
+                disabled={isLoading}
+                className="flex items-center gap-2 rounded bg-black px-12 py-3.5 text-sm font-bold text-white shadow-xl transition-all disabled:opacity-50"
+              >
+                {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Save Updates'}
+              </button>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

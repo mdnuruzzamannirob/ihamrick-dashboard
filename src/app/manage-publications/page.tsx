@@ -1,345 +1,251 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { UserProfile } from "@/components/user-profile";
-import { Trash2, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
-// import { DeleteConfirmationModal } from "@/components/modal/deleteModal";
-import QualityOfLifeModal from "@/components/modal/qualityModal";
-import { PublicationModal } from "@/components/modal/publication-modal";
-import { EditPublicationsModal } from "@/components/modal/edit-publications";
+import { useState } from 'react';
+import { Sidebar } from '@/components/sidebar';
+import { UserProfile } from '@/components/user-profile';
+import { Trash2, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
-interface BlogPost {
-  id: number;
-  title: string;
-  status: "Published" | "Unpublished";
-}
+import { PublicationModal } from '@/components/modal/publication-modal';
+import { useDeletePublicationMutation, useGetPublicationsQuery } from '../../../services/allApi';
+import { EditPublicationModal } from '@/components/modal/edit-publications';
+import { ViewPublicationModal } from '@/components/modal/ViewPublicationModal';
 
-interface Publication {
-  id: string;
-  title: string;
-  author: string;
-  publicationDate: string;
-  publicationType: string;
-  status: "Published" | "Unpublished";
-  description: string;
-  coverImage: string;
-  fileUrl: string;
-  fileName: string;
-}
-interface PublicationData {
-  title: string;
-  author: string;
-  publicationDate: string;
-  publicationType: string;
-  status: "Published" | "Unpublished";
-  description: string;
-}
 const ITEMS_PER_PAGE = 10;
 
-// Sample data - 50 blog posts for pagination demo
-const allBlogPosts: BlogPost[] = Array.from({ length: 150 }, (_, i) => ({
-  id: i + 1,
-  title:
-    i % 2 === 0 ? "Healthy Living Happier Life" : "Small Habits Big Health",
-  status: i % 3 === 0 ? "Unpublished" : "Published",
-}));
-
-// Sample publication data
-const samplePublication: Publication = {
-  id: "1",
-  title: "Healthy Living Happier Life",
-  author: "Harmick",
-  publicationDate: "2024-01-15",
-  publicationType: "Research Paper",
-  status: "Published",
-  description:
-    "A healthy life is a balanced lifestyle that promotes physical, mental, and emotional well-being. It includes nutritious eating, regular exercise, adequate sleep, stress management, and positive habits that support long-term vitality and disease prevention.",
-  coverImage: "healthy_living_cover.jpg",
-  fileUrl: "/publications/healthy_living.pdf",
-  fileName: "healthy_living.pdf",
-};
-
-export default function ManageBlogPage() {
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(allBlogPosts);
-  const [currentPage, setCurrentPage] = useState(1);
+export default function ManagePublications() {
+  const [page, setPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<number | null>(null);
+  const [selectedPublicationId, setSelectedPublicationId] = useState<string | null>(null);
 
-  // State to control modal visibility for each post
-  const [editModalVisible, setEditModalVisible] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const [viewModalVisible, setViewModalVisible] = useState<{
-    [key: number]: boolean;
-  }>({});
+  const router = useRouter();
 
-  // Create publication data for each blog post
-  const getPublicationForPost = (post: BlogPost): Publication => ({
-    ...samplePublication,
-    id: post.id.toString(),
-    title: post.title,
-    status: post.status,
+  /* -------------------- API -------------------- */
+  const { data, isLoading } = useGetPublicationsQuery({
+    page,
+    limit: ITEMS_PER_PAGE,
   });
 
-  //calculations
-  const totalPages = Math.ceil(blogPosts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentPosts = blogPosts.slice(startIndex, endIndex);
+  const [deletePublication, { isLoading: deleting }] = useDeletePublicationMutation();
 
-  const handleDeleteClick = (id: number) => {
-    setPostToDelete(id);
+  const publications = data?.data ?? [];
+  const totalPages = data?.meta?.totalPages ?? 1;
+
+  /* -------------------- Handlers -------------------- */
+  const openDeleteModal = (id: string) => {
+    setSelectedPublicationId(id);
     setDeleteModalOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (postToDelete !== null) {
-      setBlogPosts((prev) => {
-        const updatedPosts = prev.filter((post) => post.id !== postToDelete);
-
-        // Recalculate total pages based on updated posts
-        const newTotalPages = Math.ceil(updatedPosts.length / ITEMS_PER_PAGE);
-
-        // Adjust current page if needed after deletion
-        if (currentPage > newTotalPages && newTotalPages > 0) {
-          setCurrentPage(newTotalPages);
-        }
-
-        return updatedPosts;
-      });
-    }
+  const closeDeleteModal = () => {
+    setSelectedPublicationId(null);
     setDeleteModalOpen(false);
-    setPostToDelete(null);
   };
 
-  const cancelDelete = () => {
-    setDeleteModalOpen(false);
-    setPostToDelete(null);
-  };
-
-  const handleSavePublication = (publicationData: PublicationData) => {
-    console.log("Saving publication:", publicationData);
-  };
-
-  const handleCloseEditModal = (postId: number) => {
-    setEditModalVisible((prev) => ({ ...prev, [postId]: false }));
-  };
-
-  const handleCloseViewModal = (postId: number) => {
-    setViewModalVisible((prev) => ({ ...prev, [postId]: false }));
-  };
-
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+  const confirmDelete = async () => {
+    if (!selectedPublicationId) return;
+    try {
+      await deletePublication(selectedPublicationId).unwrap();
+      toast.success('Publication deleted successfully');
+      closeDeleteModal();
+      router.refresh();
+    } catch {
+      toast.error('Failed to delete publication');
     }
   };
 
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, "...", totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(
-          1,
-          "...",
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages
-        );
-      } else {
-        pages.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages
-        );
-      }
+  const renderPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setPage(i)}
+          className={`h-10 w-10 rounded-lg text-sm font-medium transition-colors ${
+            page === i ? 'bg-red-500 text-white' : 'text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {i}
+        </button>,
+      );
     }
-
     return pages;
   };
 
+  /* -------------------- UI -------------------- */
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex-1 lg:ml-64">
-        <div className="p-4 md:p-6 lg:p-8">
-          {/* Header */}
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h1 className="text-2xl font-poppins font-semibold text-black md:text-3xl">
-              Manage Publications
-            </h1>
+      <div className="flex-1 p-6 lg:ml-64">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-semibold text-gray-800">Manage Publications</h1>
+          <UserProfile />
+        </div>
 
-            <div className="flex items-center gap-3">
-              <UserProfile />
-            </div>
-          </div>
+        {/* Actions */}
+        <div className="mb-6 flex justify-end">
+          <PublicationModal />
+        </div>
 
-          {/* Action Buttons */}
-          <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
-  
-            <PublicationModal />
-          </div>
+        {/* Table */}
+        <div className="overflow-hidden rounded-xl border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="border-b border-gray-200 bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Title</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Author</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Date</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
+                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                    Action
+                  </th>
+                </tr>
+              </thead>
 
-          {/* Table */}
-          <div className="overflow-hidden rounded-lg border border-neutral-200">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-neutral-50">
+              <tbody className="divide-y bg-white">
+                {isLoading ? (
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Title
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Author
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Date
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Action
-                    </th>
+                    <td colSpan={5} className="py-10 text-center text-gray-500">
+                      Loading publications...
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-200">
-                  {currentPosts.map((post) => (
-                    <tr
-                      key={post.id}
-                      className="transition-colors hover:bg-neutral-50"
-                    >
-                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
-                        {post.title}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
-                        {getPublicationForPost(post).author}
-                      </td>
-                      <td className="px-4 py-4 md:px-6">
-                        <div className="flex items-center gap-2 text-sm text-neutral-700">
-                          <Calendar className="h-4 w-4 text-neutral-500" />
-                          <span>
-                            {new Date(
-                              getPublicationForPost(post).publicationDate
-                            ).toLocaleDateString()}
-                          </span>
+                ) : publications.length > 0 ? (
+                  publications.map((publication: any, index) => (
+                    <tr key={index + publication.id} className="transition-colors hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium text-gray-900">{publication.title}</td>
+
+                      <td className="px-6 py-4 text-gray-700">{publication.author}</td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          {new Date(publication.publicationDate).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-center md:px-6">
+
+                      <td className="px-6 py-4">
                         <span
-                          className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
-                            post.status === "Published"
-                              ? "bg-red-400"
-                              : "bg-neutral-800"
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                            publication.status
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-600'
                           }`}
                         >
-                          {post.status}
+                          {publication.status ? 'Published' : 'Unpublished'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 md:px-6">
-                        <div className="flex items-center justify-center gap-2">
-                          <EditPublicationsModal
-                            publication={getPublicationForPost(post)}
-                            mode="edit"
-                            onSave={handleSavePublication}
-                            onClose={() => handleCloseEditModal(post.id)}
-                            visible={editModalVisible[post.id] || false}
-                          />
+
+                      <td className="px-6 py-4">
+                        <div className="flex justify-center gap-3">
+                          <EditPublicationModal publication={publication} />
+                          <ViewPublicationModal publication={publication} />
 
                           <button
-                            onClick={() => handleDeleteClick(post.id)}
-                            className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
-                            aria-label="Delete"
+                            onClick={() => openDeleteModal(publication.id)}
+                            className="rounded-lg bg-red-50 p-2 text-red-600 hover:bg-red-100"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 size={18} />
                           </button>
-
-                          <EditPublicationsModal
-                            publication={getPublicationForPost(post)}
-                            mode="view"
-                            onSave={handleSavePublication}
-                            onClose={() => handleCloseViewModal(post.id)}
-                            visible={viewModalVisible[post.id] || false}
-                          />
                         </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-10 text-center text-gray-500">
+                      No publications found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="border-t border-gray-200 bg-white px-6 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="text-sm text-gray-600">
+                  Page <span className="font-semibold">{page}</span> of{' '}
+                  <span className="font-semibold">{totalPages}</span>
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                    disabled={page === 1}
+                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm disabled:opacity-50"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Prev
+                  </button>
+
+                  <div className="hidden gap-1 md:flex">{renderPageNumbers()}</div>
+
+                  <button
+                    onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                    disabled={page === totalPages}
+                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm disabled:opacity-50"
+                  >
+                    Next <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
             </div>
+          )}
+        </div>
+      </div>
 
-            {/* Pagination */}
-            <div className="border-t border-neutral-200 bg-white px-4 py-4 md:px-6">
-              <div className="flex items-center justify-center gap-1">
-                {/* Previous Button */}
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div
+          onClick={() => setDeleteModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <AlertTriangle size={30} />
+              </div>
+
+              <h3 className="mb-2 text-xl font-bold">Confirm Deletion</h3>
+              <p className="mb-6 text-sm text-gray-500">
+                This publication will be permanently deleted. This action cannot be undone.
+              </p>
+
+              <div className="flex w-full gap-3">
                 <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Previous page"
+                  onClick={closeDeleteModal}
+                  disabled={deleting}
+                  className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-semibold"
                 >
-                  <ChevronLeft className="h-5 w-5" />
+                  Cancel
                 </button>
-
-                {/* Page Numbers */}
-                {getPageNumbers().map((page, index) => (
-                  <div key={index}>
-                    {page === "..." ? (
-                      <span className="px-3 py-2 text-neutral-600">...</span>
-                    ) : (
-                      <button
-                        onClick={() => handlePageChange(page as number)}
-                        className={`min-w-[40px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                          currentPage === page
-                            ? "bg-red-500 text-white"
-                            : "text-neutral-600 hover:bg-neutral-100"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )}
-                  </div>
-                ))}
-
-                {/* Next Button */}
                 <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Next page"
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white"
                 >
-                  <ChevronRight className="h-5 w-5" />
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
                 </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Other Modals */}
-
-      {/* <DeleteConfirmationModal
-        isOpen={deleteModalOpen}
-        onClose={cancelDelete}
-        onConfirm={confirmDelete}
-      /> */}
+      )}
     </div>
   );
 }
