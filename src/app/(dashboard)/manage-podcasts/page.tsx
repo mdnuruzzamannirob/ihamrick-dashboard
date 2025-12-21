@@ -11,15 +11,22 @@ import {
   Clock,
   AlertTriangle,
   Loader2,
+  Cast,
+  StopCircle,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import PodcastsUploadModal from '@/components/modal/padcastsUpload';
+import PodcastsUploadModal from '@/components/modal/podcastUpload';
 import PodcastsEditModal from '@/components/modal/podcastsEdit';
 import { PodcastsViewModal } from '@/components/modal/podcastsViewModal';
-import { useGetPodcastsQuery, useDeletePodcastMutation } from '../../../../services/allApi';
+import {
+  useGetPodcastsQuery,
+  useDeletePodcastMutation,
+  useEndPodcastMutation,
+  useStartPodcastMutation,
+} from '../../../../services/allApi';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
 
 export default function ManagePodcasts() {
   const [page, setPage] = useState(1);
@@ -35,6 +42,8 @@ export default function ManagePodcasts() {
   });
 
   const [deletePodcast, { isLoading: deleting }] = useDeletePodcastMutation();
+  const [startPodcast, { isLoading: starting }] = useStartPodcastMutation();
+  const [endPodcast, { isLoading: ending }] = useEndPodcastMutation();
 
   const podcasts = data?.data?.podcasts ?? [];
   const totalPages = data?.data?.pagination?.totalPages ?? 1;
@@ -80,6 +89,28 @@ export default function ManagePodcasts() {
     return pages;
   };
 
+  const startPodcastLive = async (id: string) => {
+    try {
+      const res: any = await startPodcast(id).unwrap();
+
+      toast.success('Podcast is now live');
+      const liveSessionId = res?.data?.podcast?.liveSessionId;
+      router.push(`/broadcaster?podcastId=${id}&sessionId=${liveSessionId}`);
+    } catch {
+      toast.error('Failed to start live podcast');
+    }
+  };
+
+  const endPodcastLive = async (id: string) => {
+    try {
+      await endPodcast(id).unwrap();
+      toast.success('Podcast live ended');
+      router.refresh();
+    } catch {
+      toast.error('Failed to end live podcast');
+    }
+  };
+
   /* -------------------- UI -------------------- */
   return (
     <div className="flex min-h-screen bg-white">
@@ -107,6 +138,7 @@ export default function ManagePodcasts() {
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Date</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Duration</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
+                  <th className="px-6 py-4 text-sm font-semibold text-gray-700"> </th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
                     Action
                   </th>
@@ -152,6 +184,43 @@ export default function ManagePodcasts() {
                         >
                           {podcast.status}
                         </span>
+                      </td>
+
+                      <td>
+                        {' '}
+                        {podcast.status === 'scheduled' ? (
+                          <button
+                            onClick={() => startPodcastLive(podcast?._id)}
+                            className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm text-white"
+                          >
+                            {starting ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Starting...
+                              </>
+                            ) : (
+                              <>
+                                <Cast size={18} /> Go Live
+                              </>
+                            )}
+                          </button>
+                        ) : podcast.status === 'live' ? (
+                          <button
+                            onClick={() => endPodcastLive(podcast?._id)}
+                            className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm text-white"
+                          >
+                            {ending ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Stopping...
+                              </>
+                            ) : (
+                              <>
+                                <StopCircle size={18} /> Stop Live
+                              </>
+                            )}
+                          </button>
+                        ) : null}
                       </td>
 
                       <td className="px-6 py-4">

@@ -2,7 +2,7 @@
 
 import type React from 'react';
 import { useState, useRef } from 'react';
-import { Cast } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
@@ -109,8 +109,8 @@ const PodcastUploadModal = () => {
         onClick={() => setIsModalOpen(true)}
         className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm text-white"
       >
-        <Cast size={18} />
-        Go Live
+        <Plus size={18} />
+        Create Podcast
       </button>
 
       {isModalOpen && (

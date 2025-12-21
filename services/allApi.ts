@@ -548,6 +548,22 @@ const allApi = createApi({
       }),
     }),
 
+    // start Podcast live
+    startPodcast: builder.mutation<{ success: boolean; message: string; data: Podcast }, string>({
+      query: (podcastId) => ({
+        url: `/podcasts/start/${podcastId}`,
+        method: 'POST',
+      }),
+    }),
+
+    // end Podcast live
+    endPodcast: builder.mutation<{ success: boolean; message: string; data: Podcast }, string>({
+      query: (podcastId) => ({
+        url: `/podcasts/end/${podcastId}`,
+        method: 'POST',
+      }),
+    }),
+
     // delete Podcast
     deletePodcast: builder.mutation<{ success: boolean; message: string; data: Podcast }, string>({
       query: (podcastId) => ({
@@ -635,6 +651,8 @@ export const {
   useCreatePublicationMutation,
   useUpdatePublicationMutation,
   useDeletePublicationMutation,
+  useStartPodcastMutation,
+  useEndPodcastMutation,
 } = allApi;
 
 export default allApi;
