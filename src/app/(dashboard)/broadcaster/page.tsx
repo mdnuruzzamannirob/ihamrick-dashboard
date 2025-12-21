@@ -20,7 +20,7 @@ import {
 import { toast } from 'react-toastify';
 import { useEndPodcastMutation } from '../../../../services/allApi';
 
-const defaultServer = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://10.10.20.73:5005';
+const defaultServer = 'https://api.pg-65.com/';
 
 export default function BroadcasterPage() {
   const searchParams = useSearchParams();
