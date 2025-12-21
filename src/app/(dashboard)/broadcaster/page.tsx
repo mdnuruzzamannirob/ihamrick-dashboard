@@ -50,30 +50,54 @@ export default function BroadcasterPage() {
 
   const startBroadcast = async () => {
     try {
-      const socket = io(`${serverUrl}/podcast`, { transports: ['websocket'] });
+      const socket = io(`${serverUrl}/podcast`, {
+        transports: ['websocket'],
+        reconnection: true,
+      });
       socketRef.current = socket;
 
-      socket.on('connect', () => setIsConnected(true));
+      socket.on('connect', () => {
+        setIsConnected(true);
+        socket.emit('join-podcast', { podcastId, role: 'broadcaster' });
+      });
+
       socket.on('disconnect', () => setIsConnected(false));
       socket.on('listener-update', (data: { count: number }) => setListenerCount(data.count || 0));
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
       audioStreamRef.current = stream;
 
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+
+      const recorder = new MediaRecorder(stream, {
+        mimeType,
+        audioBitsPerSecond: 128000,
+      });
       mediaRecorderRef.current = recorder;
 
       let isFirstChunk = true;
+
       recorder.ondataavailable = async (event) => {
         if (event.data.size > 0 && socket.connected) {
           const buffer = await event.data.arrayBuffer();
           const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+
           socket.emit('broadcast-audio', {
             podcastId,
             sessionId,
             audioChunk: base64,
+            mimeType: mimeType,
             isHeader: isFirstChunk,
           });
+
           isFirstChunk = false;
           setChunkCount((c) => c + 1);
         }
@@ -82,8 +106,9 @@ export default function BroadcasterPage() {
       recorder.start(1000);
       setIsBroadcasting(true);
       toast.success('Broadcast is Live!');
-    } catch {
-      toast.error('Could not start broadcast. Check mic permissions.');
+    } catch (err: any) {
+      toast.error(err.message || 'Could not start broadcast. Check mic permissions.');
+      stopBroadcast();
     }
   };
 
@@ -92,7 +117,15 @@ export default function BroadcasterPage() {
       mediaRecorderRef.current?.stop();
       audioStreamRef.current?.getTracks().forEach((t) => t.stop());
       socketRef.current?.disconnect();
-      if (podcastId) {
+
+      mediaRecorderRef.current = null;
+      audioStreamRef.current = null;
+      socketRef.current = null;
+
+      setIsBroadcasting(false);
+      setChunkCount(0);
+
+      if (podcastId && isBroadcasting) {
         await endPodcast(podcastId).unwrap();
         toast.success('Session Ended');
         router.push('/manage-podcasts');
@@ -102,10 +135,15 @@ export default function BroadcasterPage() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (isBroadcasting) stopBroadcast();
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#F9FAFB] p-4 font-sans lg:p-10">
       <div className="mx-auto max-w-7xl">
-        {/* Header Section */}
         <header className="mb-10 flex flex-wrap items-center justify-between gap-6">
           <button
             onClick={() => router.back()}
@@ -115,7 +153,6 @@ export default function BroadcasterPage() {
           </button>
 
           <div className="flex items-center gap-4">
-            {/* Dynamic Status Pill */}
             <div
               className={`flex items-center gap-3 rounded-2xl border px-5 py-2.5 text-sm font-black tracking-widest uppercase shadow-sm transition-all ${
                 isBroadcasting
@@ -134,7 +171,6 @@ export default function BroadcasterPage() {
         </header>
 
         <div className="grid gap-10 lg:grid-cols-12">
-          {/* Main Production Hub (Left) */}
           <div className="lg:col-span-8">
             <div className="overflow-hidden rounded-[3rem] border border-slate-100 bg-white shadow-2xl shadow-slate-200">
               <div className="p-8 md:p-12">
@@ -147,12 +183,10 @@ export default function BroadcasterPage() {
                       Professional Audio Broadcasting Environment
                     </p>
                   </div>
-                  <div className="hidden md:block">
-                    <ShieldCheck className="text-indigo-500" size={40} />
-                  </div>
+                  <ShieldCheck className="hidden text-indigo-500 md:block" size={40} />
                 </div>
 
-                {/* Waveform / Visualizer */}
+                {/* Visualizer */}
                 <div className="relative mb-12 flex h-72 items-center justify-center rounded-[2.5rem] bg-slate-950 shadow-inner">
                   {isBroadcasting && !isMuted ? (
                     <div className="flex h-32 items-end gap-1.5">
@@ -179,7 +213,6 @@ export default function BroadcasterPage() {
                   )}
                 </div>
 
-                {/* Primary Controls */}
                 <div className="flex flex-wrap gap-5">
                   {!isBroadcasting ? (
                     <button
@@ -221,7 +254,7 @@ export default function BroadcasterPage() {
             </div>
           </div>
 
-          {/* Right Sidebar - Data & Analytics */}
+          {/* Sidebar */}
           <div className="space-y-8 lg:col-span-4">
             {/* Listener Analytics */}
             <div className="relative overflow-hidden rounded-[2.5rem] bg-indigo-600 p-10 text-white shadow-2xl shadow-indigo-100">
@@ -234,15 +267,13 @@ export default function BroadcasterPage() {
                 </div>
                 <h2 className="text-7xl font-black tabular-nums">{listenerCount}</h2>
                 <div className="mt-6 flex w-fit items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/30 px-3 py-1 text-xs font-bold">
-                  <Activity size={14} className="animate-pulse" /> Trending Up
+                  <Activity size={14} className="animate-pulse" /> Audio Streaming
                 </div>
               </div>
-              <div className="absolute -right-6 -bottom-6 opacity-10">
-                <Users size={180} />
-              </div>
+              <Users size={180} className="absolute -right-6 -bottom-6 opacity-10" />
             </div>
-
             {/* Technical Metadata Card */}
+
             <div className="rounded-[2.5rem] border border-slate-50 bg-white p-8 shadow-xl shadow-slate-200">
               <h3 className="mb-8 flex items-center gap-2 text-xs font-black tracking-widest text-slate-400 uppercase">
                 <Database size={16} /> Broadcast Metadata
