@@ -26,7 +26,7 @@ import {
   useStartPodcastMutation,
 } from '../../../../services/allApi';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
 export default function ManagePodcasts() {
   const [page, setPage] = useState(1);
