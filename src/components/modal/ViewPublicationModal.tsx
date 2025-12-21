@@ -154,13 +154,18 @@ export function ViewPublicationModal({ publication }: { publication: Publication
                       </div>
                       <div className="flex-1 overflow-hidden">
                         <p className="truncate text-sm font-bold text-gray-900">
-                          Publication Document
+                          {publication.file
+                            ? publication.file.split('/').pop()?.split('_').pop()
+                            : 'No file attached'}
                         </p>
-                        <p className="text-xs text-gray-500 uppercase">PDF Resource</p>
+                        <p className="text-xs font-medium tracking-wider text-gray-500 uppercase">
+                          PDF Resource
+                        </p>
                       </div>
                       <button
                         onClick={() => handleDownload(publication.file, 'publication-file')}
                         className="rounded-full border border-gray-200 bg-white p-2 text-gray-600 shadow-sm transition hover:border-blue-600 hover:bg-blue-600 hover:text-white"
+                        title="Download File"
                       >
                         <Download size={18} />
                       </button>
