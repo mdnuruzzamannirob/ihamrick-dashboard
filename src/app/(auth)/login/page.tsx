@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Lock, Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
-import BrandSection from "@/components/auth/Brand-section";
-import Header from "@/components/auth/Header";
-import EmailField from "@/components/auth/EmailField";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useLoginMutation } from "../../../../services/allApi";
+import { useState } from 'react';
+import { Lock, Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import BrandSection from '@/components/auth/Brand-section';
+import Header from '@/components/auth/Header';
+import EmailField from '@/components/auth/EmailField';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useLoginMutation } from '../../../../services/allApi';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState("");
+  const [emailError, setEmailError] = useState('');
 
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation(); // Extract isLoading here
@@ -23,12 +23,12 @@ export default function LoginPage() {
     e.preventDefault();
 
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      setEmailError("Please enter a valid email address.");
+      setEmailError('Please enter a valid email address.');
       return;
     }
 
     if (!password) {
-      toast.error("Password is required.");
+      toast.error('Password is required.');
       return;
     }
 
@@ -36,19 +36,19 @@ export default function LoginPage() {
       const res = await login({ email, password }).unwrap();
       console.log(res);
       if (res.success) {
-        toast.success("Login successful!");
+        toast.success('Login successful!');
 
         // Store token in cookie so middleware can check it
         document.cookie = `Ihamrickadmindashboardtoken=${res.data.token}; path=/;`;
 
         setTimeout(() => {
-          router.replace("/dashboard");
+          router.replace('/dashboard');
         }, 800);
       } else {
         toast.error(res.message);
       }
-    } catch (err: any) {
-      toast.error("Invalid credentials.");
+    } catch {
+      toast.error('Invalid credentials.');
     }
   };
 
@@ -64,25 +64,25 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                setEmailError("");
+                setEmailError('');
               }}
               error={emailError}
             />
 
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <input
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-12 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-12"
+                className="h-12 w-full rounded-lg border border-gray-300 bg-white pr-12 pl-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400"
               >
                 {showPassword ? <EyeOff /> : <Eye />}
               </button>
@@ -90,18 +90,18 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              className={`h-12 w-full rounded-lg text-white ${isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-black hover:bg-gray-800"}`}
+              className={`h-12 w-full rounded-lg text-white ${isLoading ? 'cursor-not-allowed bg-gray-400' : 'bg-black hover:bg-gray-800'}`}
               disabled={isLoading} // Disable the button when loading
             >
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
 
-          <div className="text-end mt-3">
+          <div className="mt-3 text-end">
             <button
               type="button"
               className="text-sm text-red-500 hover:underline"
-              onClick={() => router.push("/forget-password")}
+              onClick={() => router.push('/forget-password')}
             >
               Forgot Password?
             </button>

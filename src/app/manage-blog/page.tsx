@@ -1,25 +1,18 @@
-"use client";
-import { useState, useEffect } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { UserProfile } from "@/components/user-profile";
-import {
-  Pencil,
-  Trash2,
-  Eye,
-  ChevronLeft,
-  ChevronRight,
-  Loader,
-} from "lucide-react";
-import UploadModal from "@/components/modal/uploadModal";
-import DeleteConfirmationModal from "../../components/modal/deleteModal";
-import { ViewBlogModal } from "@/components/modal/viewModal";
+'use client';
+import { useState, useEffect } from 'react';
+import { Sidebar } from '@/components/sidebar';
+import { UserProfile } from '@/components/user-profile';
+import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import UploadModal from '@/components/modal/uploadModal';
+import DeleteConfirmationModal from '../../components/modal/deleteModal';
+import { ViewBlogModal } from '@/components/modal/viewModal';
 import {
   useGetBlogsQuery,
   useDeleteBlogMutation,
   useUpdateBlogMutation,
   useCreateBlogMutation, // Import the createBlog mutation
-} from "../../../services/allApi";
-import { json } from "stream/consumers";
+} from '../../../services/allApi';
+import Image from 'next/image';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -34,10 +27,10 @@ export default function ManageBlogPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
   const [blogToView, setBlogToView] = useState<any | null>(null);
-  const { data, isLoading, error, refetch } = useGetBlogsQuery();
+  const { data, isLoading, refetch } = useGetBlogsQuery();
   const [deleteBlog, { isLoading: deleteLoading }] = useDeleteBlogMutation();
-  const [updateBlog, { isLoading: updateLoading }] = useUpdateBlogMutation();
-  const [createBlog, { isLoading: createLoading }] = useCreateBlogMutation(); // Add createBlog hook
+  const [updateBlog] = useUpdateBlogMutation();
+  const [createBlog] = useCreateBlogMutation(); // Add createBlog hook
 
   useEffect(() => {
     if (data?.data) {
@@ -74,7 +67,7 @@ export default function ManageBlogPage() {
         setBlogToDelete(null);
         setDeleteModalOpen(false);
       } catch (err) {
-        console.error("Failed to delete the blog:", err);
+        console.error('Failed to delete the blog:', err);
       }
     }
   };
@@ -90,48 +83,47 @@ export default function ManageBlogPage() {
     setIsModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedBlog(null);
-  };
+  // const handleCloseModal = () => {
+  //   setIsModalOpen(false);
+  //   setSelectedBlog(null);
+  // };
 
   const handleSaveChanges = async (updatedBlog: any) => {
     setIsModalOpen(false);
     const formData = new FormData();
-    formData.append("title", updatedBlog.title);
-    formData.append("description", updatedBlog.description);
-    formData.append("status", updatedBlog.status);
+    formData.append('title', updatedBlog.title);
+    formData.append('description', updatedBlog.description);
+    formData.append('status', updatedBlog.status);
     if (updatedBlog.coverImage) {
-      formData.append("coverImage", updatedBlog.coverImage);
+      formData.append('coverImage', updatedBlog.coverImage);
     }
 
     try {
-      const response = await updateBlog({
+      await updateBlog({
         id: updatedBlog.id,
         data: formData,
       }).unwrap();
       refetch();
     } catch (error) {
-      console.error("Failed to update the blog:", error);
+      console.error('Failed to update the blog:', error);
     }
   };
 
   // New logic for creating a blog
   const handleCreateBlog = async (newBlog: any) => {
     const formData = new FormData();
-    formData.append("title", newBlog.title);
-    formData.append("description", newBlog.description);
-    formData.append("status", newBlog.status);
+    formData.append('title', newBlog.title);
+    formData.append('description', newBlog.description);
+    formData.append('status', newBlog.status);
     if (newBlog.coverImage) {
-      formData.append("coverImage", newBlog.coverImage);
+      formData.append('coverImage', newBlog.coverImage);
     }
 
     try {
-      const response = await createBlog({ data: formData }).unwrap();
+      await createBlog({ data: formData }).unwrap();
       refetch();
       setIsModalOpen(false); // Close modal after successful creation
-    } catch (error) {
-    }
+    } catch {}
   };
 
   const handlePageChange = (page: any) => {
@@ -148,26 +140,11 @@ export default function ManageBlogPage() {
       }
     } else {
       if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, "...", totalPages);
+        pages.push(1, 2, 3, 4, '...', totalPages);
       } else if (currentPage >= totalPages - 2) {
-        pages.push(
-          1,
-          "...",
-          totalPages - 3,
-          totalPages - 2,
-          totalPages - 1,
-          totalPages
-        );
+        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
       } else {
-        pages.push(
-          1,
-          "...",
-          currentPage - 1,
-          currentPage,
-          currentPage + 1,
-          "...",
-          totalPages
-        );
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
       }
     }
     return pages;
@@ -176,29 +153,29 @@ export default function ManageBlogPage() {
   return (
     <div className="flex min-h-screen bg-white">
       {isLoading && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-          <Loader className="text-white w-16 h-16 animate-spin" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <Loader className="h-16 w-16 animate-spin text-white" />
         </div>
       )}
       <Sidebar />
       <div className="flex-1 lg:ml-64">
         <div className="p-4 md:p-6 lg:p-8">
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h1 className="text-2xl font-poppins font-semibold text-black md:text-3xl">
+            <h1 className="font-poppins text-2xl font-semibold text-black md:text-3xl">
               Manage Blog
             </h1>
             <div className="flex items-center gap-3">
               <UserProfile />
             </div>
           </div>
-          <div className="mb-6 justify-end flex flex-wrap items-center gap-3">
+          <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
             <button
               onClick={() => {
                 setSelectedBlog(null);
                 setIsNewBlog(true);
                 setIsModalOpen(true);
               }}
-              className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"
+              className="font-poppins flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"
             >
               <span className="text-base">+</span>
               Add
@@ -225,30 +202,27 @@ export default function ManageBlogPage() {
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
                   {currentBlogs.map((blog) => (
-                    <tr
-                      key={blog._id}
-                      className="transition-colors hover:bg-neutral-50"
-                    >
-                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">
-                        {blog.title}
-                      </td>
+                    <tr key={blog._id} className="transition-colors hover:bg-neutral-50">
+                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">{blog.title}</td>
                       <td className="px-4 py-4 text-center md:px-6">
-                        <img
+                        <Image
                           src={blog.coverImage}
                           alt={blog.title}
-                          className="w-16 h-16 object-cover rounded mx-auto"
+                          width={80}
+                          height={80}
+                          className="mx-auto h-16 w-16 rounded object-cover"
                         />
                       </td>
-                      <td className="px-4 py-4 md:px-6 text-center">
+                      <td className="px-4 py-4 text-center md:px-6">
                         <span
                           className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
-                            blog.status ? "bg-red-400" : "bg-black"
+                            blog.status ? 'bg-red-400' : 'bg-black'
                           }`}
                         >
-                          {blog.status ? "Published" : "Unpublished"}
+                          {blog.status ? 'Published' : 'Unpublished'}
                         </span>
                       </td>
-                      <td className="px-4 py-4 md:px-6 text-center">
+                      <td className="px-4 py-4 text-center md:px-6">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleEdit(blog)}
@@ -290,15 +264,15 @@ export default function ManageBlogPage() {
                 </button>
                 {getPageNumbers().map((page, index) => (
                   <div key={index}>
-                    {page === "..." ? (
+                    {page === '...' ? (
                       <span className="px-3 py-2 text-neutral-600">...</span>
                     ) : (
                       <button
                         onClick={() => handlePageChange(page as number)}
-                        className={`min-w-[40px] rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        className={`min-w-10 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                           currentPage === page
-                            ? "bg-red-500 text-white"
-                            : "text-neutral-600 hover:bg-neutral-100"
+                            ? 'bg-red-500 text-white'
+                            : 'text-neutral-600 hover:bg-neutral-100'
                         }`}
                       >
                         {page}
@@ -333,11 +307,7 @@ export default function ManageBlogPage() {
         onConfirm={confirmDelete}
         isLoading={deleteLoading}
       />
-      <ViewBlogModal
-        isOpen={isViewModalOpen}
-        onClose={closeViewModal}
-        blog={blogToView}
-      />
+      <ViewBlogModal isOpen={isViewModalOpen} onClose={closeViewModal} blog={blogToView} />
     </div>
   );
 }

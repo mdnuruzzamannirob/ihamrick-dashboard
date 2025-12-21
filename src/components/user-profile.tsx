@@ -1,17 +1,11 @@
-import Image from "next/image";
-import Avatar from "@/assets/svg/Avatar.svg";
-import { useGetCurrentUserQuery } from "../../services/allApi";
-import { useEffect } from "react";
+import Image from 'next/image';
+import Avatar from '@/assets/svg/Avatar.svg';
+import { useGetCurrentUserQuery } from '../../services/allApi';
+import { useEffect } from 'react';
 
 export function UserProfile() {
   // Fetch current user data
-  const {
-    data: userData,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useGetCurrentUserQuery();
+  const { data: userData, isLoading, refetch } = useGetCurrentUserQuery();
 
   useEffect(() => {
     refetch();
@@ -25,18 +19,16 @@ export function UserProfile() {
   }
 
   return (
-    <div className="flex w-[163px] `h-[48px]` items-center gap-2 rounded-lg border border-black bg-white px-3 py-2">
+    <div className="`h-[48px]` flex w-[163px] items-center gap-2 rounded-lg border border-black bg-white px-3 py-2">
       <div className="flex h-7 w-7 items-center justify-center rounded-full">
         <Image src={Avatar} width={28} height={28} alt="Avatar" />
       </div>
       <div className="flex flex-col">
-        <span className="font-poppins font-medium text-[10px] text-black">
-          {userData?.data?.role || "Admin"}{" "}
-          {/* You can adjust this based on your role */}
+        <span className="font-poppins text-[10px] font-medium text-black">
+          {userData?.data?.role || 'Admin'} {/* You can adjust this based on your role */}
         </span>
-        <span className="text-base font-poppins font-medium text-black">
-          {userData?.data?.userName || "Hormick"}{" "}
-          {/* Default to "Hormick" if no userName */}
+        <span className="font-poppins text-base font-medium text-black">
+          {userData?.data?.userName || 'Hormick'} {/* Default to "Hormick" if no userName */}
         </span>
       </div>
     </div>

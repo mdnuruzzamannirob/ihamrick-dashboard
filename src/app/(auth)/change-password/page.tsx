@@ -1,52 +1,51 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Sidebar } from "@/components/sidebar";
-import { UserProfile } from "@/components/user-profile";
-import PasswordField from "@/components/auth/PasswordField";
-import { useChangePasswordMutation } from "../../../../services/allApi"; // Import your mutation hook
-import "react-toastify/dist/ReactToastify.css";
-import { ToastContainer, toast } from "react-toastify"; // For notifications
+import { useState } from 'react';
+import { Sidebar } from '@/components/sidebar';
+import { UserProfile } from '@/components/user-profile';
+import PasswordField from '@/components/auth/PasswordField';
+import { useChangePasswordMutation } from '../../../../services/allApi'; // Import your mutation hook
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify'; // For notifications
 
 export default function ChangePasswordPage() {
   // State to manage form values
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false); // Track the loading state
 
   // Mutation hook for change password
-  const [changePassword, { isLoading, isError, error, isSuccess }] = useChangePasswordMutation();
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
 
   // Handle form submission
   const handleChangePassword = async () => {
     // Check if new password and confirm password match
     if (newPassword !== confirmPassword) {
-      toast.error("New password and confirm password do not match.");
+      toast.error('New password and confirm password do not match.');
       return;
     }
 
     setIsSaving(true); // Start loading
 
     try {
-      const response = await changePassword({
+      await changePassword({
         oldPassword: currentPassword,
         newPassword,
       }).unwrap();
 
-
       // Show success notification
-      toast.success("Password changed successfully!", {
-        position: "top-right",
+      toast.success('Password changed successfully!', {
+        position: 'top-right',
         autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
       });
-    } catch (err) {
-      toast.error("Failed to change password. Please try again.", {
-        position: "top-right",
+    } catch {
+      toast.error('Failed to change password. Please try again.', {
+        position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -62,7 +61,7 @@ export default function ChangePasswordPage() {
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
       <Sidebar />
-      <div className="min-h-screen justify-center items-center flex-1 lg:ml-64 bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex-1 items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:ml-64 lg:px-8">
         <div className="mx-auto max-w-4xl">
           {/* Header with User Badge */}
           <div className="mb-8 flex items-center justify-end">
@@ -70,12 +69,12 @@ export default function ChangePasswordPage() {
           </div>
 
           {/* Profile Card */}
-          <div className="rounded-xl justify-center items-center bg-white p-6 shadow-sm sm:p-8">
+          <div className="items-center justify-center rounded-xl bg-white p-6 shadow-sm sm:p-8">
             {/* Profile Header */}
 
             {/* Personal Information Form */}
             <div>
-              <h3 className="mb-6 font-poppins text-lg font-semibold text-gray-900">
+              <h3 className="font-poppins mb-6 text-lg font-semibold text-gray-900">
                 Change Password
               </h3>
 
@@ -85,7 +84,7 @@ export default function ChangePasswordPage() {
                   <div>
                     <label
                       htmlFor="currentPassword"
-                      className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                      className="font-poppins mb-2 block text-sm font-medium text-gray-700"
                     >
                       Current Password
                     </label>
@@ -99,7 +98,7 @@ export default function ChangePasswordPage() {
                   <div>
                     <label
                       htmlFor="newPassword"
-                      className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                      className="font-poppins mb-2 block text-sm font-medium text-gray-700"
                     >
                       New Password
                     </label>
@@ -113,7 +112,7 @@ export default function ChangePasswordPage() {
                   <div>
                     <label
                       htmlFor="confirmPassword"
-                      className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                      className="font-poppins mb-2 block text-sm font-medium text-gray-700"
                     >
                       Confirm Password
                     </label>
@@ -132,12 +131,12 @@ export default function ChangePasswordPage() {
                   type="button"
                   onClick={handleChangePassword}
                   disabled={isSaving || isLoading}
-                  className="rounded-md bg-black px-6 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="font-poppins flex items-center gap-2 rounded-md bg-black px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
                 >
                   {isSaving || isLoading ? (
                     <>
                       <svg
-                        className="animate-spin h-4 w-4 text-white"
+                        className="h-4 w-4 animate-spin text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -159,7 +158,7 @@ export default function ChangePasswordPage() {
                       Changing...
                     </>
                   ) : (
-                    "Change Password"
+                    'Change Password'
                   )}
                 </button>
               </div>

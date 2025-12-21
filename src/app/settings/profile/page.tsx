@@ -1,39 +1,30 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { ArrowLeft, Camera, ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { Sidebar } from "@/components/sidebar";
-import { UserProfile } from "@/components/user-profile";
-import Avatar from "@/assets/svg/Avatar.svg";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
-import {
-  useGetCurrentUserQuery,
-  useUpdateProfileMutation,
-} from "../../../../services/allApi";
-import "react-toastify/dist/ReactToastify.css";
+import { useState, useRef, useEffect } from 'react';
+import { ArrowLeft, Camera, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+import { Sidebar } from '@/components/sidebar';
+import { UserProfile } from '@/components/user-profile';
+import Avatar from '@/assets/svg/Avatar.svg';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { ToastContainer, toast } from 'react-toastify';
+import { useGetCurrentUserQuery, useUpdateProfileMutation } from '../../../../services/allApi';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function ProfilePage() {
   const router = useRouter();
 
   // Initialize formData state with default values
   const [formData, setFormData] = useState({
-    firstName: "Hamrick",
-    location: "New York",
-    email: "hamrick@gmail.com",
-    phoneNumber: "866 12 346 0780",
+    firstName: 'Hamrick',
+    location: 'New York',
+    email: 'hamrick@gmail.com',
+    phoneNumber: '866 12 346 0780',
   });
 
   // Fetch current user data
-  const {
-    data: userData,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useGetCurrentUserQuery();
+  const { data: userData, isLoading, refetch } = useGetCurrentUserQuery();
 
   // Mutation hook to update profile
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
@@ -42,12 +33,12 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (userData) {
-      console.log("Current User Data: ", userData);
+      console.log('Current User Data: ', userData);
       setFormData({
         firstName: userData?.data?.userName,
-        location: userData.data.location || "New York", // Provide default if not available
+        location: userData.data.location || 'New York', // Provide default if not available
         email: userData.data.email,
-        phoneNumber: userData.data.phoneNumber || "866 12 346 0780", // Provide default if not available
+        phoneNumber: userData.data.phoneNumber || '866 12 346 0780', // Provide default if not available
       });
       setProfileImage(userData.data.profilePicture);
     }
@@ -77,25 +68,25 @@ export default function ProfilePage() {
   };
 
   const handleChangePassword = () => {
-    router.push("/change-password");
+    router.push('/change-password');
   };
   const handleSaveChanges = async () => {
     const formDataToUpdate = new FormData();
-    formDataToUpdate.append("userName", formData.firstName);
-    formDataToUpdate.append("email", formData.email);
-    formDataToUpdate.append("phoneNumber", formData.phoneNumber);
-    formDataToUpdate.append("location", formData.location);
+    formDataToUpdate.append('userName', formData.firstName);
+    formDataToUpdate.append('email', formData.email);
+    formDataToUpdate.append('phoneNumber', formData.phoneNumber);
+    formDataToUpdate.append('location', formData.location);
 
     if (profileImage) {
-      formDataToUpdate.append("profilePicture", profileImage);
+      formDataToUpdate.append('profilePicture', profileImage);
     }
 
     try {
       const response = await updateProfile(formDataToUpdate).unwrap();
       console.log(response);
       refetch();
-      toast.success("Changes saved successfully!", {
-        position: "top-right",
+      toast.success('Changes saved successfully!', {
+        position: 'top-right',
         autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -105,11 +96,11 @@ export default function ProfilePage() {
 
       // Redirect to dashboard after success
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push('/dashboard');
       }, 2000);
-    } catch (error) {
-      toast.error("Failed to save changes. Please try again.", {
-        position: "top-right",
+    } catch {
+      toast.error('Failed to save changes. Please try again.', {
+        position: 'top-right',
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -127,13 +118,13 @@ export default function ProfilePage() {
     <div className="flex min-h-screen bg-white">
       {/* Sidebar */}
       <Sidebar />
-      <div className="min-h-screen flex-1 lg:ml-64 bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex-1 bg-gray-50 px-4 py-8 sm:px-6 lg:ml-64 lg:px-8">
         <div className="mx-auto max-w-4xl">
           {/* Header with User Badge */}
           <div className="mb-8 flex items-center justify-between">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 font-poppins text-sm font-medium text-gray-700 transition-colors hover:text-gray-900"
+              className="font-poppins flex items-center gap-2 text-sm font-medium text-gray-700 transition-colors hover:text-gray-900"
             >
               <ArrowLeft className="h-4 w-4" />
               Profile
@@ -148,30 +139,25 @@ export default function ProfilePage() {
             <div className="mb-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-4">
                 <div
-                  className="relative cursor-pointer group"
+                  className="group relative cursor-pointer"
                   onClick={handleImageClick}
                   title="Click to upload profile image"
                 >
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100 sm:h-20 sm:w-20 relative overflow-hidden group-hover:opacity-80 transition-opacity">
+                  <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-orange-100 transition-opacity group-hover:opacity-80 sm:h-20 sm:w-20">
                     {profileImage ? (
                       <Image
                         src={profileImage}
                         width={100}
                         height={100}
                         alt="Profile"
-                        className="object-cover w-full h-full"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <Image
-                        src={Avatar}
-                        width={100}
-                        height={100}
-                        alt="Avatar"
-                      />
+                      <Image src={Avatar} width={100} height={100} alt="Avatar" />
                     )}
                   </div>
-                  <div className="absolute bottom-0 right-0 flex h-5 w-5 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-[#DD7372] border-2 border-[#DD7372]">
-                    <Camera className="h-5 w-5 sm:h-4 sm:w-4 text-white" />
+                  <div className="absolute right-0 bottom-0 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#DD7372] bg-[#DD7372] sm:h-8 sm:w-8">
+                    <Camera className="h-5 w-5 text-white sm:h-4 sm:w-4" />
                   </div>
                 </div>
                 <input
@@ -183,26 +169,26 @@ export default function ProfilePage() {
                 />
                 <div>
                   <h2 className="font-poppins text-xl font-semibold text-gray-900 sm:text-2xl">
-                    {userData?.data?.userName || "User Name"}
+                    {userData?.data?.userName || 'User Name'}
                   </h2>
                   <p className="font-poppins text-sm text-gray-500 sm:text-base">
-                    {userData?.data?.email || "Email not available"}
+                    {userData?.data?.email || 'Email not available'}
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={handleChangePassword}
-                className="rounded-lg gap-x-1 flex flex-row items-center bg-black px-4 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-6 sm:py-2.5"
+                className="font-poppins flex flex-row items-center gap-x-1 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 sm:px-6 sm:py-2.5"
               >
                 Change Password
-                <ArrowRight className="h-4 text-white w-4" />
+                <ArrowRight className="h-4 w-4 text-white" />
               </button>
             </div>
 
             {/* Personal Information Form */}
             <div>
-              <h3 className="mb-6 font-poppins text-lg font-semibold text-gray-900">
+              <h3 className="font-poppins mb-6 text-lg font-semibold text-gray-900">
                 Personal Information
               </h3>
 
@@ -212,7 +198,7 @@ export default function ProfilePage() {
                   <div>
                     <label
                       htmlFor="firstName"
-                      className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                      className="font-poppins mb-2 block text-sm font-medium text-gray-700"
                     >
                       First Name
                     </label>
@@ -223,7 +209,7 @@ export default function ProfilePage() {
                       value={formData.firstName} // Use formData for input
                       onChange={handleChange}
                       placeholder="Write your full name"
-                      className="w-full placeholder:text-gray-400 text-xs rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                      className="font-poppins w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs text-gray-900 transition-colors placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -231,7 +217,7 @@ export default function ProfilePage() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                    className="font-poppins mb-2 block text-sm font-medium text-gray-700"
                   >
                     Email
                   </label>
@@ -242,14 +228,14 @@ export default function ProfilePage() {
                     value={formData.email} // Use formData for input
                     onChange={handleChange}
                     placeholder="hamrick@gmail.com"
-                    className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                    className="font-poppins w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs text-gray-900 transition-colors placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="phoneNumber"
-                    className="mb-2 block font-poppins text-sm font-medium text-gray-700"
+                    className="font-poppins mb-2 block text-sm font-medium text-gray-700"
                   >
                     Phone Number
                   </label>
@@ -260,7 +246,7 @@ export default function ProfilePage() {
                     value={formData.phoneNumber} // Use formData for input
                     placeholder="+42"
                     onChange={handleChange}
-                    className="w-full placeholder:text-gray-400 rounded-lg border border-gray-300 px-4 py-2.5 font-poppins text-xs text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+                    className="font-poppins w-full rounded-lg border border-gray-300 px-4 py-2.5 text-xs text-gray-900 transition-colors placeholder:text-gray-400 focus:border-gray-900 focus:ring-2 focus:ring-gray-900/10 focus:outline-none"
                   />
                 </div>
               </div>
@@ -271,12 +257,12 @@ export default function ProfilePage() {
                   type="button"
                   onClick={handleSaveChanges}
                   disabled={isUpdating}
-                  className="rounded-md bg-black px-6 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="font-poppins flex items-center gap-2 rounded-md bg-black px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
                 >
                   {isUpdating ? (
                     <>
                       <svg
-                        className="animate-spin h-4 w-4 text-white"
+                        className="h-4 w-4 animate-spin text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -298,7 +284,7 @@ export default function ProfilePage() {
                       Saving...
                     </>
                   ) : (
-                    "Save Changes"
+                    'Save Changes'
                   )}
                 </button>
               </div>

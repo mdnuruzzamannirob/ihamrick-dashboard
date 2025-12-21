@@ -1,14 +1,14 @@
-"use client";
-import React, { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux"; // Import useSelector for accessing Redux state
-import { useResetPasswordMutation } from "../../../../services/allApi";
-import BrandSection from "@/components/auth/Brand-section";
-import Header from "@/components/auth/Header";
-import PasswordField from "@/components/auth/PasswordField";
-import { RootState } from "../../../../services/store"; // Ensure this is the correct path
+'use client';
+import React, { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useRouter } from 'next/navigation';
+import { useSelector } from 'react-redux';
+import BrandSection from '@/components/auth/Brand-section';
+import Header from '@/components/auth/Header';
+import PasswordField from '@/components/auth/PasswordField';
+import { useResetPasswordMutation } from '../../../../services/allApi';
+import { RootState } from '../../../../services/store';
 
 export default function SetPassword() {
   const router = useRouter();
@@ -16,16 +16,16 @@ export default function SetPassword() {
   // Access email and OTP from Redux state
   const { email, otp } = useSelector((state: RootState) => state.email);
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   // Call the resetPassword API hook
-  const [resetPassword, { isLoading, isSuccess, error }] = useResetPasswordMutation();
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const handleReset = async () => {
     try {
-      const emailString = email ? email : "";
-      const otpString = otp !== null && otp !== undefined ? String(otp) : "";
+      const emailString = email ? email : '';
+      const otpString = otp !== null && otp !== undefined ? String(otp) : '';
       const response = await resetPassword({
         email: emailString,
         newPassword,
@@ -34,25 +34,25 @@ export default function SetPassword() {
       }).unwrap();
 
       if (response.success) {
-        toast.success("Password reset successful!");
+        toast.success('Password reset successful!');
         setTimeout(() => {
-          router.replace("/"); // Redirect after successful reset
+          router.replace('/'); // Redirect after successful reset
         }, 1200);
       } else {
         toast.error(response.message); // Handle failure response
       }
     } catch (err) {
-      console.error("Error:", err);
-      toast.error("An error occurred while resetting your password.");
+      console.error('Error:', err);
+      toast.error('An error occurred while resetting your password.');
     }
   };
 
   return (
-    <div className="flex bg-white min-h-screen flex-col lg:flex-row">
+    <div className="flex min-h-screen flex-col bg-white lg:flex-row">
       <BrandSection />
 
-      <div className="flex flex-col h-screen w-full items-center justify-center px-6 py-12 lg:w-2/5 lg:px-8">
-        <div className="max-w-md w-full">
+      <div className="flex h-screen w-full flex-col items-center justify-center px-6 py-12 lg:w-2/5 lg:px-8">
+        <div className="w-full max-w-md">
           <Header
             title="Set A New Password"
             subtitle="Your new password must be different from previously used passwords."
@@ -72,10 +72,10 @@ export default function SetPassword() {
 
             <button
               onClick={handleReset}
-              className="mb-4 w-full rounded-lg bg-black py-3 font-poppins text-sm font-medium text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 sm:text-base"
+              className="font-poppins mb-4 w-full rounded-lg bg-black py-3 text-sm font-medium text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 sm:text-base"
               disabled={isLoading}
             >
-              {isLoading ? "Resetting..." : "Reset Password"}
+              {isLoading ? 'Resetting...' : 'Reset Password'}
             </button>
           </div>
         </div>

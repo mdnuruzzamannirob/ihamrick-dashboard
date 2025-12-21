@@ -1,19 +1,15 @@
-import React from "react";
+import React from 'react';
 
 export default function BrandSection() {
   return (
-    <div className="relative flex w-full flex-col justify-center bg-gradient-to-b from-[#FF8080] via-[#E03030] to-[#392525] px-8 py-12 lg:w-3/5 lg:px-16 lg:py-0">
+    <div className="relative flex w-full flex-col justify-center bg-linear-to-b from-[#FF8080] via-[#E03030] to-[#392525] px-8 py-12 lg:w-3/5 lg:px-16 lg:py-0">
       <div className="relative z-10">
-        <h1 className="mb-2 font-poppins text-4xl font-bold text-white lg:text-6xl">
-          PG-65
-        </h1>
-        <p className="font-poppins text-lg text-white/90 lg:text-xl">
-          Practical Geriatrican
-        </p>
+        <h1 className="font-poppins mb-2 text-4xl font-bold text-white lg:text-6xl">PG-65</h1>
+        <p className="font-poppins text-lg text-white/90 lg:text-xl">Practical Geriatrican</p>
       </div>
 
       {/* Decorative curved lines */}
-      <div className="absolute bottom-0 left-0 right-0">
+      <div className="absolute right-0 bottom-0 left-0">
         <svg
           className="w-full"
           viewBox="0 0 800 400"

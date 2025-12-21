@@ -494,7 +494,7 @@ const allApi = createApi({
     }),
 
     //  get videos
-    getVideos: builder.query<any, { page: number; limit: number }>({
+    getVideos: builder.query<any, { page?: number; limit?: number }>({
       query: ({ page = 1, limit = 10 }) => ({
         url: `/videos?page=${page}&limit=${limit}`,
         method: 'GET',

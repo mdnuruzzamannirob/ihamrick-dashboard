@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import dynamic from "next/dynamic";
+import { useRef, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import dynamic from 'next/dynamic';
 
 // Dynamically import JoditEditor only on client side
-const JoditEditor = dynamic(() => import("jodit-react"), {
+const JoditEditor = dynamic(() => import('jodit-react'), {
   ssr: false,
 });
 
@@ -15,7 +15,15 @@ const initialContent = `
 // Initial content goes here, including HTML structure...
 `;
 
-export default function AboutUsEditor({ title, onSave, isLoading }: { title: string, onSave: (content: string) => void, isLoading: boolean }) {
+export default function AboutUsEditor({
+  title,
+  onSave,
+  isLoading,
+}: {
+  title: string;
+  onSave: (content: string) => void;
+  isLoading: boolean;
+}) {
   const editor = useRef(null);
   const router = useRouter();
   const [content, setContent] = useState(initialContent);
@@ -24,26 +32,26 @@ export default function AboutUsEditor({ title, onSave, isLoading }: { title: str
 
   // Only run this effect on the client side
   useEffect(() => {
-    setIsClient(true);  // Ensures that client-side rendering is done
+    setIsClient(true); // Ensures that client-side rendering is done
   }, []);
 
   const config = {
     readonly: false,
     toolbar: true,
-    height: "calc(100vh - 220px)",
+    height: 'calc(100vh - 220px)',
     buttons: [
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "outdent",
-      "indent",
-      "|",
-      "link",
+      'bold',
+      'italic',
+      'underline',
+      'strikethrough',
+      '|',
+      'ul',
+      'ol',
+      '|',
+      'outdent',
+      'indent',
+      '|',
+      'link',
     ],
   };
 
@@ -54,44 +62,41 @@ export default function AboutUsEditor({ title, onSave, isLoading }: { title: str
       // Call onSave from parent (AboutUs component) to save the content
       await onSave(content);
 
-
       setTimeout(() => {
-        router.push("/dashboard"); // Redirect to dashboard after saving
+        router.push('/dashboard'); // Redirect to dashboard after saving
       }, 2000);
     } catch (error) {
       setIsSaving(false);
-      console.error(error);  // Log the error
+      console.error(error); // Log the error
     }
   };
 
   // Show loading state until the component is client-side
   if (!isClient) {
     return (
-      <div className="min-h-screen font-poppins">
+      <div className="font-poppins min-h-screen">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-48 mb-6"></div>
-          <div className="h-64 bg-gray-200 rounded mb-6"></div>
-          <div className="h-10 bg-gray-200 rounded w-32 mx-auto"></div>
+          <div className="mb-6 h-6 w-48 rounded bg-gray-200"></div>
+          <div className="mb-6 h-64 rounded bg-gray-200"></div>
+          <div className="mx-auto h-10 w-32 rounded bg-gray-200"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen font-poppins">
+    <div className="font-poppins min-h-screen">
       <div className="mb-6">
-        <h1 className="text-lg font-poppins font-semibold text-gray-900">
-          {title}
-        </h1>
+        <h1 className="font-poppins text-lg font-semibold text-gray-900">{title}</h1>
       </div>
 
-      <div className="rounded-lg text-base font-poppins text-[#333333] border border-gray-200">
+      <div className="font-poppins rounded-lg border border-gray-200 text-base text-[#333333]">
         {/* JoditEditor to edit content */}
         <JoditEditor
           ref={editor}
           value={content}
           config={config}
-          onBlur={(newContent) => setContent(newContent)}  // Update content when editor loses focus
+          onBlur={(newContent) => setContent(newContent)} // Update content when editor loses focus
         />
       </div>
 
@@ -99,12 +104,12 @@ export default function AboutUsEditor({ title, onSave, isLoading }: { title: str
         <button
           onClick={handleSave}
           disabled={isLoading || isSaving}
-          className="rounded-md bg-black px-6 py-2 font-poppins text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+          className="font-poppins flex items-center gap-2 rounded-md bg-black px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-400"
         >
           {isSaving || isLoading ? (
             <>
               <svg
-                className="animate-spin h-4 w-4 text-white"
+                className="h-4 w-4 animate-spin text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -126,7 +131,7 @@ export default function AboutUsEditor({ title, onSave, isLoading }: { title: str
               Saving...
             </>
           ) : (
-            "Save Changes"
+            'Save Changes'
           )}
         </button>
       </div>

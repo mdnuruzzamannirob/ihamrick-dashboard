@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   LayoutDashboard,
   FileText,
@@ -21,26 +21,26 @@ import {
   User,
   Info,
   Shield,
-} from "lucide-react";
-import { useLogoutMutation } from "../../services/allApi";
-import Cookies from "js-cookie"; // For cookie management
+} from 'lucide-react';
+import { useLogoutMutation } from '../../services/allApi';
+import Cookies from 'js-cookie'; // For cookie management
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: FileText, label: "Manage Blog", href: "/manage-blog" },
-  { icon: Video, label: "Manage Videos", href: "/manage-videos" },
-  { icon: Mic, label: "Manage Podcasts", href: "/manage-podcasts" },
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
+  { icon: FileText, label: 'Manage Blog', href: '/manage-blog' },
+  { icon: Video, label: 'Manage Videos', href: '/manage-videos' },
+  { icon: Mic, label: 'Manage Podcasts', href: '/manage-podcasts' },
   {
     icon: BookOpen,
-    label: "Manage Publications",
-    href: "/manage-publications",
+    label: 'Manage Publications',
+    href: '/manage-publications',
   },
 ];
 
 const settingsSubItems = [
-  { icon: User, label: "Profile", href: "/settings/profile" },
-  { icon: Info, label: "About Us", href: "/settings/about-us" },
-  { icon: Shield, label: "Privacy", href: "/settings/privacy" },
+  { icon: User, label: 'Profile', href: '/settings/profile' },
+  { icon: Info, label: 'About Us', href: '/settings/about-us' },
+  { icon: Shield, label: 'Privacy', href: '/settings/privacy' },
 ];
 
 export function Sidebar() {
@@ -50,26 +50,26 @@ export function Sidebar() {
   const router = useRouter();
 
   // Use the logout mutation
-  const [logout, { isLoading }] = useLogoutMutation(); // use the logout mutation
+  const [logout] = useLogoutMutation(); // use the logout mutation
 
   const handleLogout = async () => {
     try {
       // Call the logout API
       await logout().unwrap(); // Call the logout mutation (no need to catch the response)
       // Remove the authentication token from cookies
-      Cookies.remove("Ihamrickadmindashboardtoken");
+      Cookies.remove('Ihamrickadmindashboardtoken');
 
       // Show success toast
-      toast.success("Logout successful. See you soon!");
+      toast.success('Logout successful. See you soon!');
 
       // Redirect to login page after logout
       setTimeout(() => {
-        router.replace("/login"); // Adjust the route to your login page
+        router.replace('/login'); // Adjust the route to your login page
       }, 1200); // Wait for toast to show before redirecting
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error('Logout failed:', error);
       // Show error toast if logout fails
-      toast.error("Logout failed. Please try again.");
+      toast.error('Logout failed. Please try again.');
     }
   };
 
@@ -78,7 +78,7 @@ export function Sidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-4 z-50 rounded-lg bg-neutral-900 p-2 text-white lg:hidden"
+        className="fixed top-4 left-4 z-50 rounded-lg bg-neutral-900 p-2 text-white lg:hidden"
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
@@ -93,16 +93,14 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-40 h-screen w-64 bg-neutral-900 transition-transform duration-300 lg:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 left-0 z-40 h-screen w-64 bg-neutral-900 transition-transform duration-300 lg:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex h-full flex-col p-4">
           {/* Logo/Title */}
           <div className="mb-8 px-3 pt-4">
-            <h1 className="text-lg font-poppins font-semibold text-neutral-400">
-              Dashboard
-            </h1>
+            <h1 className="font-poppins text-lg font-semibold text-neutral-400">Dashboard</h1>
           </div>
 
           {/* Menu Items */}
@@ -114,10 +112,10 @@ export function Sidebar() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 font-poppins py-2.5 text-sm font-medium transition-colors ${
+                  className={`font-poppins flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-white text-neutral-900"
-                      : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                      ? 'bg-white text-neutral-900'
+                      : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
                   }`}
                 >
                   <item.icon className="h-5 w-5" />
@@ -130,7 +128,7 @@ export function Sidebar() {
             <div>
               <button
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+                className="font-poppins flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
               >
                 <Settings className="h-5 w-5" />
                 Settings
@@ -151,10 +149,10 @@ export function Sidebar() {
                         key={subItem.label}
                         href={subItem.href}
                         onClick={() => setIsOpen(false)}
-                        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-poppins font-medium transition-colors ${
+                        className={`font-poppins flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                           isActive
-                            ? "bg-white text-neutral-900"
-                            : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
+                            ? 'bg-white text-neutral-900'
+                            : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
                         }`}
                       >
                         <subItem.icon className="h-4 w-4" />
@@ -170,7 +168,7 @@ export function Sidebar() {
           {/* Log Out */}
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-poppins font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
+            className="font-poppins flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-white"
           >
             <LogOut className="h-5 w-5" />
             Log Out
