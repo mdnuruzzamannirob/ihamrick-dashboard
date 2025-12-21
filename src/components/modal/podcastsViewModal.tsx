@@ -1,61 +1,20 @@
-"use client";
-import { Eye, X, Calendar, User, Play, Download } from "lucide-react";
-import { useState } from "react";
-interface Podcast {
-  id: string;
-  title: string;
-  author: string;
-  publishDate: string;
-  status: "Published" | "Unpublished";
-  description: string;
-  featuredVideo: string;
-  duration: string;
-  fileSize: string;
-  category: string;
-}
+'use client';
 
-interface PodcastsViewModalProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-  podcast?: Podcast | null;
-}
+import { Eye, X, Calendar, FileText, Layout, CheckCircle, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import Image from 'next/image';
 
-export function PodcastsViewModal({
-  isOpen,
-  onClose,
-  podcast,
-}: PodcastsViewModalProps) {
+export function PodcastsViewModal({ podcast }: { podcast: any }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
-  // Default podcast data
-  const defaultPodcast: Podcast = {
-    id: "1",
-    title: "Healthy Living Happier Life",
-    author: "Dr. Sarah Johnson",
-    publishDate: "2025-10-11",
-    status: "Published",
-    description:
-      "A healthy life isn't just about eating greens or hitting the gym — it's about cultivating habits that nourish your body, mind, and soul. In this podcast, we explore how small lifestyle shifts can lead to lasting happiness. From mindful mornings to joyful movement, discover practical ways to feel more energized, balanced, and fulfilled every day. Because when you care for your health, happiness naturally follows.",
-    featuredVideo:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    duration: "24:35",
-    fileSize: "45.2 MB",
-    category: "Health & Wellness",
-  };
-
-  const currentPodcast = podcast || defaultPodcast;
-
-  const handleClose = () => {
-    setViewModalOpen(false);
-    onClose?.();
-  };
+  if (!podcast) return null;
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
@@ -64,177 +23,123 @@ export function PodcastsViewModal({
       <button
         onClick={() => setViewModalOpen(true)}
         className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-        aria-label="View Podcast"
+        title="View Details"
       >
-        <Eye className="h-4 w-4" />
+        <Eye size={16} />
       </button>
 
-      {(viewModalOpen || isOpen) && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4 md:p-5">
+      {viewModalOpen && (
+        <div
+          onClick={() => setViewModalOpen(false)}
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+        >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-8 font-poppins relative overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
+            className="animate-in fade-in slide-in-from-bottom-4 relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
           >
             {/* Close Button */}
             <button
-              onClick={handleClose}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors"
+              onClick={() => setViewModalOpen(false)}
+              className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-gray-500 shadow-sm transition-all hover:text-black"
             >
-              <X className="w-5 h-5" />
+              <X size={20} />
             </button>
 
-            {/* Modal Header */}
-            <div className="mb-6">
-              <h2 className="text-xl font-poppins font-semibold text-gray-900">
-                Podcast Details
-              </h2>
-              <p className="text-sm font-poppins text-gray-500 mt-1">
-                View podcast information and content
-              </p>
+            <div className="flex-1 overflow-y-auto">
+              {/* Header Image Section */}
+              <div className="relative h-64 w-full bg-neutral-900">
+                <Image
+                  src={podcast.coverImageUrl || podcast.coverImage || '/placeholder-podcast.jpg'}
+                  alt={podcast.title}
+                  fill
+                  className="object-cover opacity-80"
+                />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute right-8 bottom-6 left-8">
+                  <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[10px] font-bold tracking-widest text-white uppercase backdrop-blur-md">
+                    {podcast.status ? (
+                      <CheckCircle size={12} className="text-emerald-400" />
+                    ) : (
+                      <XCircle size={12} className="text-amber-400" />
+                    )}
+                    {podcast.status ? 'Published' : 'Draft'}
+                  </div>
+                  <h1 className="text-3xl font-extrabold text-white">{podcast.title}</h1>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <div className="p-8">
+                {/* Info Cards */}
+                <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    <Calendar className="text-gray-400" size={20} />
+                    <div>
+                      <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                        Release Date
+                      </p>
+                      <p className="text-sm font-semibold text-gray-800">
+                        {formatDate(podcast.date)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    <Layout className="text-gray-400" size={20} />
+                    <div>
+                      <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                        Category
+                      </p>
+                      <p className="text-sm font-semibold text-gray-800">Podcast Session</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-4">
+                    <FileText className="text-gray-400" size={20} />
+                    <div>
+                      <p className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                        Type
+                      </p>
+                      <p className="text-sm font-semibold text-gray-800">Audio/Visual Content</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rich Text Areas */}
+                <div className="space-y-8">
+                  <section>
+                    <h3 className="mb-3 flex items-center gap-2 text-sm font-bold tracking-wide text-gray-900 uppercase">
+                      About this Podcast
+                    </h3>
+                    <div
+                      className="prose prose-sm max-w-none rounded-2xl border border-gray-100 bg-gray-50 p-6 leading-relaxed text-gray-600 italic"
+                      dangerouslySetInnerHTML={{
+                        __html: podcast.description || 'No description provided.',
+                      }}
+                    />
+                  </section>
+
+                  <section>
+                    <h3 className="mb-3 flex items-center gap-2 text-sm font-bold tracking-wide text-gray-900 uppercase">
+                      Transcription
+                    </h3>
+                    <div
+                      className="prose prose-sm max-w-none rounded-2xl border border-gray-100 bg-gray-50 p-6 leading-relaxed text-gray-600 italic"
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          podcast.transcription || 'Transcription not available for this episode.',
+                      }}
+                    />
+                  </section>
+                </div>
+              </div>
             </div>
 
-            {/* Podcast Content */}
-            <div className="space-y-6">
-              {/* Header with Title and Status Badge */}
-              <div className="flex justify-between items-start">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {currentPodcast.title}
-                </h1>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    currentPodcast.status === "Published"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  }`}
-                >
-                  {currentPodcast.status}
-                </span>
-              </div>
-
-              {/* Author and Date Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <User className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Host/Author
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {currentPodcast.author}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Publish Date
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {formatDate(currentPodcast.publishDate)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category and Duration */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-5 h-5 flex items-center justify-center">
-                    <span className="text-sm">📁</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Category
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {currentPodcast.category}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <Play className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">
-                      Duration
-                    </p>
-                    <p className="text-gray-900 font-medium">
-                      {currentPodcast.duration}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Featured Video/Player */}
-              <div className="space-y-3">
-                <label className="text-sm font-poppins font-medium text-gray-700 block">
-                  Featured Podcast
-                </label>
-                <div className="border border-gray-200 rounded-lg overflow-hidden bg-black">
-                  <video
-                    src={currentPodcast.featuredVideo}
-                    controls
-                    className="w-full h-64 md:h-80 object-contain bg-black"
-                    poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%231f2937'/%3E%3Ccircle cx='200' cy='150' r='40' fill='%236b7280'/%3E%3Cpolygon points='180,130 180,170 220,150' fill='%23ffffff'/%3E%3C/svg%3E"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-                <div className="flex justify-between items-center text-sm text-gray-600">
-                  <span>Podcast Episode</span>
-                  <span>{currentPodcast.fileSize}</span>
-                </div>
-              </div>
-
-              {/* Download Section */}
-              <div className="space-y-3">
-                <label className="text-sm font-poppins font-medium text-gray-700 block">
-                  Download Options
-                </label>
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Download className="w-6 h-6 text-blue-600" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {currentPodcast.title}.mp3
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Audio File • {currentPodcast.fileSize}
-                        </p>
-                      </div>
-                    </div>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                      <Download className="w-4 h-4" />
-                      <span>Download</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-3">
-                <label className="text-sm font-poppins font-medium text-gray-700 block">
-                  Episode Description
-                </label>
-                <div className="prose prose-sm max-w-none text-gray-700 bg-gray-50 rounded-lg p-6">
-                  <p className="leading-relaxed">
-                    {currentPodcast.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleClose}
-                  className="px-5 py-2 font-poppins rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
+            <div className="flex justify-end border-t border-gray-100 bg-gray-50 px-8 py-4">
+              <button
+                onClick={() => setViewModalOpen(false)}
+                className="rounded-lg bg-black px-6 py-2 text-xs font-bold text-white transition-all hover:bg-zinc-800"
+              >
+                Close Preview
+              </button>
             </div>
           </div>
         </div>

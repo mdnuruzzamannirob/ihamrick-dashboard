@@ -157,13 +157,6 @@ interface Blog {
 
 // Define API Response Types
 
-interface PodcastResponse {
-  success: boolean;
-  message: string;
-  results: number;
-  data: { podcasts: Podcast[] };
-}
-
 interface PublicationResponse {
   success: boolean;
   message: string;
@@ -359,12 +352,6 @@ const allApi = createApi({
       }),
     }),
 
-    getPodcasts: builder.query<PodcastResponse, void>({
-      query: () => ({
-        url: '/podcasts',
-        method: 'GET',
-      }),
-    }),
     getPublications: builder.query<PublicationResponse, void>({
       query: () => ({
         url: '/publications',
@@ -546,6 +533,34 @@ const allApi = createApi({
         };
       },
     }),
+
+    // get Podcasts
+    getPodcasts: builder.query<any, { page?: number; limit?: number }>({
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/podcasts?page=${page}&limit=${limit}`,
+        method: 'GET',
+      }),
+    }),
+
+    // update Podcast by id
+    updatePodcast: builder.mutation<
+      { success: boolean; message: string; data: Podcast },
+      { id: string; data: FormData }
+    >({
+      query: ({ id, data }) => ({
+        url: `/podcasts/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+    }),
+
+    // delete Podcast
+    deletePodcast: builder.mutation<{ success: boolean; message: string; data: Podcast }, string>({
+      query: (podcastId) => ({
+        url: `/podcasts/${podcastId}`,
+        method: 'DELETE',
+      }),
+    }),
   }),
 });
 
@@ -579,6 +594,8 @@ export const {
   useGetVideoByIdQuery,
   useUpdateVideoMutation,
   useCreatePodcastMutation,
+  useDeletePodcastMutation,
+  useUpdatePodcastMutation,
 } = allApi;
 
 export default allApi;

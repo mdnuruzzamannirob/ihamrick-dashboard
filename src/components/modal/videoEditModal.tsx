@@ -113,8 +113,14 @@ const VideoEditModal = ({ video }: { video: any }) => {
       </button>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
+        <div
+          onClick={() => setIsModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl"
+          >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-sm font-semibold text-gray-800">Edit Video Details</h2>

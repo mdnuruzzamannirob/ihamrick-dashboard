@@ -11,7 +11,7 @@ import { useCreatePodcastMutation } from '../../../services/allApi';
 interface PodcastFormState {
   title: string;
   date: string;
-  status: 'published' | 'unpublished';
+  status: 'scheduled' | 'live' | 'ended' | 'cancelled';
   description: string;
   transcription: string;
   coverImage: File | null;
@@ -23,7 +23,7 @@ const PodcastUploadModal = () => {
   const [formData, setFormData] = useState<PodcastFormState>({
     title: '',
     date: '',
-    status: 'published',
+    status: 'scheduled',
     description: '',
     transcription: '',
     coverImage: null,
@@ -67,7 +67,7 @@ const PodcastUploadModal = () => {
       'date',
       formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
     );
-    payload.append('status', String(formData.status === 'published'));
+    payload.append('status', String(formData.status));
     payload.append('coverImage', formData.coverImage);
 
     try {
@@ -84,7 +84,7 @@ const PodcastUploadModal = () => {
     setFormData({
       title: '',
       date: '',
-      status: 'published',
+      status: 'scheduled',
       description: '',
       transcription: '',
       coverImage: null,
@@ -114,10 +114,16 @@ const PodcastUploadModal = () => {
       </button>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl">
+        <div
+          onClick={() => setIsModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl"
+          >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-300 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
               <h2 className="text-sm font-semibold">Create Podcast</h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -161,8 +167,18 @@ const PodcastUploadModal = () => {
                       onChange={handleInputChange}
                       className="w-full rounded border border-gray-200 px-3 py-2 text-sm"
                     >
-                      <option value="published">Published</option>
-                      <option value="unpublished">Unpublished</option>
+                      <option className="capitalize" value="scheduled">
+                        scheduled
+                      </option>
+                      <option className="capitalize" value="live">
+                        live
+                      </option>
+                      <option className="capitalize" value="ended">
+                        ended
+                      </option>
+                      <option className="capitalize" value="cancelled">
+                        cancelled
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -216,7 +232,7 @@ const PodcastUploadModal = () => {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-4 border-t bg-white px-6 py-4">
+            <div className="flex justify-end gap-4 border-t border-gray-200 bg-white px-6 py-4">
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="rounded bg-red-500 px-5 py-2 text-sm text-white"

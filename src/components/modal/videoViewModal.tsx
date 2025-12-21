@@ -26,8 +26,14 @@ export function VideoViewModal({ video }: { video: any }) {
       </button>
 
       {viewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="font-poppins relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-8 shadow-2xl">
+        <div
+          onClick={() => setViewModalOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="font-poppins relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-8 shadow-2xl"
+          >
             <button
               onClick={() => setViewModalOpen(false)}
               className="absolute top-5 right-5 text-gray-400 hover:text-gray-700"
