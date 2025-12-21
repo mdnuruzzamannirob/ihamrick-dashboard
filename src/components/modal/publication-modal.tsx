@@ -1,227 +1,217 @@
-"use client";
+'use client';
 
-import type React from "react";
-import { useState, useRef } from "react";
-import { ChevronDown, X, Upload, File } from "lucide-react";
-import dynamic from "next/dynamic";
+import type React from 'react';
+import { useState, useRef } from 'react';
+import { ChevronDown, X, Upload, File } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { toast } from 'react-toastify';
+import { useCreatePublicationMutation } from '../../../services/allApi';
+
+interface PublicationFormState {
+  title: string;
+  author: string;
+  publicationDate: string;
+  status: 'Published' | 'Unpublished' | '';
+  description: string;
+  cover: File | null;
+  file: File | null;
+}
+
+const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 export function PublicationModal() {
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [publicationDate, setPublicationDate] = useState("");
-
-  const [status, setStatus] = useState("");
-  const [statusOpen, setStatusOpen] = useState(false);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [podcastFile, setPodcastFile] = useState<File | null>(null);
-  const [coverDragging, setCoverDragging] = useState(false);
-  const [podcastDragging, setPodcastDragging] = useState(false);
-  // Dynamically import JoditEditor only on client side
-  const JoditEditor = dynamic(() => import("jodit-react"), {
-    ssr: false,
+  const [formData, setFormData] = useState<PublicationFormState>({
+    title: '',
+    author: '',
+    publicationDate: '',
+    status: 'Published',
+    description: '',
+    cover: null,
+    file: null,
   });
 
-  const editor = useRef(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
-  const podcastInputRef = useRef<HTMLInputElement>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
 
-  const config = {
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [createPublication, { isLoading }] = useCreatePublicationMutation();
+
+  /* ---------------- handlers ---------------- */
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((p) => ({ ...p, [name]: value }));
+  };
+
+  const editorConfig = {
     readonly: false,
-    toolbar: true,
     height: 150,
+    toolbar: true,
     buttons: [
-      "bold",
-      "italic",
-      "underline",
-      "strikethrough",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "outdent",
-      "indent",
-      "|",
-      "link",
+      'bold',
+      'italic',
+      'underline',
+      'strikethrough',
+      '|',
+      'ul',
+      'ol',
+      '|',
+      'outdent',
+      'indent',
+      '|',
+      'link',
     ],
   };
 
-  const handleSave = () => {};
+  /* ---------------- submit ---------------- */
 
-  const handleCoverDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setCoverDragging(true);
-  };
+  const handleSave = async () => {
+    if (
+      !formData.title ||
+      !formData.author ||
+      !formData.status ||
+      !formData.cover ||
+      !formData.file
+    ) {
+      toast.error('Please fill all required fields');
+      return;
+    }
 
-  const handleCoverDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setCoverDragging(false);
-  };
+    const payload = new FormData();
+    payload.append('title', formData.title);
+    payload.append('author', formData.author);
+    payload.append(
+      'publicationDate',
+      formData.publicationDate
+        ? new Date(formData.publicationDate).toISOString()
+        : new Date().toISOString(),
+    );
+    payload.append('status', String(formData.status === 'Published'));
+    payload.append('description', formData.description);
+    payload.append('coverImage', formData.cover);
+    payload.append('file', formData.file);
+    payload.append('fileType', formData.file.name.split('.').pop() || '');
 
-  const handleCoverDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setCoverDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) {
-      setCoverFile(file);
+    try {
+      await createPublication(payload).unwrap();
+      toast.success('Publication created successfully');
+      setIsOpen(false);
+      resetForm();
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Failed to create publication');
     }
   };
 
-  const handleCoverFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCoverFile(file);
-    }
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      author: '',
+      publicationDate: '',
+      status: '',
+      description: '',
+      cover: null,
+      file: null,
+    });
   };
 
-  const handlePodcastDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setPodcastDragging(true);
-  };
-
-  const handlePodcastDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setPodcastDragging(false);
-  };
-
-  const handlePodcastDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setPodcastDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      setPodcastFile(file);
-    }
-  };
-
-  const handlePodcastFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPodcastFile(file);
-    }
-  };
+  /* ---------------- UI ---------------- */
 
   return (
     <>
       <button
-        onClick={() => setShowModal(true)}
-        className="flex items-center font-poppins gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-base text-white"
       >
-        <span className="text-base">+</span>
-        Add
+        <span>+</span> Add
       </button>
-      {showModal && (
+
+      {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4 md:p-5"
-          onClick={() => setShowModal(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setIsOpen(false)}
         >
           <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] p-8 font-poppins relative  overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
+            className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-white p-8 shadow-2xl"
           >
             <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700 transition-colors"
+              onClick={() => setIsOpen(false)}
+              className="absolute top-5 right-5 text-gray-400 hover:text-gray-700"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
 
+            {/* Header */}
             <div className="mb-6">
-              <h2 className="text-xl  font-poppins font-semibold text-gray-900">
-                Add Publication
-              </h2>
-              <p className="text-sm font-poppins text-gray-500 mt-1">
-                Fill in the details below
-              </p>
+              <h2 className="text-xl font-semibold text-gray-900">Add Publication</h2>
+              <p className="mt-1 text-sm text-gray-500">Fill in the details below</p>
             </div>
 
             <div className="space-y-5">
-              {/* Title and Author Row */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Title + Author */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <label
-                    htmlFor="title"
-                    className="text-sm font-poppins  font-medium text-gray-700 block"
-                  >
-                    Title
-                  </label>
+                  <label className="text-sm font-medium text-gray-700">Title</label>
                   <input
-                    id="title"
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
                     placeholder="Enter title"
-                    className="w-full h-10 px-3 text-neutral-800 placeholder:text-gray-400  text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
+                    className="h-10 w-full rounded-lg border px-3 text-sm"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label
-                    htmlFor="author"
-                    className="text-sm font-poppins font-medium text-gray-700 block"
-                  >
-                    Author
-                  </label>
+                  <label className="text-sm font-medium text-gray-700">Author</label>
                   <input
-                    id="author"
-                    type="text"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
+                    name="author"
+                    value={formData.author}
+                    onChange={handleChange}
                     placeholder="Enter author"
-                    className="w-full h-10 px-3 text-neutral-800 placeholder:text-gray-400  text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
+                    className="h-10 w-full rounded-lg border px-3 text-sm"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label
-                    htmlFor="publication-date"
-                    className="text-sm font-poppins font-medium text-gray-700 block"
-                  >
-                    Publication Date
-                  </label>
-                  <input
-                    id="publication-date"
-                    type="date"
-                    value={publicationDate}
-                    onChange={(e) => setPublicationDate(e.target.value)}
-                    className="w-full h-10 px-3 text-sm border border-gray-300 text-neutral-800 placeholder:text-gray-400  rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-shadow"
-                  />
-                </div>
-              </div>
-
+              {/* Date */}
               <div className="space-y-2">
-                <label
-                  htmlFor="status"
-                  className="text-sm font-poppins font-medium text-gray-700 block"
-                >
-                  Status
-                </label>
+                <label className="text-sm font-medium text-gray-700">Publication Date</label>
+                <input
+                  type="date"
+                  name="publicationDate"
+                  value={formData.publicationDate}
+                  onChange={handleChange}
+                  className="h-10 w-full rounded-lg border px-3 text-sm"
+                />
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Status</label>
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setStatusOpen(!statusOpen)}
-                    className="w-full h-10 px-3 font-poppins text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent flex items-center justify-between bg-white transition-shadow"
+                    className="flex h-10 w-full items-center justify-between rounded-lg border px-3 text-sm"
                   >
-                    <span
-                      className={status ? "text-gray-900" : "text-gray-400"}
-                    >
-                      {status || "Select status"}
-                    </span>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                    {formData.status || 'Select status'}
+                    <ChevronDown className="h-4 w-4" />
                   </button>
+
                   {statusOpen && (
-                    <div className="absolute z-10 w-full mt-1 font-poppins bg-white  border border-gray-200 rounded-lg shadow-lg">
-                      {["Published", "Unpublished"].map((statusOption) => (
+                    <div className="absolute z-10 mt-1 w-full rounded-lg border bg-white shadow">
+                      {['Published', 'Unpublished'].map((s) => (
                         <button
-                          key={statusOption}
-                          type="button"
+                          key={s}
                           onClick={() => {
-                            setStatus(statusOption);
+                            setFormData((p) => ({ ...p, status: s as any }));
                             setStatusOpen(false);
                           }}
-                          className="w-full px-3 font-poppins bg-white/75 py-2 text-black hover:text-white text-sm text-left hover:bg-black first:rounded-t-lg last:rounded-b-lg transition-colors"
+                          className="block w-full px-3 py-2 text-left text-sm hover:bg-black hover:text-white"
                         >
-                          {statusOption}
+                          {s}
                         </button>
                       ))}
                     </div>
@@ -229,125 +219,98 @@ export function PublicationModal() {
                 </div>
               </div>
 
-              {/* Upload Cover and Upload File */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Uploads */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* Upload Cover */}
                 <div className="space-y-2">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Upload Cover
-                  </label>
+                  <label className="text-sm font-medium text-gray-700">Upload Cover</label>
+                  <div
+                    onClick={() => coverInputRef.current?.click()}
+                    className="cursor-pointer rounded-lg border-2 border-dashed p-4 text-center"
+                  >
+                    {formData.cover ? (
+                      <p className="truncate text-xs">{formData.cover.name}</p>
+                    ) : (
+                      <>
+                        <Upload className="mx-auto mb-2 text-gray-400" />
+                        <p className="text-xs text-gray-500">
+                          Drop image or <span className="font-medium">browse</span>
+                        </p>
+                      </>
+                    )}
+                  </div>
                   <input
                     ref={coverInputRef}
                     type="file"
                     accept="image/*"
-                    onChange={handleCoverFileChange}
-                    className="hidden"
+                    hidden
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        cover: e.target.files?.[0] || null,
+                      }))
+                    }
                   />
-                  <div
-                    onClick={() => coverInputRef.current?.click()}
-                    onDragOver={handleCoverDragOver}
-                    onDragLeave={handleCoverDragLeave}
-                    onDrop={handleCoverDrop}
-                    className={`border-2 border-dashed font-poppins rounded-lg p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
-                      coverDragging
-                        ? "border-black bg-gray-50"
-                        : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
-                    }`}
-                  >
-                    {coverFile ? (
-                      <>
-                        <File className="w-8 h-8 text-green-600 mb-2" />
-                        <p className="text-xs text-gray-700 font-medium truncate w-full px-2">
-                          {coverFile.name}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                        <p className="text-xs font-poppins text-gray-500">
-                          Drop image or{" "}
-                          <span className="text-gray-900 font-poppins font-medium">
-                            browse
-                          </span>
-                        </p>
-                      </>
-                    )}
-                  </div>
                 </div>
+
+                {/* Upload File */}
                 <div className="space-y-2">
-                  <label className="text-sm font-poppins font-medium text-gray-700 block">
-                    Upload File
-                  </label>
-                  <input
-                    ref={podcastInputRef}
-                    type="file"
-                    onChange={handlePodcastFileChange}
-                    className="hidden"
-                  />
+                  <label className="text-sm font-medium text-gray-700">Upload File</label>
                   <div
-                    onClick={() => podcastInputRef.current?.click()}
-                    onDragOver={handlePodcastDragOver}
-                    onDragLeave={handlePodcastDragLeave}
-                    onDrop={handlePodcastDrop}
-                    className={`border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
-                      podcastDragging
-                        ? "border-black bg-gray-50"
-                        : "border-gray-300 hover:border-gray-400 hover:bg-gray-50"
-                    }`}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="cursor-pointer rounded-lg border-2 border-dashed p-4 text-center"
                   >
-                    {podcastFile ? (
-                      <>
-                        <File className="w-8 h-8 text-green-600 mb-2" />
-                        <p className="text-xs font-poppins text-gray-700 font-medium truncate w-full px-2">
-                          {podcastFile.name}
-                        </p>
-                      </>
+                    {formData.file ? (
+                      <p className="truncate text-xs">{formData.file.name}</p>
                     ) : (
                       <>
-                        <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                        <p className="text-xs font-poppins text-gray-500">
-                          Drop file or{" "}
-                          <span className="text-gray-900 font-poppins font-medium">
-                            browse
-                          </span>
+                        <File className="mx-auto mb-2 text-gray-400" />
+                        <p className="text-xs text-gray-500">
+                          Drop file or <span className="font-medium">browse</span>
                         </p>
                       </>
                     )}
                   </div>
-                </div>
-              </div>
-
-              {/* Description with Jodit Editor */}
-              <div className="space-y-2">
-                <label
-                  htmlFor="description"
-                  className="text-sm font-poppins font-medium text-gray-700 block"
-                >
-                  Description
-                </label>
-                <div className="border text-neutral-800 placeholder:text-gray-400  border-gray-300 rounded-lg overflow-hidden [&_.jodit-container]:border-0 [&_.jodit-workplace]:text-sm [&_.jodit-toolbar-button]:text-xs">
-                  <JoditEditor
-                    ref={editor}
-                    value=""
-                    config={config}
-                    // onBlur={(newContent) => setDescription(newContent)}
-                    // onChange={(newContent) => {}}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    hidden
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        file: e.target.files?.[0] || null,
+                      }))
+                    }
                   />
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              {/* Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Description</label>
+                <div className="overflow-hidden rounded-lg border">
+                  <JoditEditor
+                    value={formData.description}
+                    config={editorConfig}
+                    onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
+                  />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-end gap-3 border-t pt-4">
                 <button
-                  onClick={() => setShowModal(false)}
-                  className="px-5 py-2 font-poppins rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-5 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSave}
-                  className="bg-black font-poppins text-white hover:bg-gray-800 px-6 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+                  disabled={isLoading}
+                  className="rounded-lg bg-black px-6 py-2 text-sm text-white"
                 >
-                  Save Changes
+                  {isLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </div>

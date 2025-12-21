@@ -34,10 +34,12 @@ export function EditPublicationModal({ publication }: { publication: any }) {
   const [pubFile, setPubFile] = useState<File | null>(null);
   const [preview, setPreview] = useState(publication.coverImage);
 
+  // File name extract logic
   const getExistingFileName = (url: string) => {
     if (!url) return 'No file attached';
     const parts = url.split('/');
-    return parts[parts.length - 1].split('_').pop();
+    const fileName = parts[parts.length - 1];
+    return fileName.includes('_') ? fileName.split('_').slice(1).join('_') : fileName;
   };
 
   const handleUpdate = async () => {
@@ -76,7 +78,7 @@ export function EditPublicationModal({ publication }: { publication: any }) {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-in zoom-in flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-[2.5rem] bg-white shadow-2xl duration-300"
+            className="animate-in zoom-in flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-50 px-10 py-6">
@@ -104,13 +106,11 @@ export function EditPublicationModal({ publication }: { publication: any }) {
                   <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                     Cover Preview
                   </label>
-                  <div className="group relative h-48 w-full overflow-hidden rounded-3xl border border-gray-100 bg-gray-50 shadow-sm transition-all hover:shadow-md">
+                  <div className="group relative h-52 w-full overflow-hidden rounded-3xl border border-gray-100 bg-gray-50 shadow-sm">
                     <Image src={preview} alt="cover" fill className="object-cover" />
                     <label className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center rounded-3xl bg-black/50 opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100">
                       <ImageIcon size={24} className="mb-2 text-white" />
-                      <span className="text-xs font-bold tracking-tighter text-white uppercase">
-                        Change Cover
-                      </span>
+                      <span className="text-xs font-bold text-white uppercase">Change Cover</span>
                       <input
                         type="file"
                         hidden
@@ -127,33 +127,33 @@ export function EditPublicationModal({ publication }: { publication: any }) {
                   </div>
                 </div>
 
-                {/* Right: PDF Upload & Name Display */}
                 <div className="space-y-3">
                   <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                     Attached Document
                   </label>
-                  <div className="group flex h-48 flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 transition-all hover:border-blue-300">
-                    <div className="mb-3 flex h-14 w-14 items-center justify-center rounded bg-blue-50 text-blue-600 shadow-sm transition-all group-hover:bg-blue-600 group-hover:text-white">
-                      <FileText size={28} />
+                  <label className="group flex h-52 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 p-6 transition-all hover:border-black hover:bg-gray-100">
+                    <input
+                      type="file"
+                      hidden
+                      accept=".pdf"
+                      onChange={(e) => setPubFile(e.target.files?.[0] || null)}
+                    />
+
+                    <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-blue-600 shadow-sm transition-all group-hover:bg-black group-hover:text-white">
+                      <FileText size={32} />
                     </div>
-                    <div className="mb-4 w-full px-4 text-center">
-                      <p className="truncate text-xs font-bold text-gray-800">
+
+                    <div className="w-full px-4 text-center">
+                      <p className="truncate text-sm font-bold text-gray-800">
                         {pubFile ? pubFile.name : getExistingFileName(publication.file)}
                       </p>
                       <p className="mt-1 text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                        {pubFile ? 'Newly Selected' : 'Current Resource'}
+                        {pubFile
+                          ? 'Newly Selected - Click to change'
+                          : 'Current Resource - Click to update'}
                       </p>
                     </div>
-                    <label className="cursor-pointer rounded-xl border border-gray-100 bg-white px-6 py-2 text-[10px] font-black tracking-wider text-gray-900 uppercase shadow-sm transition-all hover:bg-gray-100">
-                      Upload New PDF
-                      <input
-                        type="file"
-                        hidden
-                        accept=".pdf"
-                        onChange={(e) => setPubFile(e.target.files?.[0] || null)}
-                      />
-                    </label>
-                  </div>
+                  </label>
                 </div>
               </div>
 
@@ -204,6 +204,7 @@ export function EditPublicationModal({ publication }: { publication: any }) {
                     </label>
                     <div className="relative">
                       <button
+                        type="button"
                         onClick={() => setStatusOpen(!statusOpen)}
                         className="flex w-full items-center justify-between rounded bg-gray-50 px-5 py-4 text-sm font-bold"
                       >
@@ -225,6 +226,7 @@ export function EditPublicationModal({ publication }: { publication: any }) {
                           {['Published', 'Unpublished'].map((s) => (
                             <button
                               key={s}
+                              type="button"
                               className="w-full px-5 py-4 text-left text-sm font-bold transition-all hover:bg-black hover:text-white"
                               onClick={() => {
                                 setFormData({ ...formData, status: s as any });
