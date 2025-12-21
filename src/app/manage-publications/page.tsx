@@ -114,7 +114,7 @@ export default function ManagePublications() {
                   </tr>
                 ) : publications.length > 0 ? (
                   publications.map((publication: any, index) => (
-                    <tr key={index + publication.id} className="transition-colors hover:bg-gray-50">
+                    <tr key={index} className="border-gray-200 transition-colors hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">{publication.title}</td>
 
                       <td className="px-6 py-4 text-gray-700">{publication.author}</td>
