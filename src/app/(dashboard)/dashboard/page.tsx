@@ -6,7 +6,7 @@ import {
   setPodcasts,
   setPublications,
   setBlogs,
-} from '../../../services/slices/mediaSlice';
+} from '../../../../services/slices/mediaSlice';
 import { Sidebar } from '@/components/sidebar';
 import { StatCards } from '@/components/stat-cards';
 import { ManageBlog } from '@/components/manage-blog';
@@ -20,9 +20,9 @@ import {
   useGetPublicationsQuery,
   useGetVideosQuery,
   useSentNotificationsMutation,
-} from '../../../services/allApi';
+} from '../../../../services/allApi';
 import QualityOfLifeModal from '@/components/modal/qualityModal';
-import { useGetSocialLinksQuery, useUpdateSocialLinkMutation } from '../../../services/allApi';
+import { useGetSocialLinksQuery, useUpdateSocialLinkMutation } from '../../../../services/allApi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

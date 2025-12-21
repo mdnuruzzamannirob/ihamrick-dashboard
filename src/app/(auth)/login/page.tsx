@@ -9,6 +9,7 @@ import EmailField from '@/components/auth/EmailField';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useLoginMutation } from '../../../../services/allApi';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -34,7 +35,7 @@ export default function LoginPage() {
 
     try {
       const res = await login({ email, password }).unwrap();
-      console.log(res);
+
       if (res.success) {
         toast.success('Login successful!');
 
@@ -98,13 +99,9 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-3 text-end">
-            <button
-              type="button"
-              className="text-sm text-red-500 hover:underline"
-              onClick={() => router.push('/forget-password')}
-            >
+            <Link href="/forgot-password" className="text-sm text-red-500 hover:underline">
               Forgot Password?
-            </button>
+            </Link>
           </div>
         </div>
 

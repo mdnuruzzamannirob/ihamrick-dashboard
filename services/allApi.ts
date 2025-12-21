@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.pg-65.com//api/';
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.pg-65.com/api/';
 
 // Define the API types and response structures
 interface LoginRequest {
