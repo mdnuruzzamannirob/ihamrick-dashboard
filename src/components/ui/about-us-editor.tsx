@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import dynamic from 'next/dynamic';
+import { joditConfig } from '@/utils/joditConfig';
 
 // Dynamically import JoditEditor only on client side
 const JoditEditor = dynamic(() => import('jodit-react'), {
@@ -34,26 +35,6 @@ export default function AboutUsEditor({
   useEffect(() => {
     setIsClient(true); // Ensures that client-side rendering is done
   }, []);
-
-  const config = {
-    readonly: false,
-    toolbar: true,
-    height: 'calc(100vh - 220px)',
-    buttons: [
-      'bold',
-      'italic',
-      'underline',
-      'strikethrough',
-      '|',
-      'ul',
-      'ol',
-      '|',
-      'outdent',
-      'indent',
-      '|',
-      'link',
-    ],
-  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -95,7 +76,7 @@ export default function AboutUsEditor({
         <JoditEditor
           ref={editor}
           value={content}
-          config={config}
+          config={joditConfig}
           onBlur={(newContent) => setContent(newContent)} // Update content when editor loses focus
         />
       </div>

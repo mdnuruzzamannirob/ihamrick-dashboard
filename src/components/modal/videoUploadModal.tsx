@@ -7,6 +7,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useUploadVideoMutation } from '../../../services/allApi';
 import { toast } from 'react-toastify';
+import { joditConfig } from '@/utils/joditConfig';
 
 interface VideoFormState {
   title: string;
@@ -107,15 +108,6 @@ const VideoUploadModal = () => {
     });
     setVideoPreview('');
     setThumbnailPreview('');
-  };
-
-  /* -------------------- editor config -------------------- */
-
-  const editorConfig = {
-    readonly: false,
-    height: 150,
-    toolbar: true,
-    buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'link'],
   };
 
   /* -------------------- UI -------------------- */
@@ -249,7 +241,7 @@ const VideoUploadModal = () => {
                 <label className="mb-2 block text-sm font-medium">Description</label>
                 <JoditEditor
                   value={formData.description}
-                  config={editorConfig}
+                  config={joditConfig}
                   onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
                 />
               </div>
@@ -258,7 +250,7 @@ const VideoUploadModal = () => {
                 <label className="mb-2 block text-sm font-medium">Transcriptions</label>
                 <JoditEditor
                   value={formData.transcriptions}
-                  config={editorConfig}
+                  config={joditConfig}
                   onBlur={(v) => setFormData((p) => ({ ...p, transcriptions: v }))}
                 />
               </div>

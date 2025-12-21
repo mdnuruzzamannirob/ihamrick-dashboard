@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useCreatePublicationMutation } from '../../../services/allApi';
 import Image from 'next/image';
+import { joditConfig } from '@/utils/joditConfig';
 
 interface PublicationFormState {
   title: string;
@@ -131,7 +132,7 @@ export function PublicationModal() {
 
             {/* Scrollable Body */}
             <div className="flex-1 space-y-8 overflow-y-auto px-8 py-8">
-              {/* Media Section: Cover & PDF */}
+              {/* Media Section */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Cover Upload */}
                 <div className="space-y-2">
@@ -171,7 +172,7 @@ export function PublicationModal() {
                   </div>
                 </div>
 
-                {/* PDF File Upload */}
+                {/* PDF Upload */}
                 <div className="space-y-2">
                   <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                     PDF Document
@@ -289,6 +290,7 @@ export function PublicationModal() {
                 <div className="overflow-hidden rounded bg-gray-50 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-black">
                   <JoditEditor
                     value={formData.description}
+                    config={joditConfig}
                     onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
                   />
                 </div>

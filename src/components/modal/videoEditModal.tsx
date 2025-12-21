@@ -7,6 +7,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useUpdateVideoMutation } from '../../../services/allApi';
+import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -93,13 +94,6 @@ const VideoEditModal = ({ video }: { video: any }) => {
     } catch (error: any) {
       toast.error(error?.data?.message || 'Failed to update video');
     }
-  };
-
-  const editorConfig = {
-    readonly: false,
-    height: 150,
-    toolbar: true,
-    buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'link'],
   };
 
   return (
@@ -237,7 +231,7 @@ const VideoEditModal = ({ video }: { video: any }) => {
                 <label className="mb-2 block text-sm font-medium text-gray-700">Description</label>
                 <JoditEditor
                   value={formData.description}
-                  config={editorConfig}
+                  config={joditConfig}
                   onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
                 />
               </div>
@@ -249,7 +243,7 @@ const VideoEditModal = ({ video }: { video: any }) => {
                 </label>
                 <JoditEditor
                   value={formData.transcription}
-                  config={editorConfig}
+                  config={joditConfig}
                   onBlur={(v) => setFormData((p) => ({ ...p, transcription: v }))}
                 />
               </div>

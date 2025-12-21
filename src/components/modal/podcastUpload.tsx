@@ -7,6 +7,7 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useCreatePodcastMutation } from '../../../services/allApi';
+import { joditConfig } from '@/utils/joditConfig';
 
 interface PodcastFormState {
   title: string;
@@ -90,15 +91,6 @@ const PodcastUploadModal = () => {
       coverImage: null,
     });
     setImagePreview('');
-  };
-
-  /* ---------------- editor config ---------------- */
-
-  const editorConfig = {
-    readonly: false,
-    height: 150,
-    toolbar: true,
-    buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'link'],
   };
 
   /* ---------------- UI ---------------- */
@@ -216,7 +208,7 @@ const PodcastUploadModal = () => {
                 <label className="mb-2 block text-sm font-medium">Description</label>
                 <JoditEditor
                   value={formData.description}
-                  config={editorConfig}
+                  config={joditConfig}
                   onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
                 />
               </div>
@@ -225,7 +217,7 @@ const PodcastUploadModal = () => {
                 <label className="mb-2 block text-sm font-medium">Transcription</label>
                 <JoditEditor
                   value={formData.transcription}
-                  config={editorConfig}
+                  config={joditConfig}
                   onBlur={(v) => setFormData((p) => ({ ...p, transcription: v }))}
                 />
               </div>

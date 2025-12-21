@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Pencil, Loader2, X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useUpdatePodcastMutation } from '../../../services/allApi';
+import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -77,16 +78,6 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
       toast.error(err?.data?.message || 'Failed to update podcast');
     }
   };
-
-  const editorConfig = useMemo(
-    () => ({
-      readonly: false,
-      height: 180,
-      toolbar: true,
-      buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'link', 'undo', 'redo'],
-    }),
-    [],
-  );
 
   return (
     <>
@@ -211,7 +202,7 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
                   </label>
                   <JoditEditor
                     value={formData.description}
-                    config={editorConfig}
+                    config={joditConfig}
                     onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
                   />
                 </div>
@@ -221,7 +212,7 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
                   </label>
                   <JoditEditor
                     value={formData.transcription}
-                    config={editorConfig}
+                    config={joditConfig}
                     onBlur={(v) => setFormData((p) => ({ ...p, transcription: v }))}
                   />
                 </div>

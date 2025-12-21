@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useUpdatePublicationMutation } from '../../../services/allApi';
+import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -249,6 +250,7 @@ export function EditPublicationModal({ publication }: { publication: any }) {
                   <div className="overflow-hidden rounded bg-gray-50 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-black">
                     <JoditEditor
                       value={formData.description}
+                      config={joditConfig}
                       onBlur={(val) => setFormData({ ...formData, description: val })}
                     />
                   </div>

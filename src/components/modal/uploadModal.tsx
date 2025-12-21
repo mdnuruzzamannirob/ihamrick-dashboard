@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -41,26 +42,6 @@ const UploadModal: React.FC<UploadModalProps> = ({
 
   const editor = useRef<any>(null);
   const descriptionRef = useRef('');
-
-  const config = {
-    readonly: false,
-    toolbar: true,
-    height: 200,
-    buttons: [
-      'bold',
-      'italic',
-      'underline',
-      'strikethrough',
-      '|',
-      'ul',
-      'ol',
-      '|',
-      'outdent',
-      'indent',
-      '|',
-      'link',
-    ],
-  };
 
   // Reset or load data based on whether it's a new blog or editing an existing one
   useEffect(() => {
@@ -193,7 +174,7 @@ const UploadModal: React.FC<UploadModalProps> = ({
               <JoditEditor
                 ref={editor}
                 value={descriptionRef.current}
-                config={config}
+                config={joditConfig}
                 onChange={(value) => {
                   descriptionRef.current = value;
                 }}
