@@ -33,6 +33,7 @@ export default function ManagePublications() {
 
   /* -------------------- Handlers -------------------- */
   const openDeleteModal = (id: string) => {
+    console.log(id);
     setSelectedPublicationId(id);
     setDeleteModalOpen(true);
   };
@@ -144,7 +145,7 @@ export default function ManagePublications() {
                           <ViewPublicationModal publication={publication} />
 
                           <button
-                            onClick={() => openDeleteModal(publication.id)}
+                            onClick={() => openDeleteModal(publication._id)}
                             className="rounded-lg bg-red-50 p-2 text-red-600 hover:bg-red-100"
                           >
                             <Trash2 size={18} />
