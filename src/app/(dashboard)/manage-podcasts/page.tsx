@@ -15,9 +15,9 @@ import {
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import PodcastsUploadModal from '@/components/modal/padcastsUpload';
-import { useDeletePodcastMutation, useGetPodcastsQuery } from '../../../services/allApi';
 import PodcastsEditModal from '@/components/modal/podcastsEdit';
 import { PodcastsViewModal } from '@/components/modal/podcastsViewModal';
+import { useGetPodcastsQuery, useDeletePodcastMutation } from '../../../../services/allApi';
 
 const ITEMS_PER_PAGE = 10;
 

@@ -9,8 +9,8 @@ import Avatar from '@/assets/svg/Avatar.svg';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
-import { useGetCurrentUserQuery, useUpdateProfileMutation } from '../../../../services/allApi';
 import 'react-toastify/dist/ReactToastify.css';
+import { useGetCurrentUserQuery, useUpdateProfileMutation } from '../../../../../services/allApi';
 
 export default function ProfilePage() {
   const router = useRouter();

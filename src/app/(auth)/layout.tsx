@@ -13,5 +13,5 @@ export default async function layout({
     redirect('/dashboard');
   }
 
-  return <div>{children}</div>;
+  return children;
 }

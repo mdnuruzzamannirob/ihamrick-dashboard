@@ -2,8 +2,8 @@
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
 import AboutUsEditor from '@/components/ui/about-us-editor';
-import { useUpdateAboutUsMutation } from '../../../../services/allApi';
 import { toast } from 'react-toastify';
+import { useUpdateAboutUsMutation } from '../../../../../services/allApi';
 
 export default function AboutUs() {
   const [updateAboutUs, { isLoading }] = useUpdateAboutUsMutation();

@@ -13,5 +13,5 @@ export default async function Layout({
     redirect('/login');
   }
 
-  <div className="admin-layout-wrapper">{children}</div>;
+  return children;
 }

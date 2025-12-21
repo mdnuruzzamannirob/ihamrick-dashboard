@@ -14,10 +14,10 @@ import {
 } from 'lucide-react';
 import VideoUploadModal from '@/components/modal/videoUploadModal';
 import { toast } from 'react-toastify';
-import { useDeleteVideoMutation, useGetVideosQuery } from '../../../services/allApi';
 import { VideoViewModal } from '@/components/modal/videoViewModal';
 import VideoEditModal from '@/components/modal/videoEditModal';
 import { useRouter } from 'next/navigation';
+import { useGetVideosQuery, useDeleteVideoMutation } from '../../../../services/allApi';
 
 const ITEMS_PER_PAGE = 10;
 

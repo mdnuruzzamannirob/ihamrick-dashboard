@@ -1,12 +1,6 @@
 'use client';
 import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import {
-  setVideos,
-  setPodcasts,
-  setPublications,
-  setBlogs,
-} from '../../../../services/slices/mediaSlice';
 import { Sidebar } from '@/components/sidebar';
 import { StatCards } from '@/components/stat-cards';
 import { ManageBlog } from '@/components/manage-blog';
@@ -14,17 +8,24 @@ import { ManageVideos } from '@/components/manage-videos';
 import { ManagePodcasts } from '@/components/manage-padcasts';
 import { ManagePublications } from '@/components/manage-publications';
 import { UserProfile } from '@/components/user-profile';
-import {
-  useGetBlogsQuery,
-  useGetPodcastsQuery,
-  useGetPublicationsQuery,
-  useGetVideosQuery,
-  useSentNotificationsMutation,
-} from '../../../../services/allApi';
 import QualityOfLifeModal from '@/components/modal/qualityModal';
-import { useGetSocialLinksQuery, useUpdateSocialLinkMutation } from '../../../../services/allApi';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {
+  useGetVideosQuery,
+  useGetPodcastsQuery,
+  useGetPublicationsQuery,
+  useGetBlogsQuery,
+  useGetSocialLinksQuery,
+  useSentNotificationsMutation,
+  useUpdateSocialLinkMutation,
+} from '../../../../services/allApi';
+import {
+  setVideos,
+  setPodcasts,
+  setPublications,
+  setBlogs,
+} from '../../../../services/slices/mediaSlice';
 
 const DashboardPage = () => {
   const dispatch = useDispatch();

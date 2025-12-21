@@ -4,15 +4,16 @@ import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
 import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
 import UploadModal from '@/components/modal/uploadModal';
-import DeleteConfirmationModal from '../../../components/modal/deleteModal';
 import { ViewBlogModal } from '@/components/modal/viewModal';
+
+import Image from 'next/image';
+import DeleteConfirmationModal from '@/components/modal/deleteModal';
 import {
   useGetBlogsQuery,
   useDeleteBlogMutation,
   useUpdateBlogMutation,
-  useCreateBlogMutation, // Import the createBlog mutation
+  useCreateBlogMutation,
 } from '../../../../services/allApi';
-import Image from 'next/image';
 
 const ITEMS_PER_PAGE = 10;
 

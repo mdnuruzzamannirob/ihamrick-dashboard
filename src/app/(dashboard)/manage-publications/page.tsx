@@ -6,10 +6,10 @@ import { UserProfile } from '@/components/user-profile';
 import { Trash2, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { useDeletePublicationMutation, useGetPublicationsQuery } from '../../../../services/allApi';
 import { EditPublicationModal } from '@/components/modal/edit-publications';
 import { ViewPublicationModal } from '@/components/modal/ViewPublicationModal';
 import { PublicationModal } from '@/components/modal/publication-modal';
+import { useGetPublicationsQuery, useDeletePublicationMutation } from '../../../../services/allApi';
 
 const ITEMS_PER_PAGE = 10;
 

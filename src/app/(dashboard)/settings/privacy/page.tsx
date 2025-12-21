@@ -3,8 +3,8 @@
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
 import AboutUsEditor from '@/components/ui/about-us-editor';
-import { useUpdatePrivacyPolicyMutation } from '../../../../services/allApi'; // Import the privacy policy mutation
 import { toast } from 'react-toastify';
+import { useUpdatePrivacyPolicyMutation } from '../../../../../services/allApi';
 export default function PrivacyPolicy() {
   // Use the updatePrivacyPolicy mutation hook
   const [updatePrivacyPolicy, { isLoading }] = useUpdatePrivacyPolicyMutation();
