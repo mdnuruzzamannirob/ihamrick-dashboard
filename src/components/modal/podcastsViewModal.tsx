@@ -3,20 +3,12 @@
 import { Eye, X, Calendar, FileText, Layout, CheckCircle, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import Image from 'next/image';
+import { formatDate } from '@/utils/formatDate';
 
 export function PodcastsViewModal({ podcast }: { podcast: any }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
   if (!podcast) return null;
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   return (
     <>

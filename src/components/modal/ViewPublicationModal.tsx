@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { X, Eye, Calendar, User, FileText, CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { formatDate } from '@/utils/formatDate';
 
 interface Publication {
   _id: string;
@@ -129,7 +130,7 @@ export function ViewPublicationModal({ publication }: { publication: Publication
                           Published On
                         </p>
                         <p className="text-sm font-semibold text-gray-800">
-                          {publication.publicationDate}
+                          {formatDate(publication.publicationDate)}
                         </p>
                       </div>
                     </div>

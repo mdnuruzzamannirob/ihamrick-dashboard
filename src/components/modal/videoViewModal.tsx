@@ -1,4 +1,5 @@
 'use client';
+import { formatDate } from '@/utils/formatDate';
 import { Eye, X, Calendar, File, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -6,15 +7,6 @@ export function VideoViewModal({ video }: { video: any }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
   if (!video) return null;
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   return (
     <>
