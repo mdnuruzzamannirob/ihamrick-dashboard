@@ -352,9 +352,9 @@ const allApi = createApi({
       }),
     }),
 
-    getBlogs: builder.query<BlogResponse, void>({
-      query: () => ({
-        url: '/blog',
+    getBlogs: builder.query<BlogResponse, { page?: number; limit?: number }>({
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/blog?page=${page}&limit=${limit}`,
         method: 'GET',
       }),
     }),

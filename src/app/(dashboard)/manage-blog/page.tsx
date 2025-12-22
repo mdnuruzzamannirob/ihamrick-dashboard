@@ -2,313 +2,232 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
-import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Loader } from 'lucide-react';
+import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import UploadModal from '@/components/modal/uploadModal';
 import { ViewBlogModal } from '@/components/modal/viewModal';
-
 import Image from 'next/image';
 import DeleteConfirmationModal from '@/components/modal/deleteModal';
-import {
-  useGetBlogsQuery,
-  useDeleteBlogMutation,
-  useUpdateBlogMutation,
-  useCreateBlogMutation,
-} from '../../../../services/allApi';
+import { useGetBlogsQuery, useDeleteBlogMutation } from '../../../../services/allApi';
+import { toast } from 'react-toastify';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function ManageBlogPage() {
-  const [isNewBlog, setIsNewBlog] = useState(true); // Initially set to true to show add blog
-
   const [blogs, setBlogs] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState<any | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState<string | null>(null);
   const [blogToView, setBlogToView] = useState<any | null>(null);
-  const { data, isLoading, refetch } = useGetBlogsQuery();
+
+  // API Hooks
+  const { data, isLoading, refetch, isFetching } = useGetBlogsQuery({
+    page: currentPage,
+    limit: ITEMS_PER_PAGE,
+  });
   const [deleteBlog, { isLoading: deleteLoading }] = useDeleteBlogMutation();
-  const [updateBlog] = useUpdateBlogMutation();
-  const [createBlog] = useCreateBlogMutation(); // Add createBlog hook
 
   useEffect(() => {
-    if (data?.data) {
-      setBlogs(data.data);
-    }
+    if (data?.data) setBlogs(data.data);
   }, [data]);
 
+  // Pagination Logic
   const totalBlogs = data?.meta?.total ?? 0;
-  const totalPages = Math.ceil(totalBlogs / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const currentBlogs = blogs.slice(startIndex, endIndex);
+  const totalPages = data?.meta?.totalPages ?? Math.ceil(totalBlogs / ITEMS_PER_PAGE);
 
-  const handleViewClick = (blog: any) => {
-    setBlogToView(blog);
-    setIsViewModalOpen(true);
-  };
-
-  const closeViewModal = () => {
-    setIsViewModalOpen(false);
-    setBlogToView(null);
-  };
-
-  const handleDeleteClick = (id: any) => {
-    setBlogToDelete(id);
-    setDeleteModalOpen(true);
-  };
-
+  // Delete Handler with Refetch
   const confirmDelete = async () => {
-    if (blogToDelete !== null) {
+    if (blogToDelete) {
       try {
         await deleteBlog(blogToDelete).unwrap();
-        refetch();
-        setBlogToDelete(null);
+        toast.success('Blog deleted successfully');
         setDeleteModalOpen(false);
+        setBlogToDelete(null);
+        refetch();
       } catch (err) {
-        console.error('Failed to delete the blog:', err);
+        toast.error('Failed to delete blog');
+        console.error(err);
       }
     }
   };
 
-  const cancelDelete = () => {
-    setDeleteModalOpen(false);
-    setBlogToDelete(null);
-  };
-
-  const handleEdit = (blog: any) => {
-    setSelectedBlog(blog);
-    setIsNewBlog(false);
-    setIsModalOpen(true);
-  };
-
-  // const handleCloseModal = () => {
-  //   setIsModalOpen(false);
-  //   setSelectedBlog(null);
-  // };
-
-  const handleSaveChanges = async (updatedBlog: any) => {
-    setIsModalOpen(false);
-    const formData = new FormData();
-    formData.append('title', updatedBlog.title);
-    formData.append('description', updatedBlog.description);
-    formData.append('status', updatedBlog.status);
-    if (updatedBlog.coverImage) {
-      formData.append('coverImage', updatedBlog.coverImage);
-    }
-
-    try {
-      await updateBlog({
-        id: updatedBlog.id,
-        data: formData,
-      }).unwrap();
-      refetch();
-    } catch (error) {
-      console.error('Failed to update the blog:', error);
-    }
-  };
-
-  // New logic for creating a blog
-  const handleCreateBlog = async (newBlog: any) => {
-    const formData = new FormData();
-    formData.append('title', newBlog.title);
-    formData.append('description', newBlog.description);
-    formData.append('status', newBlog.status);
-    if (newBlog.coverImage) {
-      formData.append('coverImage', newBlog.coverImage);
-    }
-
-    try {
-      await createBlog({ data: formData }).unwrap();
-      refetch();
-      setIsModalOpen(false); // Close modal after successful creation
-    } catch {}
-  };
-
-  const handlePageChange = (page: any) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
-  };
-
-  const getPageNumbers = () => {
+  const renderPageNumbers = () => {
     const pages = [];
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, '...', totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-      }
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setCurrentPage(i)}
+          className={`h-10 w-10 rounded-lg text-sm font-medium transition-colors ${
+            currentPage === i ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {i}
+        </button>,
+      );
     }
     return pages;
   };
 
   return (
     <div className="flex min-h-screen bg-white">
-      {isLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Loader className="h-16 w-16 animate-spin text-white" />
-        </div>
-      )}
       <Sidebar />
+
       <div className="flex-1 lg:ml-64">
         <div className="p-4 md:p-6 lg:p-8">
+          {/* Header */}
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <h1 className="font-poppins text-2xl font-semibold text-black md:text-3xl">
-              Manage Blog
-            </h1>
-            <div className="flex items-center gap-3">
-              <UserProfile />
-            </div>
+            <h1 className="text-2xl font-bold text-black md:text-3xl">Manage Blog</h1>
+            <UserProfile />
           </div>
-          <div className="mb-6 flex flex-wrap items-center justify-end gap-3">
-            <button
-              onClick={() => {
-                setSelectedBlog(null);
-                setIsNewBlog(true);
-                setIsModalOpen(true);
-              }}
-              className="font-poppins flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-base font-medium text-white transition-colors hover:bg-neutral-800"
-            >
-              <span className="text-base">+</span>
-              Add
-            </button>
+
+          {/* Add Blog Button Area */}
+          <div className="mb-6 flex justify-end">
+            <UploadModal
+              refetch={refetch}
+              selectedBlog={selectedBlog}
+              onCloseTrigger={() => setSelectedBlog(null)}
+            />
           </div>
-          <div className="overflow-hidden rounded-lg border border-neutral-200">
+
+          {/* Table Container */}
+          <div className="overflow-hidden rounded-3xl border border-neutral-100 shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-neutral-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-neutral-900 md:px-6">
-                      Title
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Image
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-center text-sm font-semibold text-neutral-900 md:px-6">
-                      Action
-                    </th>
+                  <tr className="text-left text-xs font-black tracking-widest text-neutral-500 uppercase">
+                    <th className="px-6 py-4">Title</th>
+                    <th className="px-6 py-4 text-center">Cover</th>
+                    <th className="px-6 py-4 text-center">Status</th>
+                    <th className="px-6 py-4 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-200">
-                  {currentBlogs.map((blog) => (
-                    <tr key={blog._id} className="transition-colors hover:bg-neutral-50">
-                      <td className="px-4 py-4 text-sm text-neutral-900 md:px-6">{blog.title}</td>
-                      <td className="px-4 py-4 text-center md:px-6">
-                        <Image
-                          src={blog.coverImage}
-                          alt={blog.title}
-                          width={80}
-                          height={80}
-                          className="mx-auto h-16 w-16 rounded object-cover"
-                        />
-                      </td>
-                      <td className="px-4 py-4 text-center md:px-6">
-                        <span
-                          className={`inline-block rounded-full px-3 py-1 text-xs font-medium text-white ${
-                            blog.status ? 'bg-red-400' : 'bg-black'
-                          }`}
-                        >
-                          {blog.status ? 'Published' : 'Unpublished'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-center md:px-6">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => handleEdit(blog)}
-                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-                            aria-label="Edit"
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(blog._id)}
-                            className="rounded-lg bg-red-400 p-2 text-white transition-colors hover:bg-red-500"
-                            aria-label="Delete"
-                            disabled={deleteLoading}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleViewClick(blog)}
-                            className="rounded-lg bg-neutral-800 p-2 text-white transition-colors hover:bg-neutral-700"
-                            aria-label="View"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
+                <tbody className="divide-y divide-neutral-100 bg-white">
+                  {isLoading || isFetching ? (
+                    <tr>
+                      <td colSpan={4} className="py-20 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+                          <p className="text-sm font-medium text-neutral-500">Loading blogs...</p>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  ) : blogs.length > 0 ? (
+                    blogs.map((blog) => (
+                      <tr key={blog._id} className="transition-colors hover:bg-neutral-50">
+                        <td className="px-6 py-4 text-sm font-medium text-neutral-900">
+                          {blog.title}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="relative mx-auto h-12 w-20 overflow-hidden rounded-xl border border-neutral-200">
+                            <Image
+                              src={blog.coverImage}
+                              alt={blog.title}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span
+                            className={`rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase ${
+                              blog.status === 'published'
+                                ? 'bg-black text-white'
+                                : 'bg-red-500 text-white'
+                            }`}
+                          >
+                            {blog.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => setSelectedBlog(blog)}
+                              className="rounded-lg bg-neutral-100 p-2 transition-all hover:bg-black hover:text-white"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setBlogToDelete(blog._id);
+                                setDeleteModalOpen(true);
+                              }}
+                              className="rounded-lg bg-red-50 p-2 text-red-500 transition-all hover:bg-red-500 hover:text-white"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setBlogToView(blog);
+                                setIsViewModalOpen(true);
+                              }}
+                              className="rounded-lg bg-neutral-100 p-2 transition-all hover:bg-black hover:text-white"
+                            >
+                              <Eye size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="py-20 text-center text-neutral-400">
+                        No blogs found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
-            <div className="border-t border-neutral-200 bg-white px-4 py-4 md:px-6">
-              <div className="flex items-center justify-center gap-1">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                {getPageNumbers().map((page, index) => (
-                  <div key={index}>
-                    {page === '...' ? (
-                      <span className="px-3 py-2 text-neutral-600">...</span>
-                    ) : (
-                      <button
-                        onClick={() => handlePageChange(page as number)}
-                        className={`min-w-10 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                          currentPage === page
-                            ? 'bg-red-500 text-white'
-                            : 'text-neutral-600 hover:bg-neutral-100'
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    )}
+
+            {/* Pagination Section */}
+            {totalPages > 1 && (
+              <div className="border-t border-neutral-100 bg-white px-6 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <p className="text-sm text-neutral-600">
+                    Page <span className="font-semibold">{currentPage}</span> of{' '}
+                    <span className="font-semibold">{totalPages}</span>
+                  </p>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="flex h-10 items-center gap-1 rounded-lg border border-neutral-200 px-3 text-sm transition-all hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      <ChevronLeft className="h-4 w-4" /> Prev
+                    </button>
+
+                    <div className="hidden gap-1 md:flex">{renderPageNumbers()}</div>
+
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="flex h-10 items-center gap-1 rounded-lg border border-neutral-200 px-3 text-sm transition-all hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      Next <ChevronRight className="h-4 w-4" />
+                    </button>
                   </div>
-                ))}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="rounded-lg p-2 text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      <UploadModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={selectedBlog ? handleSaveChanges : handleCreateBlog}
-        isNewBlog={isNewBlog}
-        post={selectedBlog || null}
-      />
-
+      {/* Modals */}
       <DeleteConfirmationModal
         isOpen={deleteModalOpen}
-        onClose={cancelDelete}
+        onClose={() => setDeleteModalOpen(false)}
         onConfirm={confirmDelete}
         isLoading={deleteLoading}
       />
-      <ViewBlogModal isOpen={isViewModalOpen} onClose={closeViewModal} blog={blogToView} />
+      <ViewBlogModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        blog={blogToView}
+      />
     </div>
   );
 }

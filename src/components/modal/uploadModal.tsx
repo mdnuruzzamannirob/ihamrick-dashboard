@@ -1,259 +1,338 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+'use client';
+import React, { useState, useEffect } from 'react';
+import { X, Calendar, Clock, CloudUpload, FileText, Loader2, Plus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { joditConfig } from '@/utils/joditConfig';
+import { toast } from 'react-toastify';
+import { useCreateBlogMutation, useUpdateBlogMutation } from '../../../services/allApi';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 interface UploadModalProps {
-  isOpen?: boolean;
-  onClose?: () => void;
-  onSave?: (data: {
-    id: number;
-    title: string;
-    status: boolean;
-    description: string;
-    coverImage?: File;
-  }) => void;
-  post: {
-    _id: number;
-    title: string;
-    status: boolean;
-    description: string;
-    coverImage: File | null;
-  } | null;
-  isNewBlog: boolean; // Pass `isNewBlog` prop to indicate whether it's a new blog or update
+  selectedBlog?: any | null;
+  onCloseTrigger?: () => void;
+  refetch: () => void;
 }
 
-const UploadModal: React.FC<UploadModalProps> = ({
-  isOpen = true,
-  onClose = () => {},
-  onSave = () => {},
-  post,
-  isNewBlog,
-}) => {
-  const [title, setTitle] = useState('');
-  const [id, setId] = useState(0);
-  const [status, setStatus] = useState(false);
+export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: UploadModalProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [formState, setFormState] = useState({
+    title: '',
+    status: 'published' as 'published' | 'scheduled' | 'unpublished',
+    date: '',
+    description: '',
+  });
+
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const editor = useRef<any>(null);
-  const descriptionRef = useRef('');
+  const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
+  const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
+  const isLoading = isCreating || isUpdating;
 
-  // Reset or load data based on whether it's a new blog or editing an existing one
+  // Sync state when editing
   useEffect(() => {
-    if (isOpen) {
-      if (isNewBlog) {
-        // Reset form when adding a new blog
-        setId(0);
-        setTitle('');
-        setStatus(false);
-        setCoverImage(null);
-        descriptionRef.current = '';
-        setFilePreview(null);
+    if (selectedBlog) {
+      const postDate =
+        selectedBlog.status === 'scheduled' ? selectedBlog.scheduledAt : selectedBlog.uploadDate;
+      setFormState({
+        title: selectedBlog.title || '',
+        status: selectedBlog.status,
+        date: postDate
+          ? selectedBlog.status === 'scheduled'
+            ? postDate.substring(0, 16)
+            : postDate.split('T')[0]
+          : '',
+        description: selectedBlog.description || '',
+      });
+      setFilePreview(selectedBlog.coverImage || null);
+      setIsOpen(true);
+    }
+  }, [selectedBlog]);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setFormState({ title: '', status: 'published', date: '', description: '' });
+    setCoverImage(null);
+    setFilePreview(null);
+    if (onCloseTrigger) onCloseTrigger();
+  };
+
+  const validateForm = () => {
+    if (!formState.title.trim()) {
+      toast.error('Title is required!');
+      return false;
+    }
+    if (!formState.date) {
+      toast.error('Please select a date!');
+      return false;
+    }
+    if (!formState.description.trim()) {
+      toast.error('Content is empty!');
+      return false;
+    }
+    if (!selectedBlog && !coverImage) {
+      toast.error('Please upload a cover image!');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+
+    const formData = new FormData();
+    const utcDate = new Date(formState.date).toISOString();
+
+    formData.append('title', formState.title);
+    formData.append('description', formState.description);
+    formData.append('status', formState.status);
+
+    if (formState.status === 'scheduled') {
+      formData.append('scheduledAt', utcDate);
+    } else {
+      formData.append('uploadDate', utcDate);
+    }
+
+    if (coverImage) formData.append('coverImage', coverImage);
+
+    try {
+      if (selectedBlog) {
+        await updateBlog({ id: selectedBlog._id, data: formData }).unwrap();
+        toast.success('Article updated!');
       } else {
-        // Load data when editing an existing blog
-        if (post) {
-          setId(post._id);
-          setTitle(post.title);
-          setStatus(post.status);
-          setCoverImage(post.coverImage);
-          descriptionRef.current = post.description;
-
-          // Check if coverImage exists and is a valid File object before creating an object URL
-          if (post.coverImage && post.coverImage instanceof File) {
-            setFilePreview(URL.createObjectURL(post.coverImage));
-          } else {
-            setFilePreview(null);
-          }
-        }
+        await createBlog({ data: formData }).unwrap();
+        toast.success('Article published!');
       }
-    }
-  }, [isOpen, post, isNewBlog]);
-
-  const handleSave = () => {
-    onSave({
-      id,
-      title,
-      status,
-      description: descriptionRef.current,
-      coverImage: coverImage || undefined,
-    });
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      setCoverImage(selectedFile);
-      setFilePreview(URL.createObjectURL(selectedFile)); // Preview the selected file
+      refetch();
+      handleClose();
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Something went wrong!');
     }
   };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) {
-      setCoverImage(droppedFile);
-      setFilePreview(URL.createObjectURL(droppedFile)); // Preview the dropped file
-    }
-  };
-
-  if (!isOpen) return null;
 
   return (
-    <div className="font-poppins fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="relative max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-lg bg-white shadow-xl">
+    <>
+      {!selectedBlog && (
         <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 text-gray-500 transition-colors hover:text-gray-700 sm:top-4 sm:right-4"
+          onClick={() => setIsOpen(true)}
+          className="flex items-center gap-2 rounded-xl bg-black px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-black/10 transition-all hover:bg-neutral-800"
         >
-          <X size={20} className="sm:h-6 sm:w-6" />
+          <Plus size={18} /> Add New Blog
         </button>
-        <div className="p-4 sm:p-6">
-          {/* Title and Status */}
-          <div className="mb-4 grid grid-cols-1 gap-4 sm:mb-6 sm:grid-cols-2">
-            <div>
-              <label className="font-poppins mb-2 block text-xs font-medium text-gray-700 sm:text-sm">
-                Title
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Write the title.."
-                className="font-poppins w-full rounded-md border border-gray-300 px-3 py-2 text-xs text-neutral-800 focus:border-transparent focus:ring-2 focus:ring-gray-400 focus:outline-none sm:text-base"
-              />
+      )}
+
+      {isOpen && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-black/60 p-4 backdrop-blur-md">
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
+
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex max-h-[95vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-2xl"
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-50 bg-white/90 px-8 py-6 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-black p-2.5 text-white shadow-xl shadow-black/20">
+                  <FileText size={22} />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight text-neutral-800">
+                  {selectedBlog ? 'Modify Article' : 'Create Article'}
+                </h2>
+              </div>
+              <button
+                onClick={handleClose}
+                disabled={isLoading}
+                className="rounded-full p-2 text-neutral-400 transition-colors hover:bg-neutral-100"
+              >
+                <X size={24} />
+              </button>
             </div>
-            <div>
-              <label className="font-poppins mb-2 block text-xs font-medium text-gray-700 sm:text-sm">
-                Status
-              </label>
-              <div className="relative">
-                <select
-                  value={status ? 'Published' : 'Unpublished'}
-                  onChange={(e) => setStatus(e.target.value === 'Published')}
-                  className="font-poppins w-full appearance-none rounded-md border border-gray-300 bg-white px-3 py-2 text-xs text-neutral-800 focus:border-transparent focus:ring-2 focus:ring-gray-400 focus:outline-none sm:text-base"
-                >
-                  <option value="Published">Published</option>
-                  <option value="Unpublished">Unpublished</option>
-                </select>
-                <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 transform">
-                  <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                    <path
-                      d="M1 1L6 6L11 1"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+
+            {/* Scrollable Form Body */}
+            <div className="custom-scrollbar flex-1 space-y-8 overflow-y-auto bg-[#fcfcfc] p-8">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
+                    Article Title
+                  </label>
+                  <input
+                    type="text"
+                    value={formState.title}
+                    onChange={(e) => setFormState((p) => ({ ...p, title: e.target.value }))}
+                    className="w-full rounded border border-neutral-200 bg-white px-5 py-4 transition-all outline-none focus:border-black focus:ring-4 focus:ring-black/5"
+                    placeholder="Enter blog title..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
+                    Status
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={formState.status}
+                      onChange={(e) =>
+                        setFormState((p) => ({ ...p, status: e.target.value as any }))
+                      }
+                      className="w-full cursor-pointer appearance-none rounded border border-neutral-200 bg-white px-5 py-4 font-bold text-neutral-700 outline-none focus:border-black"
+                    >
+                      {selectedBlog ? (
+                        <>
+                          <option value="scheduled">Scheduled</option>
+                          <option value="published">Published</option>
+                          <option value="unpublished">Unpublished</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="scheduled">Scheduled</option>
+                          <option value="published">Published</option>
+                        </>
+                      )}
+                    </select>
+                    <Clock
+                      className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 text-neutral-400"
+                      size={18}
                     />
-                  </svg>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Description Editor */}
-          <div className="mb-4 sm:mb-6">
-            <label className="font-poppins mb-2 block text-xs font-medium text-gray-700 sm:text-sm">
-              Description
-            </label>
-            <div className="font-poppins overflow-hidden rounded-md border border-gray-300 text-xs text-neutral-800">
-              <JoditEditor
-                ref={editor}
-                value={descriptionRef.current}
-                config={joditConfig}
-                onChange={(value) => {
-                  descriptionRef.current = value;
-                }}
-              />
-            </div>
-          </div>
+              {/* Dynamic Date Input Based on Status */}
+              <div className="space-y-2">
+                <label className="ml-1 flex items-center gap-2 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
+                  {formState.status === 'scheduled' ? <Clock size={14} /> : <Calendar size={14} />}
+                  {formState.status === 'scheduled'
+                    ? 'Scheduling Time (UTC)'
+                    : 'Target Publication Date'}
+                </label>
+                <input
+                  type={formState.status === 'scheduled' ? 'datetime-local' : 'date'}
+                  value={formState.date}
+                  onChange={(e) => setFormState((p) => ({ ...p, date: e.target.value }))}
+                  className="w-full rounded border border-neutral-200 bg-white px-5 py-4 font-medium transition-all outline-none focus:border-black"
+                />
+              </div>
 
-          {/* File Upload */}
-          <div className="mb-4 sm:mb-6">
-            <label className="font-poppins mb-3 block text-center text-xs font-medium text-gray-700 sm:mb-4 sm:text-sm">
-              Upload Cover
-            </label>
-            <div
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              className={`rounded-lg border-2 border-dashed p-6 text-center transition-colors sm:p-8 ${
-                isDragging ? 'border-red-400 bg-blue-50' : 'border-gray-300'
-              }`}
-            >
-              <input
-                type="file"
-                id="file-upload"
-                className="hidden"
-                onChange={handleFileSelect}
-                accept="image/*"
-              />
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="flex flex-col items-center">
-                  <div className="mb-2 h-12 w-12 text-gray-400 sm:mb-3 sm:h-16 sm:w-16">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M3 7C3 5.89543 3.89543 5 5 5H19C20.1046 5 21 5.89543 21 7V17C21 18.1046 20.1046 19 19 19H5C3.89543 19 3 18.1046 3 17V7Z" />
-                      <path
-                        d="M3 7L3 17L9 11L15 17L21 11V7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <p className="font-poppins text-xs text-gray-600 sm:text-sm">
-                    {coverImage ? (
-                      <span className="text-blue-600">{coverImage.name}</span>
-                    ) : (
-                      <>
-                        Drag and Drop a file here, or{' '}
-                        <span className="font-semibold text-red-400">Browse</span>
-                      </>
-                    )}
-                  </p>
-                  {/* Image Preview */}
-                  {filePreview && (
-                    <div className="mt-4">
-                      <Image
-                        src={filePreview}
-                        alt="Preview"
-                        width={500}
-                        height={200}
-                        className="h-auto max-w-full rounded-lg"
-                      />
+              {/* Editor Section */}
+              <div className="space-y-2">
+                <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
+                  Main Content
+                </label>
+                <div className="overflow-hidden rounded border border-neutral-200 bg-white shadow-inner">
+                  <JoditEditor
+                    value={formState.description}
+                    config={joditConfig}
+                    onBlur={(newContent) =>
+                      setFormState((p) => ({ ...p, description: newContent }))
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Dynamic Image Upload Area */}
+              <div className="space-y-3">
+                <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
+                  Cover Image
+                </label>
+                <label
+                  htmlFor="file-upload-final"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                      setCoverImage(file);
+                      setFilePreview(URL.createObjectURL(file));
+                    }
+                  }}
+                  className={`group relative flex min-h-[280px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-500 ${
+                    isDragging
+                      ? 'scale-[0.98] border-black bg-neutral-100'
+                      : 'border-neutral-200 hover:border-neutral-400 hover:bg-white'
+                  }`}
+                >
+                  <input
+                    id="file-upload-final"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setCoverImage(file);
+                        setFilePreview(URL.createObjectURL(file));
+                      }
+                    }}
+                  />
+
+                  {filePreview ? (
+                    <div className="absolute inset-0 h-full w-full overflow-hidden">
+                      <div className="relative h-full w-full overflow-hidden rounded-3xl shadow-2xl">
+                        <Image
+                          src={filePreview}
+                          alt="Preview"
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-[3px] transition-all group-hover:opacity-100">
+                          <span className="bold rounded-full bg-white px-8 py-3 text-[10px] tracking-widest uppercase shadow-2xl">
+                            Replace Media
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center py-12">
+                      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-neutral-100 bg-neutral-50 shadow-sm transition-all duration-500 group-hover:scale-105">
+                        <CloudUpload className="text-neutral-400" size={36} />
+                      </div>
+                      <p className="text-sm font-bold text-neutral-800">
+                        Drag & Drop or Click to Upload
+                      </p>
+                      <p className="mt-2 text-xs font-medium text-neutral-400">
+                        Supports High-res PNG, JPG, WebP
+                      </p>
                     </div>
                   )}
-                </div>
-              </label>
+                </label>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-4 border-t border-neutral-50 bg-white px-8 py-6">
+              <button
+                disabled={isLoading}
+                onClick={handleClose}
+                className="rounded-2xl px-6 py-3 text-sm font-bold text-neutral-400 transition-all hover:bg-neutral-50 hover:text-neutral-800"
+              >
+                Discard
+              </button>
+              <button
+                disabled={isLoading}
+                onClick={handleSave}
+                className="flex min-w-[200px] items-center justify-center gap-3 rounded-[22px] bg-black px-10 py-4 text-xs font-bold tracking-[0.2em] text-white uppercase shadow-2xl shadow-black/20 transition-all hover:bg-neutral-800 active:scale-95 disabled:bg-neutral-200"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" /> Syncing...
+                  </>
+                ) : selectedBlog ? (
+                  'Update Blog'
+                ) : (
+                  'Publish Blog'
+                )}
+              </button>
             </div>
           </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={handleSave}
-              className="font-poppins rounded-md bg-black px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-gray-800 sm:px-6 sm:text-sm"
-            >
-              {isNewBlog ? 'Create Blog' : 'Save Changes'}
-            </button>
-          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
-};
-
-export default UploadModal;
+}

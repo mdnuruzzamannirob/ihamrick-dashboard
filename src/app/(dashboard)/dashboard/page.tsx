@@ -36,7 +36,7 @@ const DashboardPage = () => {
   const { data: videos } = useGetVideosQuery({});
   const { data: podcasts } = useGetPodcastsQuery({});
   const { data: publications } = useGetPublicationsQuery({});
-  const { data: blogs } = useGetBlogsQuery();
+  const { data: blogs } = useGetBlogsQuery({});
   const { data: socialLinks, isLoading: isSocialLinksLoading } = useGetSocialLinksQuery();
 
   // Use the sentNotifications mutation
