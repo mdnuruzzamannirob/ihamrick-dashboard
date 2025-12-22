@@ -5,7 +5,6 @@ import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
 import { Trash2, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
 import { EditPublicationModal } from '@/components/modal/edit-publications';
 import { ViewPublicationModal } from '@/components/modal/ViewPublicationModal';
 import { PublicationModal } from '@/components/modal/publication-modal';
@@ -18,10 +17,8 @@ export default function ManagePublications() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPublicationId, setSelectedPublicationId] = useState<string | null>(null);
 
-  const router = useRouter();
-
   /* -------------------- API -------------------- */
-  const { data, isLoading } = useGetPublicationsQuery({
+  const { data, isLoading, refetch } = useGetPublicationsQuery({
     page,
     limit: ITEMS_PER_PAGE,
   });
@@ -49,7 +46,7 @@ export default function ManagePublications() {
       await deletePublication(selectedPublicationId).unwrap();
       toast.success('Publication deleted successfully');
       closeDeleteModal();
-      router.refresh();
+      refetch();
     } catch {
       toast.error('Failed to delete publication');
     }
@@ -201,13 +198,11 @@ export default function ManagePublications() {
 
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
-        <div
-          onClick={() => setDeleteModalOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => setDeleteModalOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            className="z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
           >
             <div className="flex flex-col items-center text-center">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">

@@ -13,7 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useUpdatePublicationMutation } from '../../../services/allApi';
+import { useGetPublicationsQuery, useUpdatePublicationMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
@@ -22,6 +22,7 @@ export function EditPublicationModal({ publication }: { publication: any }) {
   const [isOpen, setIsOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [updatePublication, { isLoading }] = useUpdatePublicationMutation();
+  const { refetch } = useGetPublicationsQuery({});
 
   const [formData, setFormData] = useState({
     title: publication.title,
@@ -56,6 +57,7 @@ export function EditPublicationModal({ publication }: { publication: any }) {
 
     try {
       await updatePublication({ id: publication._id, data: payload }).unwrap();
+      refetch();
       toast.success('Publication updated successfully!');
       setIsOpen(false);
     } catch (err: any) {
@@ -73,13 +75,11 @@ export function EditPublicationModal({ publication }: { publication: any }) {
       </button>
 
       {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-in zoom-in flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
+            className="animate-in zoom-in z-10 flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-50 px-10 py-6">
@@ -192,6 +192,7 @@ export function EditPublicationModal({ publication }: { publication: any }) {
                     </label>
                     <input
                       disabled
+                      name="publicationDate"
                       value={formData.publicationDate}
                       onChange={(e) =>
                         setFormData({ ...formData, publicationDate: e.target.value })

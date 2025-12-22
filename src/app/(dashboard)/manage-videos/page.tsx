@@ -16,7 +16,6 @@ import VideoUploadModal from '@/components/modal/videoUploadModal';
 import { toast } from 'react-toastify';
 import { VideoViewModal } from '@/components/modal/videoViewModal';
 import VideoEditModal from '@/components/modal/videoEditModal';
-import { useRouter } from 'next/navigation';
 import { useGetVideosQuery, useDeleteVideoMutation } from '../../../../services/allApi';
 
 const ITEMS_PER_PAGE = 10;
@@ -27,13 +26,12 @@ export default function ManageVideos() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
 
-  const { data, isLoading } = useGetVideosQuery({
+  const { data, isLoading, refetch } = useGetVideosQuery({
     page,
     limit: ITEMS_PER_PAGE,
   });
 
   const [deleteVideo, { isLoading: deleting }] = useDeleteVideoMutation();
-  const router = useRouter();
 
   const videos = data?.data ?? [];
   const totalPages = data?.meta?.totalPages ?? 1;
@@ -55,7 +53,7 @@ export default function ManageVideos() {
       await deleteVideo(selectedVideoId).unwrap();
       toast.success('Video deleted successfully');
       closeDeleteModal();
-      router.refresh();
+      refetch();
     } catch {
       toast.error('Failed to delete video');
     }
@@ -202,7 +200,11 @@ export default function ManageVideos() {
       {/* --- Delete Confirmation Modal --- */}
       {deleteModalOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md scale-100 rounded-xl bg-white p-6 shadow-2xl transition-all">
+          <div className="absolute inset-0" onClick={() => setDeleteModalOpen(false)} />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="z-10 w-full max-w-md scale-100 rounded-xl bg-white p-6 shadow-2xl transition-all"
+          >
             <div className="flex flex-col items-center text-center">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
                 <AlertTriangle size={30} />

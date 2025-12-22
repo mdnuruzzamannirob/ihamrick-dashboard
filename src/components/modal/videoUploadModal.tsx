@@ -5,7 +5,7 @@ import { useState, useRef } from 'react';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useUploadVideoMutation } from '../../../services/allApi';
+import { useGetVideosQuery, useUploadVideoMutation } from '../../../services/allApi';
 import { toast } from 'react-toastify';
 import { joditConfig } from '@/utils/joditConfig';
 
@@ -40,6 +40,7 @@ const VideoUploadModal = () => {
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const [uploadVideo, { isLoading }] = useUploadVideoMutation();
+  const { refetch } = useGetVideosQuery({});
 
   /* -------------------- handlers -------------------- */
 
@@ -88,6 +89,7 @@ const VideoUploadModal = () => {
 
     try {
       await uploadVideo(payload).unwrap();
+      refetch();
       toast.success('Video uploaded successfully');
       setIsModalOpen(false);
       resetForm();
@@ -123,13 +125,11 @@ const VideoUploadModal = () => {
       </button>
 
       {isModalOpen && (
-        <div
-          onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-background text-foreground flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg shadow-2xl"
+            className="bg-background text-foreground z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
@@ -138,7 +138,7 @@ const VideoUploadModal = () => {
                 onClick={() => setIsModalOpen(false)}
                 className="text-2xl leading-none text-gray-500 hover:text-black"
               >
-                ×
+                x
               </button>
             </div>
 
@@ -163,7 +163,7 @@ const VideoUploadModal = () => {
                   <div>
                     <label className="mb-2 block text-sm font-medium text-gray-700">Date</label>
                     <input
-                      name="uploadDate"
+                      name="date"
                       type="date"
                       value={formData.date}
                       onChange={handleInputChange}

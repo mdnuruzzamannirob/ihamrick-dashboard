@@ -5,7 +5,7 @@ import { Pencil, Loader2, X, UploadCloud, Image as ImageIcon } from 'lucide-reac
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { useUpdatePodcastMutation } from '../../../services/allApi';
+import { useGetPodcastsQuery, useUpdatePodcastMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
@@ -13,6 +13,7 @@ const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 const PodcastEditModal = ({ podcast }: { podcast: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatePodcast, { isLoading: isUpdating }] = useUpdatePodcastMutation();
+  const { refetch } = useGetPodcastsQuery({});
 
   const [formData, setFormData] = useState({
     title: '',
@@ -72,6 +73,7 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
 
     try {
       await updatePodcast({ id: podcast.id, data: payload }).unwrap();
+      refetch();
       toast.success('Podcast updated successfully');
       setIsModalOpen(false);
     } catch (err: any) {
@@ -90,13 +92,11 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
       </button>
 
       {isModalOpen && (
-        <div
-          onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-        >
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-in zoom-in flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl duration-200"
+            className="animate-in zoom-in z-10 flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl duration-200"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">

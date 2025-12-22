@@ -6,7 +6,7 @@ import { Pencil, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { useUpdateVideoMutation } from '../../../services/allApi';
+import { useGetVideosQuery, useUpdateVideoMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
@@ -14,6 +14,7 @@ const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 const VideoEditModal = ({ video }: { video: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
+  const { refetch } = useGetVideosQuery({});
 
   const [formData, setFormData] = useState({
     title: '',
@@ -89,6 +90,7 @@ const VideoEditModal = ({ video }: { video: any }) => {
       if (files.coverImage) submitData.append('coverImage', files.coverImage);
 
       await updateVideo({ id: video.id, data: submitData as any }).unwrap();
+      refetch();
       toast.success('Video updated successfully!');
       setIsModalOpen(false);
     } catch (error: any) {

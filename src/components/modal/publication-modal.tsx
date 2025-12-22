@@ -5,7 +5,7 @@ import { useState, useRef } from 'react';
 import { ChevronDown, X, FileText, ImageIcon, Loader2, Plus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { useCreatePublicationMutation } from '../../../services/allApi';
+import { useCreatePublicationMutation, useGetPublicationsQuery } from '../../../services/allApi';
 import Image from 'next/image';
 import { joditConfig } from '@/utils/joditConfig';
 
@@ -40,6 +40,7 @@ export function PublicationModal() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [createPublication, { isLoading }] = useCreatePublicationMutation();
+  const { refetch } = useGetPublicationsQuery({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -75,6 +76,7 @@ export function PublicationModal() {
 
     try {
       await createPublication(payload).unwrap();
+      refetch();
       toast.success('Publication created successfully');
       setIsOpen(false);
       resetForm();
@@ -106,13 +108,11 @@ export function PublicationModal() {
       </button>
 
       {isOpen && (
-        <div
-          onClick={() => setIsOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-in zoom-in flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
+            className="animate-in zoom-in z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-50 px-8 py-6">

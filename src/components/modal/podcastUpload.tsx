@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { useCreatePodcastMutation } from '../../../services/allApi';
+import { useCreatePodcastMutation, useGetPodcastsQuery } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 
 interface PodcastFormState {
@@ -35,6 +35,7 @@ const PodcastUploadModal = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [createPodcast, { isLoading }] = useCreatePodcastMutation();
+  const { refetch } = useGetPodcastsQuery({});
 
   /* ---------------- handlers ---------------- */
 
@@ -73,6 +74,7 @@ const PodcastUploadModal = () => {
 
     try {
       await createPodcast(payload).unwrap();
+      refetch();
       toast.success('Podcast created successfully');
       setIsModalOpen(false);
       resetForm();
@@ -106,13 +108,11 @@ const PodcastUploadModal = () => {
       </button>
 
       {isModalOpen && (
-        <div
-          onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl"
+            className="z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">

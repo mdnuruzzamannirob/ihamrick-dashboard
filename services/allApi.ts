@@ -478,6 +478,7 @@ const allApi = createApi({
         url: '/videos/upload',
         method: 'POST',
         body: formData,
+        timeout: 600000,
       }),
     }),
 
@@ -490,6 +491,7 @@ const allApi = createApi({
         url: `/videos/${id}`,
         method: 'PUT',
         body: data,
+        timeout: 600000,
       }),
     }),
 

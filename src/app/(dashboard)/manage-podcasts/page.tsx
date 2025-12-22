@@ -36,7 +36,7 @@ export default function ManagePodcasts() {
   const router = useRouter();
 
   /* -------------------- API -------------------- */
-  const { data, isLoading } = useGetPodcastsQuery({
+  const { data, isLoading, refetch } = useGetPodcastsQuery({
     page,
     limit: ITEMS_PER_PAGE,
   });
@@ -65,7 +65,7 @@ export default function ManagePodcasts() {
       await deletePodcast(selectedPodcastId).unwrap();
       toast.success('Podcast deleted successfully');
       closeDeleteModal();
-      router.refresh();
+      refetch();
     } catch {
       toast.error('Failed to delete podcast');
     }
@@ -105,7 +105,7 @@ export default function ManagePodcasts() {
     try {
       await endPodcast(id).unwrap();
       toast.success('Podcast live ended');
-      router.refresh();
+      refetch();
     } catch {
       toast.error('Failed to end live podcast');
     }
@@ -284,13 +284,11 @@ export default function ManagePodcasts() {
 
       {/* Delete Modal */}
       {deleteModalOpen && (
-        <div
-          onClick={() => setDeleteModalOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={() => setDeleteModalOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            className="z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
           >
             <div className="flex flex-col items-center text-center">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
