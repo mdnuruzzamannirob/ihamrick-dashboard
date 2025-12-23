@@ -69,7 +69,7 @@ const PodcastUploadModal = () => {
       'date',
       formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
     );
-    payload.append('status', String(formData.status));
+    payload.append('status', formData.status);
     payload.append('coverImage', formData.coverImage);
 
     try {
@@ -136,6 +136,7 @@ const PodcastUploadModal = () => {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
+                      placeholder="Title"
                       className="w-full rounded border border-gray-200 px-3 py-2 text-sm"
                     />
                   </div>
@@ -149,29 +150,6 @@ const PodcastUploadModal = () => {
                       onChange={handleInputChange}
                       className="w-full rounded border border-gray-200 px-3 py-2 text-sm"
                     />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">Status</label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="w-full rounded border border-gray-200 px-3 py-2 text-sm"
-                    >
-                      <option className="capitalize" value="scheduled">
-                        scheduled
-                      </option>
-                      <option className="capitalize" value="live">
-                        live
-                      </option>
-                      <option className="capitalize" value="ended">
-                        ended
-                      </option>
-                      <option className="capitalize" value="cancelled">
-                        cancelled
-                      </option>
-                    </select>
                   </div>
                 </div>
 

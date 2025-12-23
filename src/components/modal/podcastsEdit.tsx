@@ -18,7 +18,7 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
   const [formData, setFormData] = useState({
     title: '',
     date: '',
-    status: '',
+    status: 'scheduled',
     description: '',
     transcription: '',
   });
@@ -122,6 +122,7 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
+                      placeholder="Title"
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm transition-all outline-none focus:border-black focus:ring-2 focus:ring-black/5"
                     />
                   </div>
@@ -136,30 +137,6 @@ const PodcastEditModal = ({ podcast }: { podcast: any }) => {
                       onChange={handleInputChange}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm transition-all outline-none focus:border-black disabled:bg-gray-100 disabled:opacity-50"
                     />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                      Status
-                    </label>
-                    <select
-                      name="status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm transition-all outline-none focus:border-black"
-                    >
-                      <option className="capitalize" value="scheduled">
-                        scheduled
-                      </option>
-                      <option className="capitalize" value="live">
-                        live
-                      </option>
-                      <option className="capitalize" value="ended">
-                        ended
-                      </option>
-                      <option className="capitalize" value="cancelled">
-                        cancelled
-                      </option>
-                    </select>
                   </div>
                 </div>
 

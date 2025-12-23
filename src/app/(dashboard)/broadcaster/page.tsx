@@ -3,24 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useSearchParams, useRouter } from 'next/navigation';
-import {
-  Mic,
-  MicOff,
-  Square,
-  Radio,
-  ArrowLeft,
-  Activity,
-  Hash,
-  Database,
-  Globe,
-  Users,
-  ShieldCheck,
-  Loader2,
-} from 'lucide-react';
+import { Mic, MicOff, Square, Radio, ArrowLeft, Users, ShieldCheck, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useEndPodcastMutation } from '../../../../services/allApi';
 
-const defaultServer = 'https://api.pg-65.com/';
+const defaultServer = 'https://api.pg-65.com';
 
 export default function BroadcasterPage() {
   const searchParams = useSearchParams();
@@ -34,36 +21,60 @@ export default function BroadcasterPage() {
 
   const [podcastId, setPodcastId] = useState('');
   const [sessionId, setSessionId] = useState('');
-  const [serverUrl, setServerUrl] = useState(defaultServer);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [listenerCount, setListenerCount] = useState(0);
   const [chunkCount, setChunkCount] = useState(0);
 
+  // Initial Setup & State Recovery
   useEffect(() => {
     const pid = searchParams.get('podcastId');
     const sid = searchParams.get('sessionId');
     if (pid) setPodcastId(pid);
     if (sid) setSessionId(sid);
+
+    // Socket Initialization
+    const socket = io(`${defaultServer}/podcast`, {
+      transports: ['websocket'],
+      reconnection: true,
+    });
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setIsConnected(true);
+      if (pid) {
+        socket.emit('join-podcast', { podcastId: pid, role: 'broadcaster' });
+
+        // --- KEY FIX FOR PERSISTENCE ---
+        // Check if this podcast was previously live in this browser
+        const wasLive = localStorage.getItem(`podcast_live_${pid}`);
+        if (wasLive === 'true') {
+          // Auto-resume logic
+          // Note: Browsers block auto-audio starting without gesture,
+          // but we will update the UI to SHOW live, and try to start mic.
+          setIsBroadcasting(true);
+          startBroadcast(true); // pass 'true' to signal it's a resume
+        }
+      }
+    });
+
+    socket.on('disconnect', () => setIsConnected(false));
+    socket.on('listener-update', (data: { currentListeners: number }) => {
+      setListenerCount(data.currentListeners || 0);
+    });
+
+    return () => {
+      // Clean up socket on unmount, but DO NOT stop the session unless user clicks Stop
+      if (socketRef.current) socketRef.current.disconnect();
+      // We also clean up tracks to stop the red recording dot on browser tab
+      if (mediaRecorderRef.current) mediaRecorderRef.current.stop();
+      if (audioStreamRef.current) audioStreamRef.current.getTracks().forEach((t) => t.stop());
+    };
   }, [searchParams]);
 
-  const startBroadcast = async () => {
+  const startBroadcast = async (isResume = false) => {
     try {
-      const socket = io(`${serverUrl}/podcast`, {
-        transports: ['websocket'],
-        reconnection: true,
-      });
-      socketRef.current = socket;
-
-      socket.on('connect', () => {
-        setIsConnected(true);
-        socket.emit('join-podcast', { podcastId, role: 'broadcaster' });
-      });
-
-      socket.on('disconnect', () => setIsConnected(false));
-      socket.on('listener-update', (data: { count: number }) => setListenerCount(data.count || 0));
-
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -86,13 +97,13 @@ export default function BroadcasterPage() {
       let isFirstChunk = true;
 
       recorder.ondataavailable = async (event) => {
-        if (event.data.size > 0 && socket.connected) {
+        if (event.data.size > 0 && socketRef.current?.connected) {
           const buffer = await event.data.arrayBuffer();
           const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
 
-          socket.emit('broadcast-audio', {
-            podcastId,
-            sessionId,
+          socketRef.current.emit('broadcast-audio', {
+            podcastId: searchParams.get('podcastId') || podcastId, // Ensure ID is present
+            sessionId: searchParams.get('sessionId') || sessionId,
             audioChunk: base64,
             mimeType: mimeType,
             isHeader: isFirstChunk,
@@ -105,10 +116,21 @@ export default function BroadcasterPage() {
 
       recorder.start(1000);
       setIsBroadcasting(true);
-      toast.success('Broadcast is Live!');
+
+      // Save state to local storage
+      const pid = searchParams.get('podcastId') || podcastId;
+      if (pid) localStorage.setItem(`podcast_live_${pid}`, 'true');
+
+      if (!isResume) toast.success('Broadcast is Live!');
     } catch (err: any) {
-      toast.error(err.message || 'Could not start broadcast. Check mic permissions.');
-      stopBroadcast();
+      console.error(err);
+      if (isResume) {
+        // If auto-resume fails (due to browser permission), we keep UI live
+        // but maybe show a toast asking to unmute/re-allow.
+        toast.info('Session resumed. Please check microphone.');
+      } else {
+        toast.error('Could not start broadcast. Check mic permissions.');
+      }
     }
   };
 
@@ -116,16 +138,13 @@ export default function BroadcasterPage() {
     try {
       mediaRecorderRef.current?.stop();
       audioStreamRef.current?.getTracks().forEach((t) => t.stop());
-      socketRef.current?.disconnect();
-
-      mediaRecorderRef.current = null;
-      audioStreamRef.current = null;
-      socketRef.current = null;
 
       setIsBroadcasting(false);
       setChunkCount(0);
 
-      if (podcastId && isBroadcasting) {
+      // Remove from local storage
+      if (podcastId) {
+        localStorage.removeItem(`podcast_live_${podcastId}`);
         await endPodcast(podcastId).unwrap();
         toast.success('Session Ended');
         router.push('/manage-podcasts');
@@ -134,12 +153,6 @@ export default function BroadcasterPage() {
       toast.error('Error ending session');
     }
   };
-
-  useEffect(() => {
-    return () => {
-      if (isBroadcasting) stopBroadcast();
-    };
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] p-4 font-sans lg:p-10">
@@ -216,7 +229,7 @@ export default function BroadcasterPage() {
                 <div className="flex flex-wrap gap-5">
                   {!isBroadcasting ? (
                     <button
-                      onClick={startBroadcast}
+                      onClick={() => startBroadcast(false)}
                       className="flex flex-1 items-center justify-center gap-4 rounded-3xl bg-indigo-600 py-7 text-2xl font-black text-white shadow-2xl shadow-indigo-200 transition-all hover:bg-indigo-700 active:scale-[0.97]"
                     >
                       <Radio size={32} /> GO LIVE
@@ -254,78 +267,74 @@ export default function BroadcasterPage() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-8 lg:col-span-4">
-            {/* Listener Analytics */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-indigo-600 p-10 text-white shadow-2xl shadow-indigo-100">
-              <div className="relative z-10">
-                <div className="mb-2 flex items-center gap-2">
-                  <Users size={20} className="text-indigo-200" />
-                  <span className="text-xs font-black tracking-[0.2em] text-indigo-200 uppercase">
-                    Live Listeners
-                  </span>
-                </div>
-                <h2 className="text-7xl font-black tabular-nums">{listenerCount}</h2>
-                <div className="mt-6 flex w-fit items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/30 px-3 py-1 text-xs font-bold">
-                  <Activity size={14} className="animate-pulse" /> Audio Streaming
-                </div>
-              </div>
-              <Users size={180} className="absolute -right-6 -bottom-6 opacity-10" />
-            </div>
-            {/* Technical Metadata Card */}
+          {/* Listener Analytics */}
+          <div className="group relative h-fit overflow-hidden rounded-[2.5rem] bg-indigo-600 p-10 text-white shadow-[0_20px_50px_rgba(79,70,229,0.3)] transition-all duration-500 hover:shadow-indigo-300/50 lg:col-span-4">
+            {/* Background Decor - Animated Blob */}
+            <div className="absolute -top-10 -right-10 h-64 w-64 rounded-full bg-indigo-500 opacity-20 blur-3xl transition-opacity duration-700 group-hover:opacity-40"></div>
 
-            <div className="rounded-[2.5rem] border border-slate-50 bg-white p-8 shadow-xl shadow-slate-200">
-              <h3 className="mb-8 flex items-center gap-2 text-xs font-black tracking-widest text-slate-400 uppercase">
-                <Database size={16} /> Broadcast Metadata
-              </h3>
-
-              <div className="space-y-8">
-                {/* Full Podcast ID */}
-                <div>
-                  <label className="mb-3 flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase">
-                    <Hash size={12} /> Podcast ID
-                  </label>
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 font-mono text-sm leading-relaxed font-bold break-all text-slate-700 shadow-sm">
-                    {podcastId || 'NOT_CONNECTED'}
+            <div className="relative z-10">
+              {/* Top Header Section */}
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md">
+                    <Users size={22} className="text-indigo-200" />
                   </div>
-                </div>
-
-                {/* Full Session ID */}
-                <div>
-                  <label className="mb-3 flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase">
-                    <Activity size={12} /> Session ID
-                  </label>
-                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 font-mono text-sm leading-relaxed font-bold break-all text-slate-700 shadow-sm">
-                    {sessionId || 'AWAITING_LIVE_SESSION'}
-                  </div>
-                </div>
-
-                {/* Server URL */}
-                <div>
-                  <label className="mb-3 flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase">
-                    <Globe size={12} /> Target Server
-                  </label>
-                  <input
-                    className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-xs font-bold text-slate-600 transition-all outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
-                    value={serverUrl}
-                    onChange={(e) => setServerUrl(e.target.value)}
-                    disabled={isBroadcasting}
-                  />
-                </div>
-
-                {/* Stats Summary */}
-                <div className="border-t border-slate-50 pt-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-slate-400 uppercase">
-                      Data Transmitted
+                  <div className="flex flex-col">
+                    <span className="text-[10px] leading-none font-black tracking-[0.25em] text-indigo-200 uppercase">
+                      Live Listeners
                     </span>
-                    <span className="rounded-full border border-indigo-100 bg-indigo-50 px-4 py-1.5 text-sm font-black text-indigo-600">
-                      {chunkCount} Chunks
+                    <span className="text-[10px] font-medium text-indigo-300/70">
+                      Real-time stats
                     </span>
                   </div>
                 </div>
+
+                {/* Chunk Badge with glass effect */}
+                <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold backdrop-blur-sm transition-colors group-hover:bg-white/10">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+                  {chunkCount} Chunks
+                </div>
+              </div>
+
+              {/* Big Number Section */}
+              <div className="relative my-4">
+                <h2 className="text-8xl font-black tracking-tighter tabular-nums lg:text-9xl">
+                  {listenerCount}
+                </h2>
+                <div className="absolute -bottom-2 left-1 h-1 w-20 rounded-full bg-linear-to-r from-indigo-300 to-transparent opacity-50" />
+              </div>
+
+              {/* Bottom Status Section */}
+              <div className="mt-8 flex items-center gap-4">
+                <div className="flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/40 px-4 py-2 text-xs font-bold shadow-inner">
+                  <div className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-200 opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
+                  </div>
+                  <span className="tracking-wide">AUDIO STREAMING</span>
+                </div>
+
+                {/* Simple Visualizer Line Effect */}
+                <div className="mt-1 flex gap-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className={`w-0.5 animate-bounce rounded-full bg-indigo-300/60`}
+                      style={{
+                        height: `${Math.random() * 15 + 5}px`,
+                        animationDelay: `${i * 0.1}s`,
+                      }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
+
+            {/* Large Background Icon */}
+            <Users
+              size={220}
+              className="absolute -right-8 -bottom-12 opacity-[0.07] transition-transform duration-700 group-hover:scale-110 group-hover:rotate-6"
+            />
           </div>
         </div>
       </div>

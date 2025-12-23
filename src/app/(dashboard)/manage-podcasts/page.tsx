@@ -13,6 +13,7 @@ import {
   Loader2,
   Cast,
   StopCircle,
+  Radio,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
@@ -35,7 +36,6 @@ export default function ManagePodcasts() {
 
   const router = useRouter();
 
-  /* -------------------- API -------------------- */
   const { data, isLoading, refetch } = useGetPodcastsQuery({
     page,
     limit: ITEMS_PER_PAGE,
@@ -71,6 +71,34 @@ export default function ManagePodcasts() {
     }
   };
 
+  const startPodcastLive = async (id: string) => {
+    try {
+      const res: any = await startPodcast(id).unwrap();
+      toast.success('Podcast is now live');
+      const liveSessionId = res?.data?.podcast?.liveSessionId;
+      // LocalStorage e flag set korchi jate broadcaster page e state dhore rakha jay
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(`podcast_live_${id}`, 'true');
+      }
+      router.push(`/broadcaster?podcastId=${id}&sessionId=${liveSessionId}`);
+    } catch {
+      toast.error('Failed to start live podcast');
+    }
+  };
+
+  const endPodcastLive = async (id: string) => {
+    try {
+      await endPodcast(id).unwrap();
+      toast.success('Podcast live ended');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(`podcast_live_${id}`);
+      }
+      refetch();
+    } catch {
+      toast.error('Failed to end live podcast');
+    }
+  };
+
   const renderPageNumbers = () => {
     const pages = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -87,28 +115,6 @@ export default function ManagePodcasts() {
       );
     }
     return pages;
-  };
-
-  const startPodcastLive = async (id: string) => {
-    try {
-      const res: any = await startPodcast(id).unwrap();
-
-      toast.success('Podcast is now live');
-      const liveSessionId = res?.data?.podcast?.liveSessionId;
-      router.push(`/broadcaster?podcastId=${id}&sessionId=${liveSessionId}`);
-    } catch {
-      toast.error('Failed to start live podcast');
-    }
-  };
-
-  const endPodcastLive = async (id: string) => {
-    try {
-      await endPodcast(id).unwrap();
-      toast.success('Podcast live ended');
-      refetch();
-    } catch {
-      toast.error('Failed to end live podcast');
-    }
   };
 
   /* -------------------- UI -------------------- */
@@ -129,7 +135,7 @@ export default function ManagePodcasts() {
         </div>
 
         {/* Table */}
-        <div className="overflow-hidden rounded-xl border border-gray-200">
+        <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="border-b border-gray-200 bg-gray-50">
@@ -138,9 +144,12 @@ export default function ManagePodcasts() {
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Date</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Duration</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-700"> </th>
+                  {/* Action Header Width Fixed */}
+                  <th className="min-w-[200px] px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                    Go Live / Actions
+                  </th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                    Action
+                    Manage
                   </th>
                 </tr>
               </thead>
@@ -155,7 +164,7 @@ export default function ManagePodcasts() {
                 ) : podcasts.length > 0 ? (
                   podcasts.map((podcast: any) => (
                     <tr
-                      key={podcast.id}
+                      key={podcast._id} // Changed to _id
                       className="border-gray-200 transition-colors hover:bg-gray-50"
                     >
                       <td className="px-6 py-4 font-medium text-gray-900">{podcast.title}</td>
@@ -174,62 +183,85 @@ export default function ManagePodcasts() {
                         </div>
                       </td>
 
+                      {/* Status Column with Animation */}
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                            podcast.status === 'Published'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-600'
+                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase ${
+                            podcast.status === 'live'
+                              ? 'animate-pulse bg-red-100 text-red-600 ring-1 ring-red-200'
+                              : podcast.status === 'scheduled'
+                                ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-200'
+                                : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'
                           }`}
                         >
+                          {podcast.status === 'live' && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+                          )}
                           {podcast.status}
                         </span>
                       </td>
 
-                      <td>
-                        {' '}
-                        {podcast.status === 'scheduled' ? (
-                          <button
-                            onClick={() => startPodcastLive(podcast?._id)}
-                            className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm text-white"
-                          >
-                            {starting ? (
-                              <>
+                      {/* Dynamic Action Buttons */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          {/* Case: Scheduled */}
+                          {podcast.status === 'scheduled' && (
+                            <button
+                              onClick={() => startPodcastLive(podcast?._id)}
+                              className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
+                            >
+                              {starting ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Starting...
-                              </>
-                            ) : (
-                              <>
-                                <Cast size={18} /> Go Live
-                              </>
-                            )}
-                          </button>
-                        ) : podcast.status === 'live' ? (
-                          <button
-                            onClick={() => endPodcastLive(podcast?._id)}
-                            className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm text-white"
-                          >
-                            {ending ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Stopping...
-                              </>
-                            ) : (
-                              <>
-                                <StopCircle size={18} /> Stop Live
-                              </>
-                            )}
-                          </button>
-                        ) : null}
+                              ) : (
+                                <Cast size={16} />
+                              )}
+                              Go Live
+                            </button>
+                          )}
+
+                          {/* Case: Live (Shows Studio + Stop) */}
+                          {podcast.status === 'live' && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  // Re-set storage flag when entering studio
+                                  if (typeof window !== 'undefined')
+                                    localStorage.setItem(`podcast_live_${podcast._id}`, 'true');
+                                  router.push(
+                                    `/broadcaster?podcastId=${podcast._id}&sessionId=${podcast.liveSessionId}`,
+                                  );
+                                }}
+                                className="flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                              >
+                                <Radio size={16} /> Studio
+                              </button>
+
+                              <button
+                                onClick={() => endPodcastLive(podcast?._id)}
+                                className="flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600"
+                              >
+                                {ending ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <StopCircle size={16} />
+                                )}
+                                Stop
+                              </button>
+                            </>
+                          )}
+
+                          {/* Case: Ended/Cancelled - Empty */}
+                        </div>
                       </td>
 
+                      {/* Manage Actions */}
                       <td className="px-6 py-4">
-                        <div className="flex justify-center gap-3">
+                        <div className="flex justify-center gap-2">
                           <PodcastsEditModal podcast={podcast} />
                           <PodcastsViewModal podcast={podcast} />
                           <button
-                            onClick={() => openDeleteModal(podcast.id)}
-                            className="rounded-lg bg-red-50 p-2 text-red-600 hover:bg-red-100"
+                            onClick={() => openDeleteModal(podcast._id)}
+                            className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
                           >
                             <Trash2 size={18} />
                           </button>
@@ -239,7 +271,7 @@ export default function ManagePodcasts() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-gray-500">
+                    <td colSpan={6} className="py-10 text-center text-gray-500">
                       No podcasts found.
                     </td>
                   </tr>
@@ -261,7 +293,7 @@ export default function ManagePodcasts() {
                   <button
                     onClick={() => setPage((p) => Math.max(p - 1, 1))}
                     disabled={page === 1}
-                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm disabled:opacity-50"
+                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm hover:bg-gray-50 disabled:opacity-50"
                   >
                     <ChevronLeft className="h-4 w-4" /> Prev
                   </button>
@@ -271,7 +303,7 @@ export default function ManagePodcasts() {
                   <button
                     onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
                     disabled={page === totalPages}
-                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm disabled:opacity-50"
+                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm hover:bg-gray-50 disabled:opacity-50"
                   >
                     Next <ChevronRight className="h-4 w-4" />
                   </button>
@@ -282,10 +314,10 @@ export default function ManagePodcasts() {
         </div>
       </div>
 
-      {/* Delete Modal */}
+      {/* Delete Modal - Unchanged */}
       {deleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="absolute inset-0" onClick={() => setDeleteModalOpen(false)} />
+          <div className="absolute inset-0" onClick={closeDeleteModal} />
           <div
             onClick={(e) => e.stopPropagation()}
             className="z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
@@ -294,29 +326,26 @@ export default function ManagePodcasts() {
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
                 <AlertTriangle size={30} />
               </div>
-
               <h3 className="mb-2 text-xl font-bold">Confirm Deletion</h3>
               <p className="mb-6 text-sm text-gray-500">
                 This podcast will be permanently deleted. This action cannot be undone.
               </p>
-
               <div className="flex w-full gap-3">
                 <button
                   onClick={closeDeleteModal}
                   disabled={deleting}
-                  className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-semibold"
+                  className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-semibold hover:bg-gray-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
                   disabled={deleting}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700"
                 >
                   {deleting ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Deleting...
+                      <Loader2 className="h-4 w-4 animate-spin" /> Deleting...
                     </>
                   ) : (
                     'Delete'
