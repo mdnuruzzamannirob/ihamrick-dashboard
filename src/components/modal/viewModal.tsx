@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Calendar, User, Eye, Clock, Tag } from 'lucide-react';
+import { X, Calendar, User } from 'lucide-react';
 import Image from 'next/image';
 
 interface Blog {
@@ -100,33 +100,6 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
               <div>
                 <p className="text-sm font-medium text-gray-500">{dateLabel}</p>
                 <p className="font-medium text-gray-900">{formatDate(displayDate)}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Row */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3">
-              <Clock className="h-5 w-5 text-gray-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-500">Read Time</p>
-                <p className="font-medium text-gray-900">{currentBlog.readTime || '5 min'}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3">
-              <Eye className="h-5 w-5 text-gray-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-500">Views</p>
-                <p className="font-medium text-gray-900">{currentBlog.views || 0}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3">
-              <Tag className="h-5 w-5 text-gray-600" />
-              <div>
-                <p className="text-sm font-medium text-gray-500">Category</p>
-                <p className="font-medium text-gray-900">{currentBlog.category || 'General'}</p>
               </div>
             </div>
           </div>
