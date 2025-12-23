@@ -3,15 +3,7 @@
 import { useState } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
-import {
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  Clock,
-  AlertTriangle,
-  Loader2,
-} from 'lucide-react';
+import { Trash2, ChevronLeft, ChevronRight, Calendar, AlertTriangle, Loader2 } from 'lucide-react';
 import VideoUploadModal from '@/components/modal/videoUploadModal';
 import { toast } from 'react-toastify';
 import { VideoViewModal } from '@/components/modal/videoViewModal';
@@ -126,12 +118,6 @@ export default function ManageVideos() {
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           {new Date(video.uploadDate).toLocaleDateString()}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          {video.duration || '—'}
                         </div>
                       </td>
                       <td className="px-6 py-4">
