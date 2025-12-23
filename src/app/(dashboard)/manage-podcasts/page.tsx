@@ -260,7 +260,7 @@ export default function ManagePodcasts() {
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-2">
                           <PodcastsEditModal podcast={podcast} refetch={refetch} />
-                          <PodcastsViewModal podcast={podcast} />
+                          <PodcastsViewModal podcast={podcast} refetch={refetch} />
                           <button
                             onClick={() => openDeleteModal(podcast._id)}
                             className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"

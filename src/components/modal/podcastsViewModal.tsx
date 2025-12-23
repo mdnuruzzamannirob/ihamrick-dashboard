@@ -33,7 +33,7 @@ const formatDate = (dateString: string) => {
   });
 };
 
-export function PodcastsViewModal({ podcast }: { podcast: any }) {
+export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch: () => void }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const router = useRouter();
 
@@ -66,6 +66,7 @@ export function PodcastsViewModal({ podcast }: { podcast: any }) {
   const handleStopLive = async () => {
     try {
       await endPodcast(podcast._id).unwrap();
+      refetch();
       toast.success('Broadcast ended successfully');
       setViewModalOpen(false); // Close modal on stop
     } catch {

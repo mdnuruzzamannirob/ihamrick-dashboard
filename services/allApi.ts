@@ -488,7 +488,7 @@ const allApi = createApi({
       { id: string; data: FormData }
     >({
       query: ({ id, data }) => ({
-        url: `/videos/${id}`,
+        url: `/videos/update/${id}`,
         method: 'PUT',
         body: data,
         timeout: 600000,
@@ -514,7 +514,7 @@ const allApi = createApi({
     // delete video
     deleteVideo: builder.mutation<{ success: boolean; message: string; data: Video }, string>({
       query: (videoId) => ({
-        url: `/videos/${videoId}`,
+        url: `/videos/delete/${videoId}`,
         method: 'DELETE',
       }),
     }),
