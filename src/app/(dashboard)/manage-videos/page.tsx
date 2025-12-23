@@ -95,7 +95,6 @@ export default function ManageVideos() {
                 <tr>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Title</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Date</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Duration</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
                   <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
                     Action
