@@ -268,7 +268,7 @@ export function PodcastsViewModal({ podcast }: { podcast: any }) {
                       ) : (
                         <Cast size={18} />
                       )}
-                      START BROADCAST
+                      GO LIVE
                     </button>
                   )}
 
