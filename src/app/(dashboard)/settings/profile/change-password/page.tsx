@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
 import PasswordField from '@/components/auth/PasswordField';
-import { useChangePasswordMutation } from '../../../../services/allApi'; // Import your mutation hook
+import { useChangePasswordMutation } from '../../../../../../services/allApi'; // Import your mutation hook
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify'; // For notifications
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default function ChangePasswordPage() {
   // State to manage form values
@@ -64,7 +66,15 @@ export default function ChangePasswordPage() {
       <div className="min-h-screen flex-1 items-center justify-center bg-gray-50 px-4 py-8 sm:px-6 lg:ml-64 lg:px-8">
         <div className="mx-auto max-w-4xl">
           {/* Header with User Badge */}
-          <div className="mb-8 flex items-center justify-end">
+          <div className="mb-8 flex items-center justify-between">
+            <Link
+              href="/settings/profile"
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Profile
+            </Link>
+
             <UserProfile />
           </div>
 
