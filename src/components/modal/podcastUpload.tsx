@@ -6,7 +6,7 @@ import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { useCreatePodcastMutation, useGetPodcastsQuery } from '../../../services/allApi';
+import { useCreatePodcastMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 
 interface PodcastFormState {
@@ -20,7 +20,7 @@ interface PodcastFormState {
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const PodcastUploadModal = () => {
+const PodcastUploadModal = ({ refetch }: any) => {
   const [formData, setFormData] = useState<PodcastFormState>({
     title: '',
     date: '',
@@ -35,7 +35,6 @@ const PodcastUploadModal = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [createPodcast, { isLoading }] = useCreatePodcastMutation();
-  const { refetch } = useGetPodcastsQuery({});
 
   /* ---------------- handlers ---------------- */
 

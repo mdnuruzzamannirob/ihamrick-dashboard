@@ -5,15 +5,14 @@ import { Pencil, Loader2, X, UploadCloud, Image as ImageIcon } from 'lucide-reac
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { useGetPodcastsQuery, useUpdatePodcastMutation } from '../../../services/allApi';
+import { useUpdatePodcastMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const PodcastEditModal = ({ podcast }: { podcast: any }) => {
+const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updatePodcast, { isLoading: isUpdating }] = useUpdatePodcastMutation();
-  const { refetch } = useGetPodcastsQuery({});
 
   const [formData, setFormData] = useState({
     title: '',

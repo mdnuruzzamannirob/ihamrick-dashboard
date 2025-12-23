@@ -13,17 +13,15 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { useGetPublicationsQuery, useUpdatePublicationMutation } from '../../../services/allApi';
+import { useUpdatePublicationMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-export function EditPublicationModal({ publication }: { publication: any }) {
+export function EditPublicationModal({ publication, refetch }: { publication: any; refetch: any }) {
   const [isOpen, setIsOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [updatePublication, { isLoading }] = useUpdatePublicationMutation();
-  const { refetch } = useGetPublicationsQuery({});
-
   const [formData, setFormData] = useState({
     title: publication.title,
     author: publication.author,

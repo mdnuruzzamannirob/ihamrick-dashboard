@@ -5,7 +5,7 @@ import { useState, useRef } from 'react';
 import { ChevronDown, X, FileText, ImageIcon, Loader2, Plus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { useCreatePublicationMutation, useGetPublicationsQuery } from '../../../services/allApi';
+import { useCreatePublicationMutation } from '../../../services/allApi';
 import Image from 'next/image';
 import { joditConfig } from '@/utils/joditConfig';
 
@@ -21,7 +21,7 @@ interface PublicationFormState {
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-export function PublicationModal() {
+export function PublicationModal({ refetch }: { refetch: any }) {
   const [formData, setFormData] = useState<PublicationFormState>({
     title: '',
     author: '',
@@ -40,7 +40,6 @@ export function PublicationModal() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [createPublication, { isLoading }] = useCreatePublicationMutation();
-  const { refetch } = useGetPublicationsQuery({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

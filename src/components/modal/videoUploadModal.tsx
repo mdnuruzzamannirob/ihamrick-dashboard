@@ -5,7 +5,7 @@ import { useState, useRef } from 'react';
 import { Upload } from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
-import { useGetVideosQuery, useUploadVideoMutation } from '../../../services/allApi';
+import { useUploadVideoMutation } from '../../../services/allApi';
 import { toast } from 'react-toastify';
 import { joditConfig } from '@/utils/joditConfig';
 
@@ -21,7 +21,7 @@ interface VideoFormState {
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
-const VideoUploadModal = () => {
+const VideoUploadModal = ({ refetch }: { refetch: any }) => {
   const [formData, setFormData] = useState<VideoFormState>({
     title: '',
     date: '',
@@ -40,7 +40,6 @@ const VideoUploadModal = () => {
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const [uploadVideo, { isLoading }] = useUploadVideoMutation();
-  const { refetch } = useGetVideosQuery({});
 
   /* -------------------- handlers -------------------- */
 

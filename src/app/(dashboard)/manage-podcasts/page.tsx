@@ -131,7 +131,7 @@ export default function ManagePodcasts() {
 
         {/* Actions */}
         <div className="mb-6 flex justify-end">
-          <PodcastsUploadModal />
+          <PodcastsUploadModal refetch={refetch} />
         </div>
 
         {/* Table */}
@@ -191,7 +191,9 @@ export default function ManagePodcasts() {
                               ? 'animate-pulse bg-red-100 text-red-600 ring-1 ring-red-200'
                               : podcast.status === 'scheduled'
                                 ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-200'
-                                : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'
+                                : podcast.status === 'ended' || podcast.status === 'cancelled'
+                                  ? 'bg-black/10 text-black ring-1 ring-black/15'
+                                  : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'
                           }`}
                         >
                           {podcast.status === 'live' && (
@@ -257,7 +259,7 @@ export default function ManagePodcasts() {
                       {/* Manage Actions */}
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-2">
-                          <PodcastsEditModal podcast={podcast} />
+                          <PodcastsEditModal podcast={podcast} refetch={refetch} />
                           <PodcastsViewModal podcast={podcast} />
                           <button
                             onClick={() => openDeleteModal(podcast._id)}

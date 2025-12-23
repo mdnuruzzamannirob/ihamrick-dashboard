@@ -84,7 +84,7 @@ export default function ManagePublications() {
 
         {/* Actions */}
         <div className="mb-6 flex justify-end">
-          <PublicationModal />
+          <PublicationModal refetch={refetch} />
         </div>
 
         {/* Table */}
@@ -138,7 +138,7 @@ export default function ManagePublications() {
 
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-3">
-                          <EditPublicationModal publication={publication} />
+                          <EditPublicationModal publication={publication} refetch={refetch} />
                           <ViewPublicationModal publication={publication} />
 
                           <button

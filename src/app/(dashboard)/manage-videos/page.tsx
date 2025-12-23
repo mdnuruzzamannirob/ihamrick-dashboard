@@ -92,7 +92,7 @@ export default function ManageVideos() {
 
         {/* Actions */}
         <div className="mb-6 flex justify-end">
-          <VideoUploadModal />
+          <VideoUploadModal refetch={refetch} />
         </div>
 
         {/* Table Section */}
@@ -143,7 +143,7 @@ export default function ManageVideos() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-center gap-3">
-                          <VideoEditModal video={video} />
+                          <VideoEditModal video={video} refetch={refetch} />
                           <VideoViewModal video={video} />
                           <button
                             onClick={() => openDeleteModal(video.id)}
