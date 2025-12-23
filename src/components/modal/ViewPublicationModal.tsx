@@ -59,8 +59,9 @@ export function ViewPublicationModal({ publication }: { publication: Publication
           onClick={() => setIsOpen(false)}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-all"
         >
+          <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
           <div
-            className="animate-in zoom-in flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-200"
+            className="animate-in zoom-in z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}

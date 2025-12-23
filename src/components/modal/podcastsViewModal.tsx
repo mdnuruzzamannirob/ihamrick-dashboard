@@ -98,9 +98,10 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
           className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity"
           onClick={() => setViewModalOpen(false)}
         >
+          <div className="absolute inset-0" onClick={() => setViewModalOpen(false)} />
           {/* Modal Content */}
           <div
-            className="relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-4xl bg-white shadow-2xl ring-1 ring-slate-900/5"
+            className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-4xl bg-white shadow-2xl ring-1 ring-slate-900/5"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header / Cover Image */}
