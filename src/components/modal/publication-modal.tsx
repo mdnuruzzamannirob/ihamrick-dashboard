@@ -176,21 +176,31 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                   <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                     PDF Document
                   </label>
+
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="group flex h-44 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-black hover:bg-gray-100"
+                    className="group flex h-44 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-black hover:bg-gray-100"
                   >
                     <div className="mb-3 rounded bg-white p-3 text-blue-600 shadow-sm transition-all group-hover:bg-black group-hover:text-white">
                       <FileText size={24} />
                     </div>
-                    <div className="px-6 text-center">
-                      <p className="truncate text-xs font-bold text-gray-700">
+
+                    {/* TEXT CONTAINER */}
+                    <div className="w-full min-w-0 px-6 text-center">
+                      {/* FILE NAME */}
+                      <p
+                        title={formData.file?.name}
+                        className="w-full truncate text-xs font-bold text-gray-700"
+                      >
                         {formData.file ? formData.file.name : 'CHOOSE PDF FILE'}
                       </p>
+
+                      {/* HELPER TEXT */}
                       <p className="mt-1 text-[10px] font-bold tracking-tighter text-gray-400 uppercase">
                         {formData.file ? 'File Selected' : 'Click to browse your computer'}
                       </p>
                     </div>
+
                     <input
                       ref={fileInputRef}
                       type="file"

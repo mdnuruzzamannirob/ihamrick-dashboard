@@ -248,9 +248,6 @@ interface SocialLink {
   createdAt: string;
   updatedAt: string;
 }
-interface content {
-  content: string;
-}
 
 interface SocialLinkResponse {
   success: boolean;
@@ -423,15 +420,27 @@ const allApi = createApi({
         body: data,
       }),
     }),
-    updateAboutUs: builder.mutation<void, { content: content }>({
+    getAboutUs: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/about-us',
+        method: 'GET',
+      }),
+    }),
+    updateAboutUs: builder.mutation<void, { content: string }>({
       query: ({ content }) => ({
         url: 'website-content/about-us',
         method: 'PATCH',
         body: content,
       }),
     }),
+    getPrivacyPolicy: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/privacy-policy',
+        method: 'GET',
+      }),
+    }),
     // Mutation for updating the 'Privacy Policy' content
-    updatePrivacyPolicy: builder.mutation<void, { content: content }>({
+    updatePrivacyPolicy: builder.mutation<void, { content: string }>({
       query: ({ content }) => ({
         url: 'website-content/privacy-policy',
         method: 'PATCH',
@@ -655,6 +664,8 @@ export const {
   useDeletePublicationMutation,
   useStartPodcastMutation,
   useEndPodcastMutation,
+  useGetAboutUsQuery,
+  useGetPrivacyPolicyQuery,
 } = allApi;
 
 export default allApi;
