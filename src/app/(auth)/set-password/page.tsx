@@ -1,7 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import BrandSection from '@/components/auth/Brand-section';
@@ -13,13 +12,11 @@ import { RootState } from '../../../../services/store';
 export default function SetPassword() {
   const router = useRouter();
 
-  // Access email and OTP from Redux state
   const { email, otp } = useSelector((state: RootState) => state.email);
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Call the resetPassword API hook
   const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const handleReset = async () => {
@@ -30,16 +27,16 @@ export default function SetPassword() {
         email: emailString,
         newPassword,
         confirmPassword,
-        otp: otpString, // Pass the stringified OTP here
+        otp: otpString,
       }).unwrap();
 
       if (response.success) {
         toast.success('Password reset successful!');
         setTimeout(() => {
-          router.replace('/'); // Redirect after successful reset
+          router.replace('/');
         }, 1200);
       } else {
-        toast.error(response.message); // Handle failure response
+        toast.error(response.message);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -80,8 +77,6 @@ export default function SetPassword() {
           </div>
         </div>
       </div>
-
-      <ToastContainer position="top-right" autoClose={1000} />
     </div>
   );
 }

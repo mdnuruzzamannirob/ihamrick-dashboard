@@ -4,31 +4,26 @@ import { useState } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
 import PasswordField from '@/components/auth/PasswordField';
-import { useChangePasswordMutation } from '../../../../../../services/allApi'; // Import your mutation hook
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from 'react-toastify'; // For notifications
+import { useChangePasswordMutation } from '../../../../../../services/allApi';
+import { toast } from 'react-toastify';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
 export default function ChangePasswordPage() {
-  // State to manage form values
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSaving, setIsSaving] = useState(false); // Track the loading state
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Mutation hook for change password
   const [changePassword, { isLoading }] = useChangePasswordMutation();
 
-  // Handle form submission
   const handleChangePassword = async () => {
-    // Check if new password and confirm password match
     if (newPassword !== confirmPassword) {
       toast.error('New password and confirm password do not match.');
       return;
     }
 
-    setIsSaving(true); // Start loading
+    setIsSaving(true);
 
     try {
       await changePassword({
@@ -36,7 +31,6 @@ export default function ChangePasswordPage() {
         newPassword,
       }).unwrap();
 
-      // Show success notification
       toast.success('Password changed successfully!', {
         position: 'top-right',
         autoClose: 2000,
@@ -55,7 +49,7 @@ export default function ChangePasswordPage() {
         draggable: true,
       });
     } finally {
-      setIsSaving(false); // Stop loading
+      setIsSaving(false);
     }
   };
 
@@ -176,9 +170,6 @@ export default function ChangePasswordPage() {
           </div>
         </div>
       </div>
-
-      {/* Toast notifications */}
-      <ToastContainer />
     </div>
   );
 }

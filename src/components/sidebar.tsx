@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import {
   LayoutDashboard,
   FileText,
@@ -175,8 +174,6 @@ export function Sidebar() {
           </button>
         </div>
       </aside>
-
-      <ToastContainer position="top-right" autoClose={1000} />
     </div>
   );
 }

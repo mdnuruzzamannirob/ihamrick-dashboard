@@ -10,7 +10,6 @@ import { ManagePublications } from '@/components/manage-publications';
 import { UserProfile } from '@/components/user-profile';
 import QualityOfLifeModal from '@/components/modal/qualityModal';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import {
   useGetVideosQuery,
   useGetPodcastsQuery,

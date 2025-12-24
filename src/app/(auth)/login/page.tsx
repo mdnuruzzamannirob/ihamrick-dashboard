@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation';
 import BrandSection from '@/components/auth/Brand-section';
 import Header from '@/components/auth/Header';
 import EmailField from '@/components/auth/EmailField';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import { useLoginMutation } from '../../../../services/allApi';
 import Link from 'next/link';
 
@@ -104,8 +103,6 @@ export default function LoginPage() {
             </Link>
           </div>
         </div>
-
-        <ToastContainer position="top-right" autoClose={1000} />
       </div>
     </div>
   );
