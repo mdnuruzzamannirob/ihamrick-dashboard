@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import {
@@ -23,16 +23,32 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
   const [statusOpen, setStatusOpen] = useState(false);
   const [updatePublication, { isLoading }] = useUpdatePublicationMutation();
   const [formData, setFormData] = useState({
-    title: publication.title,
-    author: publication.author,
-    publicationDate: publication.publicationDate,
-    status: publication.status ? 'Published' : 'Unpublished',
-    description: publication.description,
+    title: '',
+    author: '',
+    publicationDate: '',
+    status: 'Published',
+    description: '',
   });
 
   const [coverImage, setCoverImage] = useState<File | null>(null);
   const [pubFile, setPubFile] = useState<File | null>(null);
   const [preview, setPreview] = useState(publication.coverImage);
+
+  useEffect(() => {
+    if (publication) {
+      setFormData({
+        title: publication.title || '',
+        author: publication.author || '',
+        publicationDate: publication.publicationDate || '',
+        status: publication.status ? 'Published' : 'Unpublished',
+        description: publication.description || '',
+      });
+      setPreview(publication.coverImage || '');
+
+      setCoverImage(null);
+      setPubFile(null);
+    }
+  }, [publication, isOpen]);
 
   // File name extract logic
   const getExistingFileName = (url: string) => {
