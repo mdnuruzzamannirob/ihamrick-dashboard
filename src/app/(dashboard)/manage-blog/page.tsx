@@ -119,16 +119,24 @@ export default function ManageBlogPage() {
                         <td className="px-6 py-4 text-sm font-medium text-neutral-900">
                           {blog.title}
                         </td>
+
                         <td className="px-6 py-4">
-                          <div className="relative mx-auto h-12 w-20 overflow-hidden rounded-xl border border-neutral-200">
-                            <Image
-                              src={blog.coverImage}
-                              alt={blog.title}
-                              fill
-                              className="object-cover"
-                            />
+                          {' '}
+                          <div className="relative mx-auto flex h-12 w-20 items-center justify-center overflow-hidden rounded-xl border border-neutral-200">
+                            {' '}
+                            {blog.coverImage ? (
+                              <Image
+                                src={blog.coverImage}
+                                alt={blog.title}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              'N/A'
+                            )}
                           </div>
                         </td>
+
                         <td className="px-6 py-4 text-center">
                           <span
                             className={`rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase ${

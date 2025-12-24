@@ -73,10 +73,10 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       toast.error('Content is empty!');
       return false;
     }
-    if (!selectedBlog && !coverImage) {
-      toast.error('Please upload a cover image!');
-      return false;
-    }
+    // if (!selectedBlog && !coverImage) {
+    //   toast.error('Please upload a cover image!');
+    //   return false;
+    // }
     return true;
   };
 
@@ -234,7 +234,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
               {/* Dynamic Image Upload Area */}
               <div className="space-y-3">
                 <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                  Cover Image
+                  Cover Image (Optional)
                 </label>
                 <label
                   htmlFor="file-upload-final"
