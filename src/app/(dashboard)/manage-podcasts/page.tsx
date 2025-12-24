@@ -34,6 +34,8 @@ export default function ManagePodcasts() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPodcastId, setSelectedPodcastId] = useState<string | null>(null);
 
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
   const router = useRouter();
 
   const { data, isLoading, refetch } = useGetPodcastsQuery({
@@ -72,21 +74,25 @@ export default function ManagePodcasts() {
   };
 
   const startPodcastLive = async (id: string) => {
+    setProcessingId(id);
     try {
       const res: any = await startPodcast(id).unwrap();
       toast.success('Podcast is now live');
       const liveSessionId = res?.data?.podcast?.liveSessionId;
-      // LocalStorage e flag set korchi jate broadcaster page e state dhore rakha jay
+
       if (typeof window !== 'undefined') {
         localStorage.setItem(`podcast_live_${id}`, 'true');
       }
       router.push(`/broadcaster?podcastId=${id}&sessionId=${liveSessionId}`);
     } catch {
       toast.error('Failed to start live podcast');
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const endPodcastLive = async (id: string) => {
+    setProcessingId(id);
     try {
       await endPodcast(id).unwrap();
       toast.success('Podcast live ended');
@@ -96,6 +102,8 @@ export default function ManagePodcasts() {
       refetch();
     } catch {
       toast.error('Failed to end live podcast');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -144,7 +152,6 @@ export default function ManagePodcasts() {
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Date</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Duration</th>
                   <th className="px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
-                  {/* Action Header Width Fixed */}
                   <th className="min-w-[200px] px-6 py-4 text-center text-sm font-semibold text-gray-700">
                     Go Live / Actions
                   </th>
@@ -157,120 +164,116 @@ export default function ManagePodcasts() {
               <tbody className="divide-y bg-white">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-gray-500">
+                    <td colSpan={6} className="py-10 text-center text-gray-500">
                       Loading podcasts...
                     </td>
                   </tr>
                 ) : podcasts.length > 0 ? (
-                  podcasts.map((podcast: any) => (
-                    <tr
-                      key={podcast._id} // Changed to _id
-                      className="border-gray-200 transition-colors hover:bg-gray-50"
-                    >
-                      <td className="px-6 py-4 font-medium text-gray-900">{podcast.title}</td>
+                  podcasts.map((podcast: any) => {
+                    const isProcessingThisRow = processingId === podcast._id;
 
-                      <td className="px-6 py-4 text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          {new Date(podcast.createdAt).toLocaleDateString()}
-                        </div>
-                      </td>
+                    return (
+                      <tr
+                        key={podcast._id}
+                        className="border-gray-200 transition-colors hover:bg-gray-50"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900">{podcast.title}</td>
 
-                      <td className="px-6 py-4 text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          {podcast.duration || '—'}
-                        </div>
-                      </td>
+                        <td className="px-6 py-4 text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            {new Date(podcast.createdAt).toLocaleDateString()}
+                          </div>
+                        </td>
 
-                      {/* Status Column with Animation */}
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase ${
-                            podcast.status === 'live'
-                              ? 'animate-pulse bg-red-100 text-red-600 ring-1 ring-red-200'
-                              : podcast.status === 'scheduled'
-                                ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-200'
-                                : podcast.status === 'ended' || podcast.status === 'cancelled'
-                                  ? 'bg-black/10 text-black ring-1 ring-black/15'
+                        <td className="px-6 py-4 text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            {podcast.duration || '—'}
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase ${
+                              podcast.status === 'live'
+                                ? 'animate-pulse bg-red-100 text-red-600 ring-1 ring-red-200'
+                                : podcast.status === 'scheduled'
+                                  ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-200'
                                   : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'
-                          }`}
-                        >
-                          {podcast.status === 'live' && (
-                            <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
-                          )}
-                          {podcast.status}
-                        </span>
-                      </td>
+                            }`}
+                          >
+                            {podcast.status === 'live' && (
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+                            )}
+                            {podcast.status}
+                          </span>
+                        </td>
 
-                      {/* Dynamic Action Buttons */}
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center gap-2">
-                          {/* Case: Scheduled */}
-                          {podcast.status === 'scheduled' && (
-                            <button
-                              onClick={() => startPodcastLive(podcast?._id)}
-                              className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800"
-                            >
-                              {starting ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Cast size={16} />
-                              )}
-                              Go Live
-                            </button>
-                          )}
-
-                          {/* Case: Live (Shows Studio + Stop) */}
-                          {podcast.status === 'live' && (
-                            <>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-center gap-2">
+                            {podcast.status === 'scheduled' && (
                               <button
-                                onClick={() => {
-                                  // Re-set storage flag when entering studio
-                                  if (typeof window !== 'undefined')
-                                    localStorage.setItem(`podcast_live_${podcast._id}`, 'true');
-                                  router.push(
-                                    `/broadcaster?podcastId=${podcast._id}&sessionId=${podcast.liveSessionId}`,
-                                  );
-                                }}
-                                className="flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                                onClick={() => startPodcastLive(podcast._id)}
+                                disabled={isProcessingThisRow}
+                                className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800 disabled:opacity-50"
                               >
-                                <Radio size={16} /> Studio
-                              </button>
-
-                              <button
-                                onClick={() => endPodcastLive(podcast?._id)}
-                                className="flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600"
-                              >
-                                {ending ? (
+                                {starting && isProcessingThisRow ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
-                                  <StopCircle size={16} />
+                                  <Cast size={16} />
                                 )}
-                                Stop
+                                Go Live
                               </button>
-                            </>
-                          )}
+                            )}
 
-                          {/* Case: Ended/Cancelled - Empty */}
-                        </div>
-                      </td>
+                            {podcast.status === 'live' && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    if (typeof window !== 'undefined')
+                                      localStorage.setItem(`podcast_live_${podcast._id}`, 'true');
+                                    router.push(
+                                      `/broadcaster?podcastId=${podcast._id}&sessionId=${podcast.liveSessionId}`,
+                                    );
+                                  }}
+                                  className="flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+                                >
+                                  <Radio size={16} /> Studio
+                                </button>
 
-                      {/* Manage Actions */}
-                      <td className="px-6 py-4">
-                        <div className="flex justify-center gap-2">
-                          <PodcastsEditModal podcast={podcast} refetch={refetch} />
-                          <PodcastsViewModal podcast={podcast} refetch={refetch} />
-                          <button
-                            onClick={() => openDeleteModal(podcast._id)}
-                            className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                                <button
+                                  onClick={() => endPodcastLive(podcast._id)}
+                                  disabled={isProcessingThisRow}
+                                  className="flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600 disabled:opacity-50"
+                                >
+                                  {ending && isProcessingThisRow ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <StopCircle size={16} />
+                                  )}
+                                  Stop
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center gap-2">
+                            <PodcastsEditModal podcast={podcast} refetch={refetch} />
+                            <PodcastsViewModal podcast={podcast} refetch={refetch} />
+                            <button
+                              onClick={() => openDeleteModal(podcast._id)}
+                              className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={6} className="py-10 text-center text-gray-500">
@@ -316,7 +319,7 @@ export default function ManagePodcasts() {
         </div>
       </div>
 
-      {/* Delete Modal - Unchanged */}
+      {/* Delete Modal */}
       {deleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="absolute inset-0" onClick={closeDeleteModal} />
