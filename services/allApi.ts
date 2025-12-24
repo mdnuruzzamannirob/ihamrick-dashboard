@@ -3,12 +3,11 @@ import Cookies from 'js-cookie';
 
 const baseUrl = 'https://api.pg-65.com/api/';
 
-// Define the API types and response structures
+// --- Interfaces ---
 interface LoginRequest {
   email: string;
   password: string;
 }
-
 interface UserData {
   _id: string;
   email: string;
@@ -17,57 +16,44 @@ interface UserData {
   createdAt: string;
   updatedAt: string;
 }
-
 interface LoginResponse {
   success: boolean;
   message: string;
-  data: {
-    token: string;
-    userData: UserData;
-  };
+  data: { token: string; userData: UserData };
 }
-
 interface ForgotPasswordRequest {
   email: string;
 }
-
 interface ForgotPasswordResponse {
   success: boolean;
   message: string;
 }
-
 interface VerifyOtpRequest {
   email: string;
   otp: string;
 }
-
 interface VerifyOtpResponse {
   success: boolean;
   message: string;
   data?: { token: string };
 }
-
 interface ResendOtpRequest {
   email: string;
 }
-
 interface ResendOtpResponse {
   success: boolean;
   message: string;
 }
-
 interface ResetPasswordRequest {
   email: string;
   newPassword: string;
   confirmPassword: string;
   otp: string;
 }
-
 interface ResetPasswordResponse {
   success: boolean;
   message: string;
 }
-
 interface Video {
   _id: string;
   title: string;
@@ -89,7 +75,6 @@ interface Video {
   isNotified: boolean;
   formattedFileSize: string;
 }
-
 interface Podcast {
   _id: string;
   title: string;
@@ -98,20 +83,13 @@ interface Podcast {
   transcription: string;
   date: string;
   status: string;
-  admin: {
-    _id: string;
-    email: string;
-  };
+  admin: { _id: string; email: string };
   currentListeners: number;
   peakListeners: number;
   totalListeners: number;
   audioFormat: string;
   isRecording: boolean;
-  podcastListeners: Array<{
-    joinedAt: string;
-    sessionId: string;
-    leftAt: string;
-  }>;
+  podcastListeners: Array<{ joinedAt: string; sessionId: string; leftAt: string }>;
   createdAt: string;
   updatedAt: string;
   actualStart: string;
@@ -130,7 +108,6 @@ interface Podcast {
     roomId: string;
   };
 }
-
 interface Publication {
   _id: string;
   title: string;
@@ -144,7 +121,6 @@ interface Publication {
   createdAt: string;
   updatedAt: string;
 }
-
 interface Blog {
   _id: string;
   title: string;
@@ -154,66 +130,42 @@ interface Blog {
   updatedAt: string;
   status: boolean;
 }
-
-// Define API Response Types
-
 interface PublicationResponse {
   success: boolean;
   message: string;
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number | null;
-  };
+  meta: { page: number; limit: number; total: number; totalPages: number | null };
   data: Publication[];
 }
-
 interface BlogResponse {
   success: boolean;
   message: string;
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number | null;
-  };
+  meta: { page: number; limit: number; total: number; totalPages: number | null };
   data: Blog[];
 }
-
-// Life Suggestion related types
 interface LifeSuggestion {
   _id: string;
   content: string;
   createdAt: string;
   updatedAt: string;
 }
-
 interface LifeSuggestionsResponse {
   success: boolean;
   message: string;
-  data: {
-    increase: LifeSuggestion[];
-    decrease: LifeSuggestion[];
-  };
+  data: { increase: LifeSuggestion[]; decrease: LifeSuggestion[] };
 }
-
 interface CreateLifeSuggestionRequest {
   type: 'increase' | 'decrease';
   content: string;
 }
-
 interface DeleteLifeSuggestionResponse {
   success: boolean;
   message: string;
 }
-
 interface BlogUpdateResponse {
   success: boolean;
   message: string;
   data: Blog;
 }
-
 interface SendNotifications {
   success: boolean;
   message: string;
@@ -230,17 +182,9 @@ interface SendNotifications {
     emailsSent: number;
     emailsFailed: number;
   };
-  errorSources?: {
-    type: string;
-    details: string;
-  }[];
-  err?: {
-    statusCode: number;
-    stack?: string;
-  };
+  errorSources?: { type: string; details: string }[];
+  err?: { statusCode: number; stack?: string };
 }
-
-// Define the API response types for social links
 interface SocialLink {
   _id: string;
   name: string;
@@ -248,24 +192,20 @@ interface SocialLink {
   createdAt: string;
   updatedAt: string;
 }
-
 interface SocialLinkResponse {
   success: boolean;
   message: string;
   data: SocialLink[];
 }
-
 interface UpdateSocialLinkRequest {
   name: string;
   url: string;
 }
-
 interface UpdateSocialLinkResponse {
   success: boolean;
   message: string;
   data: SocialLink;
 }
-
 interface User {
   _id: string;
   email: string;
@@ -278,108 +218,114 @@ interface User {
   createdAt: string;
   updatedAt: string;
 }
-
 interface MeResponse {
   success: boolean;
   message: string;
   data: User;
 }
-
-// Define the API types and response structures
 interface ChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
 }
-
 interface ChangePasswordResponse {
   success: boolean;
   message: string;
 }
 
+// --- API Definition ---
 const allApi = createApi({
   reducerPath: 'allApi',
   baseQuery: fetchBaseQuery({
     baseUrl,
     prepareHeaders: (headers) => {
-      // Retrieve token from cookies
       const token = Cookies.get('Ihamrickadmindashboardtoken');
-
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
-
       return headers;
     },
   }),
 
+  tagTypes: [
+    'User',
+    'Blog',
+    'Video',
+    'Podcast',
+    'Publication',
+    'LifeSuggestion',
+    'SocialLink',
+    'AboutUs',
+    'PrivacyPolicy',
+  ],
+
   endpoints: (builder) => ({
+    // AUTH & PROFILE
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
         url: '/auth/login',
         method: 'POST',
         body: credentials,
       }),
+      invalidatesTags: ['User'],
     }),
-    forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
-      query: (email) => ({
-        url: '/auth/forgot-password',
-        method: 'POST',
-        body: email,
+    getCurrentUser: builder.query<MeResponse, void>({
+      query: () => ({
+        url: '/auth/me',
+        method: 'GET',
+      }),
+      providesTags: ['User'],
+    }),
+    updateProfile: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: '/auth/update-profile',
+        method: 'PATCH',
+        body: formData,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
+      query: (body) => ({
+        url: '/auth/change-password',
+        method: 'PUT',
+        body,
       }),
     }),
-    verifyOtp: builder.mutation<VerifyOtpResponse, VerifyOtpRequest>({
-      query: ({ email, otp }) => ({
-        url: '/auth/verify-otp',
+    logout: builder.mutation<void, void>({
+      query: () => ({
+        url: '/auth/logout',
         method: 'POST',
-        body: { email, otp },
       }),
-    }),
-    resendOtp: builder.mutation<ResendOtpResponse, ResendOtpRequest>({
-      query: ({ email }) => ({
-        url: '/auth/resend-otp',
-        method: 'POST',
-        body: { email },
-      }),
-    }),
-    resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
-      query: ({ email, newPassword, confirmPassword, otp }) => ({
-        url: '/auth/reset-password',
-        method: 'POST',
-        body: { email, newPassword, confirmPassword, otp },
-      }),
+      invalidatesTags: ['User', 'Blog', 'Video', 'Podcast', 'Publication'],
     }),
 
+    forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
+      query: (email) => ({ url: '/auth/forgot-password', method: 'POST', body: email }),
+    }),
+    verifyOtp: builder.mutation<VerifyOtpResponse, VerifyOtpRequest>({
+      query: (body) => ({ url: '/auth/verify-otp', method: 'POST', body }),
+    }),
+    resendOtp: builder.mutation<ResendOtpResponse, ResendOtpRequest>({
+      query: (body) => ({ url: '/auth/resend-otp', method: 'POST', body }),
+    }),
+    resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
+      query: (body) => ({ url: '/auth/reset-password', method: 'POST', body }),
+    }),
+
+    // BLOGS
     getBlogs: builder.query<BlogResponse, { page?: number; limit?: number }>({
       query: ({ page = 1, limit = 10 }) => ({
         url: `/blog?page=${page}&limit=${limit}`,
         method: 'GET',
       }),
+      providesTags: ['Blog'],
     }),
-    // Life Suggestions API Endpoints
-    createLifeSuggestion: builder.mutation<LifeSuggestion, CreateLifeSuggestionRequest>({
-      query: (newLifeSuggestion) => ({
-        url: '/life-suggestions/create',
+    createBlog: builder.mutation<void, { data: FormData }>({
+      query: ({ data }) => ({
+        url: '/blog/create-blog',
         method: 'POST',
-        body: newLifeSuggestion,
+        body: data,
       }),
-    }),
-    getLifeSuggestions: builder.query<LifeSuggestionsResponse, void>({
-      query: () => ({
-        url: '/life-suggestions/',
-        method: 'GET',
-      }),
-    }),
-    deleteLifeSuggestion: builder.mutation<DeleteLifeSuggestionResponse, string>({
-      query: (suggestionId) => ({
-        url: `/life-suggestions/${suggestionId}`,
-        method: 'DELETE',
-      }),
-    }),
-    deleteBlog: builder.mutation<BlogResponse, string>({
-      query: (blogId) => ({
-        url: `/blog/delete/${blogId}`,
-        method: 'DELETE',
-      }),
+      invalidatesTags: ['Blog'],
     }),
     updateBlog: builder.mutation<BlogUpdateResponse, { id: string; data: FormData }>({
       query: ({ id, data }) => ({
@@ -387,101 +333,31 @@ const allApi = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: ['Blog'],
+    }),
+    deleteBlog: builder.mutation<BlogResponse, string>({
+      query: (blogId) => ({
+        url: `/blog/delete/${blogId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Blog'],
     }),
 
-    logout: builder.mutation<void, void>({
-      query: () => ({
-        url: '/auth/logout',
-        method: 'POST',
-      }),
-    }),
-    sentNotifications: builder.mutation<SendNotifications, void>({
-      query: () => ({
-        url: '/notifications/send-notifications',
-        method: 'POST',
-      }),
-    }),
-    // Get all social links
-    getSocialLinks: builder.query<SocialLinkResponse, void>({
-      query: () => ({
-        url: '/social-links',
+    // VIDEOS
+    getVideos: builder.query<any, { page?: number; limit?: number }>({
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/videos?page=${page}&limit=${limit}`,
         method: 'GET',
       }),
+      providesTags: ['Video'],
     }),
-
-    // Update a social link by ID
-    updateSocialLink: builder.mutation<
-      UpdateSocialLinkResponse,
-      { id: string; data: UpdateSocialLinkRequest }
-    >({
-      query: ({ id, data }) => ({
-        url: `/social-links/${id}`,
-        method: 'PUT',
-        body: data,
-      }),
-    }),
-    getAboutUs: builder.query<any, void>({
-      query: () => ({
-        url: 'website-content/about-us',
+    getVideoById: builder.query<Video, string>({
+      query: (videoId) => ({
+        url: `/videos/${videoId}`,
         method: 'GET',
       }),
+      providesTags: ['Video'],
     }),
-    updateAboutUs: builder.mutation<void, { content: string }>({
-      query: (content) => ({
-        url: 'website-content/about-us',
-        method: 'PATCH',
-        body: content,
-      }),
-    }),
-    getPrivacyPolicy: builder.query<any, void>({
-      query: () => ({
-        url: 'website-content/privacy-policy',
-        method: 'GET',
-      }),
-    }),
-    // Mutation for updating the 'Privacy Policy' content
-    updatePrivacyPolicy: builder.mutation<void, { content: string }>({
-      query: (content) => ({
-        url: 'website-content/privacy-policy',
-        method: 'PATCH',
-        body: content,
-      }),
-    }),
-
-    // New query to get the current authenticated user
-    getCurrentUser: builder.query<MeResponse, void>({
-      query: () => ({
-        url: '/auth/me',
-        method: 'GET',
-      }),
-    }),
-    updateProfile: builder.mutation({
-      query: (formData: FormData) => {
-        return {
-          url: '/auth/update-profile',
-          method: 'PATCH',
-          body: formData,
-        };
-      },
-    }),
-    changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
-      query: ({ oldPassword, newPassword }) => ({
-        url: '/auth/change-password',
-        method: 'PUT',
-        body: { oldPassword, newPassword },
-      }),
-    }),
-    createBlog: builder.mutation<void, { data: FormData }>({
-      query: ({ data }) => {
-        return {
-          url: '/blog/create-blog', // Adjust this URL to your endpoint
-          method: 'POST',
-          body: data,
-        };
-      },
-    }),
-
-    // upload video
     uploadVideo: builder.mutation<{ success: boolean; message: string; data: Video }, FormData>({
       query: (formData) => ({
         url: '/videos/upload',
@@ -489,9 +365,8 @@ const allApi = createApi({
         body: formData,
         timeout: 600000,
       }),
+      invalidatesTags: ['Video'],
     }),
-
-    // update video by id
     updateVideo: builder.mutation<
       { success: boolean; message: string; data: Video },
       { id: string; data: FormData }
@@ -502,52 +377,32 @@ const allApi = createApi({
         body: data,
         timeout: 600000,
       }),
+      invalidatesTags: ['Video'],
     }),
-
-    //  get videos
-    getVideos: builder.query<any, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => ({
-        url: `/videos?page=${page}&limit=${limit}`,
-        method: 'GET',
-      }),
-    }),
-
-    // get single video by id
-    getVideoById: builder.query<Video, string>({
-      query: (videoId) => ({
-        url: `/videos/${videoId}`,
-        method: 'GET',
-      }),
-    }),
-
-    // delete video
     deleteVideo: builder.mutation<{ success: boolean; message: string; data: Video }, string>({
       query: (videoId) => ({
         url: `/videos/delete/${videoId}`,
         method: 'DELETE',
       }),
+      invalidatesTags: ['Video'],
     }),
 
-    // create Podcast
-    createPodcast: builder.mutation<void, FormData>({
-      query: (data) => {
-        return {
-          url: '/podcasts',
-          method: 'POST',
-          body: data,
-        };
-      },
-    }),
-
-    // get Podcasts
+    // PODCASTS
     getPodcasts: builder.query<any, { page?: number; limit?: number }>({
       query: ({ page = 1, limit = 10 }) => ({
         url: `/podcasts?page=${page}&limit=${limit}`,
         method: 'GET',
       }),
+      providesTags: ['Podcast'],
     }),
-
-    // update Podcast by id
+    createPodcast: builder.mutation<void, FormData>({
+      query: (data) => ({
+        url: '/podcasts',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Podcast'],
+    }),
     updatePodcast: builder.mutation<
       { success: boolean; message: string; data: Podcast },
       { id: string; data: FormData }
@@ -557,52 +412,46 @@ const allApi = createApi({
         method: 'PATCH',
         body: data,
       }),
+      invalidatesTags: ['Podcast'],
     }),
-
-    // start Podcast live
     startPodcast: builder.mutation<{ success: boolean; message: string; data: Podcast }, string>({
       query: (podcastId) => ({
         url: `/podcasts/start/${podcastId}`,
         method: 'POST',
       }),
+      invalidatesTags: ['Podcast'],
     }),
-
-    // end Podcast live
     endPodcast: builder.mutation<{ success: boolean; message: string; data: Podcast }, string>({
       query: (podcastId) => ({
         url: `/podcasts/end/${podcastId}`,
         method: 'POST',
       }),
+      invalidatesTags: ['Podcast'],
     }),
-
-    // delete Podcast
     deletePodcast: builder.mutation<{ success: boolean; message: string; data: Podcast }, string>({
       query: (podcastId) => ({
         url: `/podcasts/${podcastId}`,
         method: 'DELETE',
       }),
+      invalidatesTags: ['Podcast'],
     }),
 
-    // get publications
+    // PUBLICATIONS
     getPublications: builder.query<PublicationResponse, { page?: number; limit?: number }>({
       query: ({ page = 1, limit = 10 }) => ({
         url: `/publications?page=${page}&limit=${limit}`,
         method: 'GET',
       }),
+      providesTags: ['Publication'],
     }),
-
-    // create publication
     createPublication: builder.mutation<void, FormData>({
-      query: (data) => {
-        return {
-          url: '/publications/create',
-          method: 'POST',
-          body: data,
-        };
-      },
+      query: (data) => ({
+        url: '/publications/create',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Publication'],
     }),
-
-    // update publication by id
     updatePublication: builder.mutation<
       { success: boolean; message: string; data: Publication },
       { id: string; data: FormData }
@@ -612,9 +461,8 @@ const allApi = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: ['Publication'],
     }),
-
-    // delete publication
     deletePublication: builder.mutation<
       { success: boolean; message: string; data: Publication },
       string
@@ -623,10 +471,96 @@ const allApi = createApi({
         url: `/publications/delete/${publicationId}`,
         method: 'DELETE',
       }),
+      invalidatesTags: ['Publication'],
+    }),
+
+    // LIFE SUGGESTIONS
+    getLifeSuggestions: builder.query<LifeSuggestionsResponse, void>({
+      query: () => ({
+        url: '/life-suggestions/',
+        method: 'GET',
+      }),
+      providesTags: ['LifeSuggestion'],
+    }),
+    createLifeSuggestion: builder.mutation<LifeSuggestion, CreateLifeSuggestionRequest>({
+      query: (newLifeSuggestion) => ({
+        url: '/life-suggestions/create',
+        method: 'POST',
+        body: newLifeSuggestion,
+      }),
+      invalidatesTags: ['LifeSuggestion'],
+    }),
+    deleteLifeSuggestion: builder.mutation<DeleteLifeSuggestionResponse, string>({
+      query: (suggestionId) => ({
+        url: `/life-suggestions/${suggestionId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['LifeSuggestion'],
+    }),
+
+    // SOCIAL LINKS
+    getSocialLinks: builder.query<SocialLinkResponse, void>({
+      query: () => ({
+        url: '/social-links',
+        method: 'GET',
+      }),
+      providesTags: ['SocialLink'],
+    }),
+    updateSocialLink: builder.mutation<
+      UpdateSocialLinkResponse,
+      { id: string; data: UpdateSocialLinkRequest }
+    >({
+      query: ({ id, data }) => ({
+        url: `/social-links/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      invalidatesTags: ['SocialLink'],
+    }),
+
+    // WEBSITE CONTENT
+    getAboutUs: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/about-us',
+        method: 'GET',
+      }),
+      providesTags: ['AboutUs'],
+    }),
+    updateAboutUs: builder.mutation<void, { content: string }>({
+      query: (content) => ({
+        url: 'website-content/about-us',
+        method: 'PATCH',
+        body: content,
+      }),
+      invalidatesTags: ['AboutUs'],
+    }),
+    getPrivacyPolicy: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/privacy-policy',
+        method: 'GET',
+      }),
+      providesTags: ['PrivacyPolicy'],
+    }),
+    updatePrivacyPolicy: builder.mutation<void, { content: string }>({
+      query: (content) => ({
+        url: 'website-content/privacy-policy',
+        method: 'PATCH',
+        body: content,
+      }),
+      invalidatesTags: ['PrivacyPolicy'],
+    }),
+
+    // NOTIFICATIONS
+    sentNotifications: builder.mutation<SendNotifications, void>({
+      query: () => ({
+        url: '/notifications/send-notifications',
+        method: 'POST',
+      }),
     }),
   }),
 });
 
+// --- Exporting Hooks ---
 export const {
   useLoginMutation,
   useForgotPasswordMutation,
