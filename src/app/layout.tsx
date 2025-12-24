@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Poppins } from 'next/font/google';
 import './globals.css';
 import ClientWrapper from '../../services/ClientWrapper';
+import { ToastContainer } from 'react-toastify';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -35,7 +36,21 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
       >
-        <ClientWrapper> {children}</ClientWrapper>
+        <ClientWrapper>
+          {' '}
+          {children}{' '}
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </ClientWrapper>
       </body>
     </html>
   );

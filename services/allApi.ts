@@ -427,7 +427,7 @@ const allApi = createApi({
       }),
     }),
     updateAboutUs: builder.mutation<void, { content: string }>({
-      query: ({ content }) => ({
+      query: (content) => ({
         url: 'website-content/about-us',
         method: 'PATCH',
         body: content,
@@ -441,7 +441,7 @@ const allApi = createApi({
     }),
     // Mutation for updating the 'Privacy Policy' content
     updatePrivacyPolicy: builder.mutation<void, { content: string }>({
-      query: ({ content }) => ({
+      query: (content) => ({
         url: 'website-content/privacy-policy',
         method: 'PATCH',
         body: content,
