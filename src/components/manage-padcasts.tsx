@@ -22,9 +22,7 @@ export function ManagePodcasts() {
               <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Cover Image
               </th>
-              <th className="font-poppins pb-3 text-center text-base font-bold text-[#383232]">
-                Total Listeners
-              </th>
+
               <th className="font-poppins pb-3 text-center text-base font-bold text-[#383232]">
                 Status
               </th>
@@ -47,9 +45,7 @@ export function ManagePodcasts() {
                       className="rounded-lg object-cover"
                     />
                   </td>
-                  <td className="font-poppins py-3 text-center text-base font-normal text-[#333333]">
-                    {podcast.totalListeners}
-                  </td>
+
                   <td className="font-poppins py-3 text-center text-base font-normal text-[#333333]">
                     <span
                       className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${

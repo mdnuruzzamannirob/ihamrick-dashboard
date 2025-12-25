@@ -3,11 +3,9 @@
 import {
   Eye,
   X,
-  Users,
   Clock,
   ShieldCheck,
   Info,
-  Headset,
   Cast,
   Radio,
   StopCircle,
@@ -22,7 +20,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useStartPodcastMutation, useEndPodcastMutation } from '../../../services/allApi';
 
-// Helper for date formatting
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     day: 'numeric',
@@ -46,19 +43,13 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
   const isScheduled = podcast.status === 'scheduled';
   const isEnded = podcast.status === 'ended';
 
-  // --- Actions ---
-
   const handleStartLive = async () => {
     try {
       const res: any = await startPodcast(podcast._id).unwrap();
       toast.success('Starting Live Session...');
-
       const sessionId = res?.data?.podcast?.liveSessionId || podcast.liveSessionId;
-
-      // Navigate to Broadcaster Page
       router.push(`/broadcaster?podcastId=${podcast._id}&sessionId=${sessionId}`);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error('Failed to start live session');
     }
   };
@@ -68,7 +59,7 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
       await endPodcast(podcast._id).unwrap();
       refetch();
       toast.success('Broadcast ended successfully');
-      setViewModalOpen(false); // Close modal on stop
+      setViewModalOpen(false);
     } catch {
       toast.error('Failed to stop broadcast');
     }
@@ -84,26 +75,18 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
 
   return (
     <>
-      {/* Trigger Button */}
       <button
         onClick={() => setViewModalOpen(true)}
-        className="group relative flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition-all hover:bg-indigo-600 hover:text-white hover:shadow-lg hover:shadow-indigo-200"
+        className="group relative flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition-all hover:bg-indigo-600 hover:text-white hover:shadow-lg"
       >
         <Eye size={18} />
       </button>
 
-      {/* Modal Overlay */}
       {viewModalOpen && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity"
-          onClick={() => setViewModalOpen(false)}
-        >
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity">
           <div className="absolute inset-0" onClick={() => setViewModalOpen(false)} />
-          {/* Modal Content */}
-          <div
-            className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-4xl bg-white shadow-2xl ring-1 ring-slate-900/5"
-            onClick={(e) => e.stopPropagation()}
-          >
+
+          <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-4xl bg-white shadow-2xl ring-1 ring-slate-900/5">
             {/* Header / Cover Image */}
             <div className="relative h-64 w-full shrink-0 bg-slate-900">
               <Image
@@ -114,7 +97,6 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
               />
               <div className="absolute inset-0 bg-linear-to-t from-white via-transparent to-black/30" />
 
-              {/* Close Button */}
               <button
                 onClick={() => setViewModalOpen(false)}
                 className="absolute top-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md transition-colors hover:bg-white hover:text-black"
@@ -122,71 +104,48 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
                 <X size={20} />
               </button>
 
-              {/* Title & Badge Overlay */}
               <div className="absolute right-8 bottom-6 left-8">
-                <div className="flex items-end justify-between">
-                  <div>
-                    <div
-                      className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-widest uppercase backdrop-blur-md ${
-                        isLive
-                          ? 'animate-pulse bg-red-600 text-white'
-                          : isScheduled
-                            ? 'bg-blue-600/90 text-white'
-                            : 'bg-slate-800/80 text-slate-200'
-                      }`}
-                    >
-                      {isLive && <span className="h-2 w-2 rounded-full bg-white" />}
-                      {podcast.status}
-                    </div>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 drop-shadow-sm lg:text-5xl">
-                      {podcast.title}
-                    </h1>
-                  </div>
+                <div
+                  className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-widest uppercase backdrop-blur-md ${
+                    isLive
+                      ? 'animate-pulse bg-red-600 text-white'
+                      : isScheduled
+                        ? 'bg-blue-600/90 text-white'
+                        : 'bg-slate-800/80 text-slate-200'
+                  }`}
+                >
+                  {isLive && <span className="h-2 w-2 rounded-full bg-white" />}
+                  {podcast.status}
                 </div>
+                <h1 className="text-4xl font-black tracking-tight text-slate-900 lg:text-5xl">
+                  {podcast.title}
+                </h1>
               </div>
             </div>
 
-            {/* Scrollable Content */}
+            {/* Content Area */}
             <div className="flex-1 overflow-y-auto bg-white p-8 lg:p-10">
-              {/* --- STATS CARDS --- */}
-              <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-3">
-                {/* Duration Card */}
-                <StatCard
-                  icon={<Clock size={24} />}
-                  label="Duration"
-                  value={podcast.duration ? `${podcast.duration} mins` : 'N/A'}
-                  subtext="Estimated Run Time"
-                  color="amber"
-                />
-
-                {/* Total Listeners Card */}
-                <StatCard
-                  icon={<Users size={24} />}
-                  label="Total Listeners"
-                  value={podcast.podcastListeners?.length || 0}
-                  subtext="Unique Audience"
-                  color="indigo"
-                />
-
-                {/* Active Listeners Card (Highlighted if Live) */}
-                <StatCard
-                  icon={<Headset size={24} />}
-                  label="Live Now"
-                  value={podcast.activeListeners || podcast.currentListeners || 0}
-                  subtext={isLive ? 'People Listening' : 'Offline'}
-                  color={isLive ? 'emerald' : 'slate'}
-                  animate={isLive}
-                />
-              </div>
-
-              <div className="grid gap-6 lg:grid-cols-3">
-                {/* Left Column: Metadata */}
+              <div className="grid gap-8 lg:grid-cols-3">
+                {/* Left Column: Stats & Meta */}
                 <div className="space-y-6 lg:col-span-1">
+                  {/* Duration Card - Now Single and Highlighted */}
+                  <div className="flex flex-col rounded-3xl border border-amber-100 bg-amber-50 p-6 transition-all hover:shadow-md">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-amber-600 shadow-sm">
+                      <Clock size={24} />
+                    </div>
+                    <p className="text-xs font-bold tracking-wider text-amber-600/60 uppercase">
+                      Duration
+                    </p>
+                    <h2 className="text-3xl font-black tracking-tight text-amber-700">
+                      {podcast.duration ? `${podcast.duration} mins` : 'N/A'}
+                    </h2>
+                    <p className="mt-1 text-xs font-medium text-amber-600/80">Estimated Run Time</p>
+                  </div>
+
                   <div className="rounded-3xl border border-slate-100 bg-slate-50 p-6">
                     <h3 className="mb-4 text-xs font-black tracking-widest text-slate-400 uppercase">
-                      Podcast Details
+                      Information
                     </h3>
-
                     <div className="space-y-4">
                       <MetaRow
                         icon={<Calendar size={16} />}
@@ -217,7 +176,7 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
 
                   {isEnded && podcast.recordedSignedUrl && (
                     <div className="rounded-3xl border border-indigo-100 bg-indigo-50 p-6">
-                      <h3 className="mb-2 text-xs font-black tracking-widest text-indigo-400 uppercase">
+                      <h3 className="mb-2 text-xs text-[10px] font-black tracking-widest text-indigo-400 uppercase">
                         Recording Available
                       </h3>
                       <audio
@@ -229,7 +188,7 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
                   )}
                 </div>
 
-                {/* Right Column: Description */}
+                {/* Right Column: Description & Transcription */}
                 <div className="space-y-8 lg:col-span-2">
                   <ContentSection
                     title="Description"
@@ -247,7 +206,7 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
               </div>
             </div>
 
-            {/* --- ACTION FOOTER --- */}
+            {/* Footer Actions */}
             <div className="border-t border-slate-100 bg-slate-50/80 p-6 backdrop-blur-md">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <button
@@ -258,12 +217,11 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
                 </button>
 
                 <div className="flex items-center gap-3">
-                  {/* Status: SCHEDULED */}
                   {isScheduled && (
                     <button
                       onClick={handleStartLive}
                       disabled={starting}
-                      className="flex items-center gap-2 rounded-xl bg-black px-8 py-3 text-sm font-bold text-white shadow-lg shadow-slate-300 transition-all hover:bg-slate-800 active:scale-95 disabled:opacity-50"
+                      className="flex items-center gap-2 rounded-xl bg-black px-8 py-3 text-sm font-bold text-white shadow-lg hover:bg-slate-800 disabled:opacity-50"
                     >
                       {starting ? (
                         <Loader2 className="animate-spin" size={18} />
@@ -274,21 +232,19 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
                     </button>
                   )}
 
-                  {/* Status: LIVE */}
                   {isLive && (
                     <>
                       <button
                         onClick={handleEnterStudio}
-                        className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 active:scale-95"
+                        className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-indigo-700"
                       >
                         <Radio size={18} className="animate-pulse" />
                         ENTER STUDIO
                       </button>
-
                       <button
                         onClick={handleStopLive}
                         disabled={ending}
-                        className="flex items-center gap-2 rounded-xl bg-red-100 px-6 py-3 text-sm font-bold text-red-600 hover:bg-red-200 active:scale-95 disabled:opacity-50"
+                        className="flex items-center gap-2 rounded-xl bg-red-100 px-6 py-3 text-sm font-bold text-red-600 hover:bg-red-200 disabled:opacity-50"
                       >
                         {ending ? (
                           <Loader2 className="animate-spin" size={18} />
@@ -300,7 +256,6 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
                     </>
                   )}
 
-                  {/* Status: ENDED */}
                   {isEnded && (
                     <span className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-500">
                       <ShieldCheck size={14} /> Session Completed
@@ -316,46 +271,7 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
   );
 }
 
-// --- SUB COMPONENTS FOR CLEANER CODE ---
-
-const StatCard = ({ icon, label, value, subtext, color, animate }: any) => {
-  // Dynamic color classes map
-  const colorStyles: any = {
-    amber: 'bg-amber-50 text-amber-600 border-amber-100',
-    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    slate: 'bg-slate-50 text-slate-500 border-slate-200',
-  };
-
-  const style = colorStyles[color] || colorStyles.slate;
-
-  return (
-    <div
-      className={`flex flex-col rounded-3xl border p-6 ${style} relative overflow-hidden transition-all hover:shadow-md`}
-    >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
-        {icon}
-      </div>
-      <div className="relative z-10">
-        <p className="mb-1 text-xs font-bold tracking-wider uppercase opacity-60">{label}</p>
-        <div className="flex items-center gap-2">
-          <h2 className="text-3xl font-black tracking-tight">{value}</h2>
-          {animate && (
-            <span className="relative flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500"></span>
-            </span>
-          )}
-        </div>
-        <p className="mt-1 text-xs font-medium opacity-80">{subtext}</p>
-      </div>
-      {/* Background Decor */}
-      <div className="absolute -right-4 -bottom-4 scale-150 rotate-12 transform opacity-10">
-        {icon}
-      </div>
-    </div>
-  );
-};
+// --- Reusable Sub-components ---
 
 const MetaRow = ({ icon, label, value }: any) => (
   <div className="flex items-center justify-between py-1">
@@ -376,7 +292,7 @@ const ContentSection = ({ title, content, icon }: any) => (
       </h3>
     </div>
     <div
-      className="prose prose-sm max-w-none rounded-3xl border border-transparent bg-slate-50 p-6 leading-relaxed text-slate-600 transition-all duration-300 hover:border-indigo-100 hover:bg-white hover:shadow-sm"
+      className="prose prose-sm max-w-none rounded-3xl border border-transparent bg-slate-50 p-6 leading-relaxed text-slate-600 transition-all hover:border-indigo-100 hover:bg-white hover:shadow-sm"
       dangerouslySetInnerHTML={{
         __html: content || `<p class="italic opacity-50">No ${title.toLowerCase()} provided.</p>`,
       }}
