@@ -353,7 +353,7 @@ const allApi = createApi({
       { page?: number; limit?: number; sortBy?: string; sortOrder?: string }
     >({
       query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
-        url: `/videos?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+        url: `/videos/admin?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
         method: 'GET',
       }),
       providesTags: ['Video'],
