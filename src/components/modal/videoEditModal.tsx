@@ -83,7 +83,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
       submitData.append('description', formData.description);
       submitData.append('transcription', formData.transcription);
       submitData.append('uploadDate', formData.uploadDate);
-      submitData.append('status', String(formData.status === 'published'));
+      submitData.append('status', formData.status);
 
       if (files.video) submitData.append('video', files.video);
       if (files.coverImage) submitData.append('coverImage', files.coverImage);

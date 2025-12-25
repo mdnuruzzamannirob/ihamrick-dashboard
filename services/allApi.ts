@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 
-const baseUrl = 'http://10.10.20.73:5005/api/';
+const baseUrl = 'https://api.pg-65.com/api/';
 
 // --- Interfaces ---
 interface LoginRequest {
@@ -312,13 +312,17 @@ const allApi = createApi({
     }),
 
     // BLOGS
-    getBlogs: builder.query<BlogResponse, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => ({
-        url: `/blog?page=${page}&limit=${limit}`,
+    getBlogs: builder.query<
+      BlogResponse,
+      { page?: number; limit?: number; sortBy?: string; sortOrder?: string }
+    >({
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
+        url: `/blog?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
         method: 'GET',
       }),
       providesTags: ['Blog'],
     }),
+
     createBlog: builder.mutation<void, { data: FormData }>({
       query: ({ data }) => ({
         url: '/blog/create-blog',
@@ -344,9 +348,12 @@ const allApi = createApi({
     }),
 
     // VIDEOS
-    getVideos: builder.query<any, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => ({
-        url: `/videos?page=${page}&limit=${limit}`,
+    getVideos: builder.query<
+      any,
+      { page?: number; limit?: number; sortBy?: string; sortOrder?: string }
+    >({
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
+        url: `/videos?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
         method: 'GET',
       }),
       providesTags: ['Video'],
@@ -388,13 +395,17 @@ const allApi = createApi({
     }),
 
     // PODCASTS
-    getPodcasts: builder.query<any, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => ({
-        url: `/podcasts?page=${page}&limit=${limit}`,
+    getPodcasts: builder.query<
+      any,
+      { page?: number; limit?: number; sortBy?: string; sortOrder?: string }
+    >({
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
+        url: `/podcasts?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
         method: 'GET',
       }),
       providesTags: ['Podcast'],
     }),
+
     createPodcast: builder.mutation<void, FormData>({
       query: (data) => ({
         url: '/podcasts',
@@ -437,13 +448,17 @@ const allApi = createApi({
     }),
 
     // PUBLICATIONS
-    getPublications: builder.query<PublicationResponse, { page?: number; limit?: number }>({
-      query: ({ page = 1, limit = 10 }) => ({
-        url: `/publications?page=${page}&limit=${limit}`,
+    getPublications: builder.query<
+      PublicationResponse,
+      { page?: number; limit?: number; sortBy?: string; sortOrder?: string }
+    >({
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
+        url: `/publications?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
         method: 'GET',
       }),
       providesTags: ['Publication'],
     }),
+
     createPublication: builder.mutation<void, FormData>({
       query: (data) => ({
         url: '/publications/create',

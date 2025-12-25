@@ -14,6 +14,8 @@ import {
   Cast,
   StopCircle,
   Radio,
+  ArrowUpDown,
+  Mic,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
@@ -33,24 +35,55 @@ export default function ManagePodcasts() {
   const [page, setPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPodcastId, setSelectedPodcastId] = useState<string | null>(null);
-
   const [processingId, setProcessingId] = useState<string | null>(null);
+
+  // --- Sorting State (Blog & Video er moto) ---
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
 
   const router = useRouter();
 
-  const { data, isLoading, refetch } = useGetPodcastsQuery({
+  const { data, isLoading, refetch, isFetching } = useGetPodcastsQuery({
     page,
     limit: ITEMS_PER_PAGE,
+    sortBy,
+    sortOrder,
   });
 
   const [deletePodcast, { isLoading: deleting }] = useDeletePodcastMutation();
-  const [startPodcast, { isLoading: starting }] = useStartPodcastMutation();
-  const [endPodcast, { isLoading: ending }] = useEndPodcastMutation();
+  const [startPodcast] = useStartPodcastMutation();
+  const [endPodcast] = useEndPodcastMutation();
 
   const podcasts = data?.data?.podcasts ?? [];
   const totalPages = data?.data?.pagination?.totalPages ?? 1;
 
   /* -------------------- Handlers -------------------- */
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+    setPage(1); // Sort করলে প্রথম পেজে নিয়ে আসা ভালো
+  };
+
+  const renderSortIcon = (field: string) => {
+    if (sortBy !== field)
+      return (
+        <ArrowUpDown
+          size={14}
+          className="ml-1 text-neutral-300 transition hover:text-neutral-500"
+        />
+      );
+    return (
+      <ArrowUpDown
+        size={14}
+        className={`ml-1 ${sortOrder === 'asc' ? 'rotate-180 transform text-blue-600' : 'text-blue-600'}`}
+      />
+    );
+  };
+
   const openDeleteModal = (id: string) => {
     setSelectedPodcastId(id);
     setDeleteModalOpen(true);
@@ -79,7 +112,6 @@ export default function ManagePodcasts() {
       const res: any = await startPodcast(id).unwrap();
       toast.success('Podcast is now live');
       const liveSessionId = res?.data?.podcast?.liveSessionId;
-
       if (typeof window !== 'undefined') {
         localStorage.setItem(`podcast_live_${id}`, 'true');
       }
@@ -107,254 +139,251 @@ export default function ManagePodcasts() {
     }
   };
 
-  const renderPageNumbers = () => {
-    const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => setPage(i)}
-          className={`h-10 w-10 rounded-lg text-sm font-medium transition-colors ${
-            page === i ? 'bg-red-500 text-white' : 'text-gray-600 hover:bg-gray-100'
-          }`}
-        >
-          {i}
-        </button>,
-      );
-    }
-    return pages;
-  };
-
-  /* -------------------- UI -------------------- */
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white text-neutral-900">
       <Sidebar />
 
-      <div className="flex-1 p-6 lg:ml-64">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-3xl font-semibold text-gray-800">Manage Podcasts</h1>
-          <UserProfile />
-        </div>
-
-        {/* Actions */}
-        <div className="mb-6 flex justify-end">
-          <PodcastsUploadModal refetch={refetch} />
-        </div>
-
-        {/* Table */}
-        <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="border-b border-gray-200 bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Title</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Date</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Duration</th>
-                  <th className="px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
-                  <th className="min-w-[200px] px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                    Go Live / Actions
-                  </th>
-                  <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                    Manage
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y bg-white">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={6} className="py-10 text-center text-gray-500">
-                      Loading podcasts...
-                    </td>
-                  </tr>
-                ) : podcasts.length > 0 ? (
-                  podcasts.map((podcast: any) => {
-                    const isProcessingThisRow = processingId === podcast._id;
-
-                    return (
-                      <tr
-                        key={podcast._id}
-                        className="border-gray-200 transition-colors hover:bg-gray-50"
-                      >
-                        <td className="px-6 py-4 font-medium text-gray-900">{podcast.title}</td>
-
-                        <td className="px-6 py-4 text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            {new Date(podcast.createdAt).toLocaleDateString()}
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4 text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4" />
-                            {podcast.duration || '—'}
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold tracking-wide uppercase ${
-                              podcast.status === 'live'
-                                ? 'animate-pulse bg-red-100 text-red-600 ring-1 ring-red-200'
-                                : podcast.status === 'scheduled'
-                                  ? 'bg-blue-100 text-blue-600 ring-1 ring-blue-200'
-                                  : 'bg-gray-100 text-gray-600 ring-1 ring-gray-200'
-                            }`}
-                          >
-                            {podcast.status === 'live' && (
-                              <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
-                            )}
-                            {podcast.status}
-                          </span>
-                        </td>
-
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-center gap-2">
-                            {podcast.status === 'scheduled' && (
-                              <button
-                                onClick={() => startPodcastLive(podcast._id)}
-                                disabled={isProcessingThisRow}
-                                className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-800 disabled:opacity-50"
-                              >
-                                {starting && isProcessingThisRow ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Cast size={16} />
-                                )}
-                                Go Live
-                              </button>
-                            )}
-
-                            {podcast.status === 'live' && (
-                              <>
-                                <button
-                                  onClick={() => {
-                                    if (typeof window !== 'undefined')
-                                      localStorage.setItem(`podcast_live_${podcast._id}`, 'true');
-                                    router.push(
-                                      `/broadcaster?podcastId=${podcast._id}&sessionId=${podcast.liveSessionId}`,
-                                    );
-                                  }}
-                                  className="flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-                                >
-                                  <Radio size={16} /> Studio
-                                </button>
-
-                                <button
-                                  onClick={() => endPodcastLive(podcast._id)}
-                                  disabled={isProcessingThisRow}
-                                  className="flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-600 disabled:opacity-50"
-                                >
-                                  {ending && isProcessingThisRow ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <StopCircle size={16} />
-                                  )}
-                                  Stop
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4">
-                          <div className="flex justify-center gap-2">
-                            <PodcastsEditModal podcast={podcast} refetch={refetch} />
-                            <PodcastsViewModal podcast={podcast} refetch={refetch} />
-                            <button
-                              onClick={() => openDeleteModal(podcast._id)}
-                              className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="py-10 text-center text-gray-500">
-                      No podcasts found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      <div className="flex-1 lg:ml-64">
+        <div className="p-4 md:p-6 lg:p-8">
+          {/* Header */}
+          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <h1 className="font-primary text-2xl font-bold md:text-3xl">Manage Podcasts</h1>
+            <UserProfile />
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="border-t border-gray-200 bg-white px-6 py-4">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <p className="text-sm text-gray-600">
-                  Page <span className="font-semibold">{page}</span> of{' '}
-                  <span className="font-semibold">{totalPages}</span>
-                </p>
+          {/* Action Button */}
+          <div className="mb-6 flex justify-end">
+            <PodcastsUploadModal refetch={refetch} />
+          </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage((p) => Math.max(p - 1, 1))}
-                    disabled={page === 1}
-                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    <ChevronLeft className="h-4 w-4" /> Prev
-                  </button>
+          {/* Table Container */}
+          <div className="overflow-hidden rounded-3xl border border-neutral-100 shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-neutral-50">
+                  <tr className="text-left text-xs font-black tracking-widest text-neutral-500 uppercase">
+                    <th
+                      className="cursor-pointer px-6 py-4 transition-colors hover:bg-neutral-100"
+                      onClick={() => handleSort('title')}
+                    >
+                      <div className="flex items-center">Title {renderSortIcon('title')}</div>
+                    </th>
+                    <th
+                      className="cursor-pointer px-6 py-4 transition-colors hover:bg-neutral-100"
+                      onClick={() => handleSort('createdAt')}
+                    >
+                      <div className="flex items-center">Date {renderSortIcon('createdAt')}</div>
+                    </th>
+                    <th
+                      className="cursor-pointer px-6 py-4 transition-colors hover:bg-neutral-100"
+                      onClick={() => handleSort('duration')}
+                    >
+                      <div className="flex items-center">Duration {renderSortIcon('duration')}</div>
+                    </th>
+                    <th
+                      className="cursor-pointer px-6 py-4 text-center transition-colors hover:bg-neutral-100"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center justify-center">
+                        Status {renderSortIcon('status')}
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-center">Live Control</th>
+                    <th className="px-6 py-4 text-center">Manage</th>
+                  </tr>
+                </thead>
 
-                  <div className="hidden gap-1 md:flex">{renderPageNumbers()}</div>
+                <tbody className="divide-y divide-neutral-100 bg-white">
+                  {isLoading || isFetching ? (
+                    <tr>
+                      <td colSpan={6} className="py-20 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+                          <p className="text-sm font-medium text-neutral-500">
+                            Getting podcasts...
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : podcasts.length > 0 ? (
+                    podcasts.map((podcast: any) => {
+                      const isProcessingThisRow = processingId === podcast._id;
 
-                  <button
-                    onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={page === totalPages}
-                    className="flex h-10 items-center gap-1 rounded-lg border border-gray-200 px-3 text-sm hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Next <ChevronRight className="h-4 w-4" />
-                  </button>
+                      return (
+                        <tr key={podcast._id} className="transition-colors hover:bg-neutral-50/50">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-500">
+                                <Mic size={18} />
+                              </div>
+                              <span className="max-w-[180px] truncate text-sm font-semibold text-neutral-800">
+                                {podcast.title}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4 text-sm text-neutral-500">
+                            <div className="flex items-center gap-2">
+                              <Calendar size={14} />
+                              {new Date(podcast.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })}
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4 text-sm text-neutral-500">
+                            <div className="flex items-center gap-2 font-mono">
+                              <Clock size={14} />
+                              {podcast.duration || '00:00'}
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4 text-center">
+                            <span
+                              className={`rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase ${
+                                podcast.status === 'live'
+                                  ? 'animate-pulse bg-red-500 text-white shadow-lg shadow-red-200'
+                                  : podcast.status === 'scheduled'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-neutral-200 text-neutral-500'
+                              }`}
+                            >
+                              {podcast.status}
+                            </span>
+                          </td>
+
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {podcast.status === 'scheduled' && (
+                                <button
+                                  onClick={() => startPodcastLive(podcast._id)}
+                                  disabled={isProcessingThisRow}
+                                  className="flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-[10px] font-black tracking-widest text-white transition-all hover:bg-neutral-800 disabled:opacity-50"
+                                >
+                                  {isProcessingThisRow ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Cast size={14} />
+                                  )}
+                                  GO LIVE
+                                </button>
+                              )}
+
+                              {podcast.status === 'live' && (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      if (typeof window !== 'undefined')
+                                        localStorage.setItem(`podcast_live_${podcast._id}`, 'true');
+                                      router.push(
+                                        `/broadcaster?podcastId=${podcast._id}&sessionId=${podcast.liveSessionId}`,
+                                      );
+                                    }}
+                                    className="flex items-center gap-2 rounded-xl bg-indigo-600 px-3 py-2 text-[10px] font-black tracking-widest text-white shadow-md shadow-indigo-100 hover:bg-indigo-700"
+                                  >
+                                    <Radio size={14} /> STUDIO
+                                  </button>
+                                  <button
+                                    onClick={() => endPodcastLive(podcast._id)}
+                                    disabled={isProcessingThisRow}
+                                    className="flex items-center gap-2 rounded-xl bg-red-100 px-3 py-2 text-[10px] font-black tracking-widest text-red-600 hover:bg-red-200"
+                                  >
+                                    {isProcessingThisRow ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      <StopCircle size={14} />
+                                    )}
+                                    STOP
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4">
+                            <div className="flex justify-center gap-2">
+                              <PodcastsEditModal podcast={podcast} refetch={refetch} />
+                              <PodcastsViewModal podcast={podcast} refetch={refetch} />
+                              <button
+                                onClick={() => openDeleteModal(podcast._id)}
+                                className="rounded-xl bg-red-50 p-2 text-red-500 transition-all hover:bg-red-500 hover:text-white"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="py-20 text-center text-neutral-400">
+                        No podcasts available.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="border-t border-neutral-100 bg-white px-6 py-5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold tracking-widest text-neutral-400 uppercase">
+                    Page <span className="text-black">{page}</span> of {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                      disabled={page === 1}
+                      className="flex h-10 items-center gap-1 rounded-xl border border-neutral-200 px-4 text-xs font-bold transition-all hover:bg-neutral-50 disabled:opacity-30"
+                    >
+                      <ChevronLeft size={16} /> Previous
+                    </button>
+                    <button
+                      onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                      disabled={page === totalPages}
+                      className="flex h-10 items-center gap-1 rounded-xl border border-neutral-200 px-4 text-xs font-bold transition-all hover:bg-neutral-50 disabled:opacity-30"
+                    >
+                      Next <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Delete Modal */}
+      {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div className="absolute inset-0" onClick={closeDeleteModal} />
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
-          >
+          <div className="z-10 w-full max-w-sm rounded-4xl bg-white p-8 shadow-2xl">
             <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600">
-                <AlertTriangle size={30} />
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
+                <AlertTriangle size={32} />
               </div>
-              <h3 className="mb-2 text-xl font-bold">Confirm Deletion</h3>
-              <p className="mb-6 text-sm text-gray-500">
-                This podcast will be permanently deleted. This action cannot be undone.
+              <h3 className="mb-2 text-xl font-bold">Delete Podcast?</h3>
+              <p className="mb-8 text-sm leading-relaxed text-neutral-500">
+                This will permanently remove the podcast. This action is irreversible.
               </p>
               <div className="flex w-full gap-3">
                 <button
                   onClick={closeDeleteModal}
-                  disabled={deleting}
-                  className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-semibold hover:bg-gray-50"
+                  className="flex-1 rounded-2xl border border-neutral-200 py-3 text-sm font-bold text-neutral-500 hover:bg-neutral-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
                   disabled={deleting}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-red-500 py-3 text-sm font-bold text-white shadow-lg shadow-red-200 hover:bg-red-600 disabled:opacity-50"
                 >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" /> Deleting...
-                    </>
-                  ) : (
-                    'Delete'
-                  )}
+                  {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
                 </button>
               </div>
             </div>

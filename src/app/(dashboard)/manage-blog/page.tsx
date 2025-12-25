@@ -2,10 +2,20 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
-import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import {
+  Pencil,
+  Trash2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ArrowUpDown,
+  Music,
+  FileText,
+  Calendar,
+} from 'lucide-react';
 import UploadModal from '@/components/modal/uploadModal';
 import { ViewBlogModal } from '@/components/modal/viewModal';
-import Image from 'next/image';
 import DeleteConfirmationModal from '@/components/modal/deleteModal';
 import { useGetBlogsQuery, useDeleteBlogMutation } from '../../../../services/allApi';
 import { toast } from 'react-toastify';
@@ -15,6 +25,10 @@ const ITEMS_PER_PAGE = 10;
 export default function ManageBlogPage() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [sortBy, setSortBy] = useState('uploadDate');
+  const [sortOrder, setSortOrder] = useState('desc');
+
   const [selectedBlog, setSelectedBlog] = useState<any | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -25,7 +39,10 @@ export default function ManageBlogPage() {
   const { data, isLoading, refetch, isFetching } = useGetBlogsQuery({
     page: currentPage,
     limit: ITEMS_PER_PAGE,
+    sortBy,
+    sortOrder,
   });
+
   const [deleteBlog, { isLoading: deleteLoading }] = useDeleteBlogMutation();
 
   useEffect(() => {
@@ -36,7 +53,35 @@ export default function ManageBlogPage() {
   const totalBlogs = data?.meta?.total ?? 0;
   const totalPages = data?.meta?.totalPages ?? Math.ceil(totalBlogs / ITEMS_PER_PAGE);
 
-  // Delete Handler with Refetch
+  // --- Sorting Handler ---
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
+    setCurrentPage(1);
+  };
+
+  // Helper to render sort icon
+
+  const renderSortIcon = (field: string) => {
+    if (sortBy !== field)
+      return (
+        <ArrowUpDown
+          size={14}
+          className="ml-1 text-neutral-300 transition hover:text-neutral-500"
+        />
+      );
+    return (
+      <ArrowUpDown
+        size={14}
+        className={`ml-1 ${sortOrder === 'asc' ? 'rotate-180 transform text-blue-600' : 'text-blue-600'}`}
+      />
+    );
+  };
+
   const confirmDelete = async () => {
     if (blogToDelete) {
       try {
@@ -97,62 +142,119 @@ export default function ManageBlogPage() {
               <table className="w-full">
                 <thead className="bg-neutral-50">
                   <tr className="text-left text-xs font-black tracking-widest text-neutral-500 uppercase">
-                    <th className="px-6 py-4">Title</th>
-                    <th className="px-6 py-4 text-center">Cover</th>
-                    <th className="px-6 py-4 text-center">Status</th>
+                    {/* Sortable Title */}
+                    <th
+                      className="cursor-pointer px-6 py-4 transition-colors hover:bg-neutral-100"
+                      onClick={() => handleSort('title')}
+                    >
+                      <div className="flex items-center">Title {renderSortIcon('title')}</div>
+                    </th>
+
+                    {/* Audio Column (Not sortable) */}
+                    <th className="px-6 py-4">Audio Track</th>
+
+                    {/* Sortable Date Column */}
+                    <th
+                      className="cursor-pointer px-6 py-4 transition-colors hover:bg-neutral-100"
+                      onClick={() => handleSort('uploadDate')}
+                    >
+                      <div className="flex items-center">Date {renderSortIcon('uploadDate')}</div>
+                    </th>
+
+                    {/* Sortable Status */}
+                    <th
+                      className="cursor-pointer px-6 py-4 text-center transition-colors hover:bg-neutral-100"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center justify-center">
+                        Status {renderSortIcon('status')}
+                      </div>
+                    </th>
+
                     <th className="px-6 py-4 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100 bg-white">
                   {isLoading || isFetching ? (
                     <tr>
-                      <td colSpan={4} className="py-20 text-center">
+                      <td colSpan={5} className="py-20 text-center">
                         <div className="flex flex-col items-center justify-center gap-3">
                           <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
-                          <p className="text-sm font-medium text-neutral-500">Loading blogs...</p>
+                          <p className="text-sm font-medium text-neutral-500">Getting blogs...</p>
                         </div>
                       </td>
                     </tr>
                   ) : blogs.length > 0 ? (
                     blogs.map((blog) => (
                       <tr key={blog._id} className="transition-colors hover:bg-neutral-50">
-                        <td className="px-6 py-4 text-sm font-medium text-neutral-900">
-                          {blog.title}
-                        </td>
-
+                        {/* Title */}
                         <td className="px-6 py-4">
-                          {' '}
-                          <div className="relative mx-auto flex h-12 w-20 items-center justify-center overflow-hidden rounded-xl border border-neutral-200">
-                            {' '}
-                            {blog.coverImage ? (
-                              <Image
-                                src={blog.coverImage}
-                                alt={blog.title}
-                                fill
-                                className="object-cover"
-                              />
-                            ) : (
-                              'N/A'
-                            )}
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-500">
+                              <FileText size={18} />
+                            </div>
+                            <span className="max-w-[180px] truncate text-sm font-semibold text-neutral-800">
+                              {blog.title}
+                            </span>
                           </div>
                         </td>
 
+                        <td className="px-6 py-4">
+                          {blog.audioSignedUrl || blog.audioUrl ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center text-neutral-400">
+                                <Music size={16} />
+                              </div>
+
+                              <audio
+                                controls
+                                src={blog.audioSignedUrl || blog.audioUrl}
+                                className="h-12 w-44 md:w-60"
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-xs text-neutral-400 italic">No Audio</span>
+                          )}
+                        </td>
+
+                        {/* Date */}
+
+                        <td className="px-6 py-4 text-sm text-neutral-500">
+                          <div className="flex items-center gap-2">
+                            <Calendar size={14} className="text-neutral-300" />
+                            <span className="font-medium">
+                              {new Date(blog.uploadDate || blog.createdAt).toLocaleDateString(
+                                'en-US',
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                },
+                              )}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Status */}
                         <td className="px-6 py-4 text-center">
                           <span
                             className={`rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase ${
                               blog.status === 'published'
                                 ? 'bg-black text-white'
-                                : 'bg-red-500 text-white'
+                                : 'bg-neutral-200 text-neutral-500'
                             }`}
                           >
                             {blog.status}
                           </span>
                         </td>
+
+                        {/* Actions */}
                         <td className="px-6 py-4">
                           <div className="flex justify-center gap-2">
                             <button
                               onClick={() => setSelectedBlog(blog)}
                               className="rounded-lg bg-neutral-100 p-2 transition-all hover:bg-black hover:text-white"
+                              title="Edit"
                             >
                               <Pencil size={16} />
                             </button>
@@ -162,6 +264,7 @@ export default function ManageBlogPage() {
                                 setDeleteModalOpen(true);
                               }}
                               className="rounded-lg bg-red-50 p-2 text-red-500 transition-all hover:bg-red-500 hover:text-white"
+                              title="Delete"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -171,6 +274,7 @@ export default function ManageBlogPage() {
                                 setIsViewModalOpen(true);
                               }}
                               className="rounded-lg bg-neutral-100 p-2 transition-all hover:bg-black hover:text-white"
+                              title="View Details"
                             >
                               <Eye size={16} />
                             </button>
@@ -180,7 +284,7 @@ export default function ManageBlogPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-20 text-center text-neutral-400">
+                      <td colSpan={5} className="py-20 text-center text-neutral-400">
                         No blogs found.
                       </td>
                     </tr>

@@ -43,9 +43,9 @@ export function VideoViewModal({ video }: { video: any }) {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <h1 className="text-2xl font-bold text-gray-900">{video.title}</h1>
                 <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${video.status ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                  className={`rounded-full px-3 py-1 text-xs font-medium ${video.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
                 >
-                  {video.status ? 'Published' : 'Unpublished'}
+                  {video.status}
                 </span>
               </div>
 

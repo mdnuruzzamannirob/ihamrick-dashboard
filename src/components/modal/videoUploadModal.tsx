@@ -82,7 +82,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
       'uploadDate',
       formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
     );
-    payload.append('status', String(formData.status === 'published'));
+    payload.append('status', formData.status);
     payload.append('video', formData.coverVideo);
     payload.append('coverImage', formData.thumbnail);
 
