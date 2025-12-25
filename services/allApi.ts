@@ -379,7 +379,7 @@ const allApi = createApi({
       { id: string; data: FormData }
     >({
       query: ({ id, data }) => ({
-        url: `/videos/update/${id}`,
+        url: `/videos/${id}`,
         method: 'PUT',
         body: data,
         timeout: 600000,
@@ -388,7 +388,7 @@ const allApi = createApi({
     }),
     deleteVideo: builder.mutation<{ success: boolean; message: string; data: Video }, string>({
       query: (videoId) => ({
-        url: `/videos/delete/${videoId}`,
+        url: `/videos/${videoId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Video'],

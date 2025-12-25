@@ -12,6 +12,7 @@ import { joditConfig } from '@/utils/joditConfig';
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
+  console.log(video);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
 
@@ -88,7 +89,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
       if (files.video) submitData.append('video', files.video);
       if (files.coverImage) submitData.append('coverImage', files.coverImage);
 
-      await updateVideo({ id: video.id, data: submitData as any }).unwrap();
+      await updateVideo({ id: video._id, data: submitData as any }).unwrap();
       refetch();
       toast.success('Video updated successfully!');
       setIsModalOpen(false);
