@@ -13,7 +13,7 @@ interface PublicationFormState {
   title: string;
   author: string;
   publicationDate: string;
-  status: 'Published' | 'Unpublished' | '';
+  status: 'Published' | 'Unpublished';
   description: string;
   cover: File | null;
   file: File | null;
@@ -47,14 +47,16 @@ export function PublicationModal({ refetch }: { refetch: any }) {
   };
 
   const handleSave = async () => {
-    if (
-      !formData.title ||
-      !formData.author ||
-      !formData.status ||
-      !formData.cover ||
-      !formData.file
-    ) {
-      toast.error('Please fill all required fields');
+    if (!formData.file) {
+      toast.error('Please upload a file');
+      return;
+    }
+    if (!formData.title) {
+      toast.error('Please enter a title');
+      return;
+    }
+    if (!formData.author) {
+      toast.error('Please enter an author');
       return;
     }
 
@@ -69,7 +71,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
     );
     payload.append('status', String(formData.status === 'Published'));
     payload.append('description', formData.description);
-    payload.append('coverImage', formData.cover);
+    if (formData.cover) payload.append('coverImage', formData.cover);
     payload.append('file', formData.file);
     payload.append('fileType', formData.file.name.split('.').pop() || '');
 
@@ -118,7 +120,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900">New Publication</h2>
                 <p className="mt-1 text-xs font-medium text-gray-400">
-                  Fill in the details to publish medical knowledge
+                  Add details and upload files for the new publication.
                 </p>
               </div>
               <button
@@ -136,7 +138,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                 {/* Cover Upload */}
                 <div className="space-y-2">
                   <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
-                    Cover Image
+                    Cover Image (optional)
                   </label>
                   <div
                     onClick={() => coverInputRef.current?.click()}
@@ -225,7 +227,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                     value={formData.title}
                     onChange={handleChange}
                     placeholder="Enter descriptive title"
-                    className="h-12 w-full rounded bg-gray-50 px-5 text-sm font-bold transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
+                    className="h-12 w-full rounded bg-gray-50 px-5 text-sm font-medium transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
                   />
                 </div>
                 <div className="space-y-2">
@@ -237,7 +239,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                     value={formData.author}
                     onChange={handleChange}
                     placeholder="e.g. Dr. Hamrick"
-                    className="h-12 w-full rounded bg-gray-50 px-5 text-sm font-bold transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
+                    className="h-12 w-full rounded bg-gray-50 px-5 text-sm font-medium transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
                   />
                 </div>
               </div>
@@ -252,7 +254,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                     name="publicationDate"
                     value={formData.publicationDate}
                     onChange={handleChange}
-                    className="h-12 w-full rounded bg-gray-50 px-5 text-sm font-bold transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
+                    className="h-12 w-full rounded bg-gray-50 px-5 text-sm font-medium transition-all outline-none focus:bg-white focus:ring-2 focus:ring-black"
                   />
                 </div>
                 <div className="space-y-2">
@@ -263,7 +265,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                     <button
                       type="button"
                       onClick={() => setStatusOpen(!statusOpen)}
-                      className="flex h-12 w-full items-center justify-between rounded bg-gray-50 px-5 text-sm font-bold outline-none"
+                      className="flex h-12 w-full items-center justify-between rounded bg-gray-50 px-5 text-sm font-medium outline-none"
                     >
                       {formData.status || 'Select status'}
                       <ChevronDown
@@ -280,7 +282,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                               setFormData((p) => ({ ...p, status: s as any }));
                               setStatusOpen(false);
                             }}
-                            className="block w-full px-5 py-3.5 text-left text-sm font-bold transition-all hover:bg-black hover:text-white"
+                            className="block w-full px-5 py-3.5 text-left text-sm font-medium transition-all hover:bg-black hover:text-white"
                           >
                             {s}
                           </button>

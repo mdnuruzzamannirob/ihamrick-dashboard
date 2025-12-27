@@ -37,7 +37,6 @@ export default function ManagePodcasts() {
   const [selectedPodcastId, setSelectedPodcastId] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  // --- Sorting State (Blog & Video er moto) ---
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
 
@@ -65,7 +64,7 @@ export default function ManagePodcasts() {
       setSortBy(field);
       setSortOrder('desc');
     }
-    setPage(1); // Sort করলে প্রথম পেজে নিয়ে আসা ভালো
+    setPage(1);
   };
 
   const renderSortIcon = (field: string) => {

@@ -218,7 +218,6 @@ export default function ManageBlogPage() {
                         </td>
 
                         {/* Date */}
-
                         <td className="px-6 py-4 text-sm text-neutral-500">
                           <div className="flex items-center gap-2">
                             <Calendar size={14} className="text-neutral-300" />

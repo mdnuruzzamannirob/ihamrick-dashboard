@@ -36,8 +36,6 @@ const PodcastUploadModal = ({ refetch }: any) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [createPodcast, { isLoading }] = useCreatePodcastMutation();
 
-  /* ---------------- handlers ---------------- */
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
@@ -51,8 +49,6 @@ const PodcastUploadModal = ({ refetch }: any) => {
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
   };
-
-  /* ---------------- submit ---------------- */
 
   const handleSubmit = async () => {
     if (!formData.coverImage) {
@@ -69,7 +65,7 @@ const PodcastUploadModal = ({ refetch }: any) => {
       formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
     );
     payload.append('status', formData.status);
-    payload.append('coverImage', formData.coverImage);
+    if (formData.coverImage) payload.append('coverImage', formData.coverImage);
 
     try {
       await createPodcast(payload).unwrap();
@@ -94,8 +90,6 @@ const PodcastUploadModal = ({ refetch }: any) => {
     setImagePreview('');
   };
 
-  /* ---------------- UI ---------------- */
-
   return (
     <>
       <button
@@ -111,7 +105,7 @@ const PodcastUploadModal = ({ refetch }: any) => {
           <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-white shadow-2xl"
+            className="z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">

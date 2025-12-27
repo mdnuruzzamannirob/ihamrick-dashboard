@@ -1,182 +1,310 @@
 'use client';
 
 import type React from 'react';
-import { useState, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import {
+  Upload,
+  X,
+  Crop as CropIcon,
+  Play,
+  Calendar,
+  FileText,
+  Check,
+  Edit3,
+  Image as ImageIcon,
+  RotateCcw,
+} from 'lucide-react';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
+import Cropper from 'react-easy-crop';
 import { useUploadVideoMutation } from '../../../services/allApi';
 import { toast } from 'react-toastify';
 import { joditConfig } from '@/utils/joditConfig';
 
-interface VideoFormState {
-  title: string;
-  date: string;
-  status: 'published' | 'unpublished';
-  description: string;
-  transcriptions: string;
-  coverVideo: File | null;
-  thumbnail: File | null;
-}
-
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 const VideoUploadModal = ({ refetch }: { refetch: any }) => {
-  const [formData, setFormData] = useState<VideoFormState>({
+  const initialFormState = {
     title: '',
     date: '',
     status: 'published',
     description: '',
     transcriptions: '',
-    coverVideo: null,
-    thumbnail: null,
-  });
+  };
 
+  const [formData, setFormData] = useState(initialFormState);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState('');
-  const [thumbnailPreview, setThumbnailPreview] = useState('');
 
+  // Thumbnail States
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+  const [finalThumbnailPreview, setFinalThumbnailPreview] = useState<string>('');
+  const [finalBlob, setFinalBlob] = useState<Blob | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+
+  const [uploadVideo, { isLoading }] = useUploadVideoMutation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
-  const [uploadVideo, { isLoading }] = useUploadVideoMutation();
+  const ASPECT_RATIO = 16 / 9;
 
-  /* -------------------- handlers -------------------- */
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Reset Function
+  const resetForm = () => {
+    setFormData(initialFormState);
+    setVideoFile(null);
+    setVideoPreview('');
+    setOriginalImage(null);
+    setFinalThumbnailPreview('');
+    setFinalBlob(null);
   };
 
-  const handleFilePreview = (file: File, setter: (v: string) => void) => {
-    const reader = new FileReader();
-    reader.onloadend = () => setter(reader.result as string);
-    reader.readAsDataURL(file);
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      setVideoPreview(URL.createObjectURL(file));
+    }
   };
 
-  const handleVideoChange = (file?: File) => {
-    if (!file) return;
-    setFormData((p) => ({ ...p, coverVideo: file }));
-    handleFilePreview(file, setVideoPreview);
+  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setOriginalImage(reader.result as string);
+        setShowCropper(true);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleThumbnailChange = (file?: File) => {
-    if (!file) return;
-    setFormData((p) => ({ ...p, thumbnail: file }));
-    handleFilePreview(file, setThumbnailPreview);
-  };
+  const onCropComplete = useCallback((_: any, pixels: any) => {
+    setCroppedAreaPixels(pixels);
+  }, []);
 
-  /* -------------------- submit -------------------- */
+  const saveCrop = async () => {
+    try {
+      if (!originalImage || !croppedAreaPixels) return;
+      const image = new window.Image();
+      image.src = originalImage;
+      await new Promise((res) => (image.onload = res));
+
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
+
+      ctx?.drawImage(
+        image,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+        0,
+        0,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            setFinalBlob(blob);
+            setFinalThumbnailPreview(URL.createObjectURL(blob));
+            setShowCropper(false);
+          }
+        },
+        'image/jpeg',
+        0.95,
+      );
+    } catch {
+      toast.error('Crop failed!');
+    }
+  };
 
   const handleSubmit = async () => {
-    if (!formData.coverVideo || !formData.thumbnail) {
-      toast.error('Video and thumbnail are required');
-      return;
-    }
+    // --- Validation ---
+    if (!videoFile) return toast.error('Please select a video file');
+    if (!finalBlob) return toast.error('Please select a thumbnail');
+    if (!formData.title.trim()) return toast.error('Video title is required');
+    if (!formData.date) return toast.error('Release date is required');
 
     const payload = new FormData();
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcriptions);
-    payload.append(
-      'uploadDate',
-      formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
-    );
+    payload.append('uploadDate', formData.date || new Date().toISOString());
     payload.append('status', formData.status);
-    payload.append('video', formData.coverVideo);
-    payload.append('coverImage', formData.thumbnail);
+    payload.append('video', videoFile);
+    payload.append('coverImage', finalBlob);
 
     try {
       await uploadVideo(payload).unwrap();
-      refetch();
       toast.success('Video uploaded successfully');
       setIsModalOpen(false);
+      refetch();
       resetForm();
     } catch (err: any) {
-      toast.error(err.message || err.data.message || 'Upload failed. Please try again.');
+      toast.error(err.message || err.data?.message || 'Upload failed. Please try again.');
     }
   };
-
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      date: '',
-      status: 'published',
-      description: '',
-      transcriptions: '',
-      coverVideo: null,
-      thumbnail: null,
-    });
-    setVideoPreview('');
-    setThumbnailPreview('');
-  };
-
-  /* -------------------- UI -------------------- */
 
   return (
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm text-white"
+        className="flex items-center gap-2 rounded-lg bg-black px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-gray-800 active:scale-95"
       >
-        <Upload size={18} />
-        Upload
+        <Upload size={16} /> Upload Video
       </button>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-gray-950/40 p-4 backdrop-blur-sm duration-200">
           <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-background text-foreground z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-lg shadow-2xl"
-          >
+          <div className="z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-sm font-semibold">Upload Video</h2>
+            <div className="flex items-center justify-between border-b border-gray-200 px-8 py-5">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight text-gray-900">Upload New Video</h2>
+                <p className="text-[13px] font-medium text-gray-500">
+                  Upload and configure your video details for publishing.
+                </p>
+              </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-2xl leading-none text-gray-500 hover:text-black"
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-black"
               >
-                x
+                <X size={22} />
               </button>
             </div>
 
-            {/* Scrollable Body */}
-            <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
+            <div className="flex-1 space-y-8 overflow-y-auto p-6">
+              {/* Media Upload Row */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Title / Date / Status */}
-
-                <div className="flex flex-col gap-6">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Title</label>
-                    <input
-                      name="title"
-                      type="text"
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      placeholder="Title"
-                      className="w-full rounded border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-black"
-                    />
+                {/* Video */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                    <Play size={12} /> Video Content
+                  </label>
+                  <div className="group relative aspect-video w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-gray-400">
+                    {videoPreview ? (
+                      <div className="relative h-full w-full">
+                        <video
+                          src={videoPreview}
+                          controls
+                          className="h-full w-full bg-black object-contain"
+                        />
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="absolute top-3 right-3 flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-[11px] font-bold text-black opacity-0 shadow-lg backdrop-blur-sm transition-all group-hover:opacity-100 hover:scale-105 hover:bg-white"
+                        >
+                          <Edit3 size={12} /> CHANGE VIDEO
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 transition group-hover:text-black"
+                      >
+                        <Upload size={24} className="mb-2 opacity-40" />
+                        <span className="text-xs font-semibold">Click to upload Video</span>
+                      </div>
+                    )}
                   </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    hidden
+                    accept="video/*"
+                    onChange={handleVideoChange}
+                  />
+                </div>
 
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Date</label>
+                {/* Thumbnail */}
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                    <ImageIcon size={12} /> Thumbnail
+                  </label>
+                  <div className="group relative aspect-video w-full overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-gray-400">
+                    {finalThumbnailPreview ? (
+                      <div className="relative h-full w-full">
+                        <Image
+                          src={finalThumbnailPreview}
+                          alt="Cover"
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/60 opacity-0 backdrop-blur-[2px] transition-all group-hover:opacity-100">
+                          <button
+                            onClick={() => setShowCropper(true)}
+                            className="flex items-center gap-2 rounded-lg bg-white px-5 py-2 text-[11px] font-bold text-black transition-all hover:scale-105"
+                          >
+                            <CropIcon size={14} /> RESIZE
+                          </button>
+                          <button
+                            onClick={() => thumbnailInputRef.current?.click()}
+                            className="flex items-center gap-2 rounded-lg border border-white/20 bg-zinc-800 px-5 py-2 text-[11px] font-bold text-white transition-all hover:scale-105 hover:bg-black"
+                          >
+                            <RotateCcw size={14} /> CHANGE
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => thumbnailInputRef.current?.click()}
+                        className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center text-gray-400 transition group-hover:text-black"
+                      >
+                        <ImageIcon size={24} className="mb-2 opacity-40" />
+                        <span className="text-xs font-semibold">Select Cover Image</span>
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    ref={thumbnailInputRef}
+                    hidden
+                    accept="image/*"
+                    onChange={handleThumbnailSelect}
+                  />
+                </div>
+              </div>
+
+              {/* Form Fields */}
+              <div className="space-y-6 border-t border-gray-100 pt-2">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-600">Video Title </label>
+                  <input
+                    type="text"
+                    placeholder="Enter video title..."
+                    className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm ring-gray-100 transition-all outline-none focus:bg-white focus:ring-2"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  />
+                </div>
+
+                {/* Date and Status Row */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
+                      <Calendar size={14} /> Release Date
+                    </label>
                     <input
-                      name="date"
                       type="date"
+                      className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100"
                       value={formData.date}
-                      onChange={handleInputChange}
-                      className="w-full rounded border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-black"
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     />
                   </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-700">Status</label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-600">Content Status</label>
                     <select
-                      name="status"
                       value={formData.status}
-                      onChange={handleInputChange}
-                      className="w-full rounded border border-gray-200 px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-black"
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      className="w-full cursor-pointer rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100"
                     >
                       <option value="published">Published</option>
                       <option value="unpublished">Unpublished</option>
@@ -184,92 +312,117 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                   </div>
                 </div>
 
-                {/* Video Upload */}
-                <div className="mb-6">
-                  <label className="mb-2 block text-sm font-medium">Video</label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex h-full min-h-[140px] cursor-pointer items-center justify-center rounded border-2 border-dashed border-gray-200 text-sm transition-colors hover:border-inherit"
-                  >
-                    {videoPreview ? (
-                      <video src={videoPreview} controls className="max-h-40" />
-                    ) : (
-                      'Click to upload video'
-                    )}
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
+                      <FileText size={14} /> Description
+                    </label>
+                    <div className="overflow-hidden rounded">
+                      <JoditEditor
+                        value={formData.description}
+                        config={joditConfig}
+                        onBlur={(v) => setFormData({ ...formData, description: v })}
+                      />
+                    </div>
                   </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="video/*"
-                    hidden
-                    onChange={(e) => handleVideoChange(e.target.files?.[0])}
-                  />
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold tracking-tight text-gray-600">
+                      Transcription
+                    </label>
+                    <div className="overflow-hidden rounded">
+                      <JoditEditor
+                        value={formData.transcriptions}
+                        config={joditConfig}
+                        onBlur={(v) => setFormData({ ...formData, transcriptions: v })}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Thumbnail */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">Thumbnail</label>
-                <div
-                  onClick={() => thumbnailInputRef.current?.click()}
-                  className="flex max-h-80 min-h-[140px] cursor-pointer items-center justify-center overflow-hidden rounded border-2 border-dashed border-gray-200 text-sm transition-colors hover:border-inherit"
-                >
-                  {thumbnailPreview ? (
-                    <Image
-                      src={thumbnailPreview}
-                      alt="thumbnail"
-                      width={600}
-                      height={200}
-                      className="size-full rounded object-cover"
-                    />
-                  ) : (
-                    'Click to upload thumbnail'
-                  )}
-                </div>
-                <input
-                  ref={thumbnailInputRef}
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => handleThumbnailChange(e.target.files?.[0])}
-                />
-              </div>
-
-              {/* Editors */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">Description</label>
-                <JoditEditor
-                  value={formData.description}
-                  config={joditConfig}
-                  onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">Transcriptions</label>
-                <JoditEditor
-                  value={formData.transcriptions}
-                  config={joditConfig}
-                  onBlur={(v) => setFormData((p) => ({ ...p, transcriptions: v }))}
-                />
               </div>
             </div>
 
-            {/* Sticky Footer */}
-            <div className="sticky bottom-0 flex items-center justify-end gap-5 border-t border-gray-200 bg-white px-6 py-4">
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 p-5 px-8">
               <button
-                onClick={() => setIsModalOpen(false)}
-                disabled={isLoading}
-                className="rounded bg-red-500 px-5 py-2 text-sm text-white hover:bg-red-600 disabled:opacity-60"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  resetForm();
+                }}
+                className="px-5 py-2 text-[11px] font-black tracking-widest text-gray-400 uppercase transition-colors hover:text-gray-700"
               >
-                Cancel
+                DISCARD
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="rounded bg-black px-5 py-2 text-sm text-white hover:bg-gray-800 disabled:opacity-60"
+                className="flex items-center gap-2 rounded-xl bg-black px-10 py-3 text-xs font-bold text-white shadow-lg shadow-gray-200 transition-all hover:bg-gray-800 disabled:bg-gray-200"
               >
-                {isLoading ? 'Uploading...' : 'Submit'}
+                {isLoading ? (
+                  'UPLOADING...'
+                ) : (
+                  <>
+                    <Check size={14} /> PUBLISH VIDEO
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- CROP OVERLAY (No Logic Changes) --- */}
+      {showCropper && originalImage && (
+        <div className="animate-in fade-in fixed inset-0 z-100 flex flex-col bg-gray-950 duration-300">
+          <div className="flex items-center justify-between bg-gray-950/50 p-5 text-white backdrop-blur-md">
+            <div className="flex items-center gap-3 text-sm font-bold tracking-tight uppercase">
+              <CropIcon size={16} className="text-gray-400" /> Adjust Thumbnail (16:9)
+            </div>
+            <button
+              onClick={() => setShowCropper(false)}
+              className="rounded-full p-2 hover:bg-white/10"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="relative flex-1">
+            <Cropper
+              image={originalImage}
+              crop={crop}
+              zoom={zoom}
+              aspect={ASPECT_RATIO}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+
+          <div className="flex flex-col items-center gap-6 border-t border-white/10 bg-gray-950 p-8">
+            <div className="flex w-full max-w-sm items-center gap-6 text-white">
+              <span className="text-[10px] font-bold tracking-widest opacity-30">ZOOM</span>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.1}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-800 accent-white"
+              />
+              <span className="font-mono text-[10px] opacity-30">{Math.round(zoom * 100)}%</span>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowCropper(false)}
+                className="px-8 py-2 text-[11px] font-bold tracking-widest text-white/50 hover:text-white"
+              >
+                CANCEL
+              </button>
+              <button
+                onClick={saveCrop}
+                className="rounded-xl bg-white px-12 py-3 text-[11px] font-black tracking-widest text-black shadow-2xl transition-all hover:bg-gray-100"
+              >
+                SAVE CROP
               </button>
             </div>
           </div>
