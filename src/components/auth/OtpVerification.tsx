@@ -1,33 +1,34 @@
-"use client";
+'use client';
 
-import { useState, useRef, KeyboardEvent } from "react";
-import { useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux"; // Import useDispatch
-import { useVerifyOtpMutation, useResendOtpMutation } from "../../../services/allApi"; // Import resendOtp mutation
-import { RootState } from "../../../services/store";
-import { setOtp } from "../../../services/slices/emailSlice"; // Import setOtp action
+import { useState, useRef, KeyboardEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSelector, useDispatch } from 'react-redux'; // Import useDispatch
+import { useVerifyOtpMutation, useResendOtpMutation } from '../../../services/allApi'; // Import resendOtp mutation
+import { RootState } from '../../../services/store';
+import { setOtp } from '../../../services/slices/emailSlice'; // Import setOtp action
 
 export default function OTPVerification() {
-  const [otp, setOtpState] = useState<string[]>(["", "", "", "", "", ""]);
+  const [otp, setOtpState] = useState<string[]>(['', '', '', '', '', '']);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const dispatch = useDispatch(); // Initialize dispatch
 
   const email = useSelector((state: RootState) => state.email.email);
   const [verifyOtp, { isLoading, isError, isSuccess }] = useVerifyOtpMutation();
-  const [resendOtp, { isLoading: resendLoading, isError: resendError, isSuccess: resendSuccess }] = useResendOtpMutation();
+  const [resendOtp, { isLoading: resendLoading, isError: resendError, isSuccess: resendSuccess }] =
+    useResendOtpMutation();
 
   const handleChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return;  // Ensure value is a digit
+    if (value && !/^\d$/.test(value)) return; // Ensure value is a digit
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtpState(newOtp);
 
     // Join the array into a string, convert to a number, and dispatch
-    const otpValue = newOtp.join("");
+    const otpValue = newOtp.join('');
     if (otpValue.length === 6) {
-      dispatch(setOtp(Number(otpValue)));  // Convert to number before dispatching
+      dispatch(setOtp(Number(otpValue))); // Convert to number before dispatching
     }
 
     if (value && index < 5) {
@@ -36,14 +37,14 @@ export default function OTPVerification() {
   };
 
   const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").slice(0, 6);
+    const pastedData = e.clipboardData.getData('text').slice(0, 6);
     const newOtp = [...otp];
 
     for (let i = 0; i < pastedData.length; i++) {
@@ -53,9 +54,9 @@ export default function OTPVerification() {
     }
 
     setOtpState(newOtp);
-    const otpValue = newOtp.join("");
+    const otpValue = newOtp.join('');
     if (otpValue.length === 6) {
-      dispatch(setOtp(Number(otpValue)));  // Convert to number before dispatching
+      dispatch(setOtp(Number(otpValue))); // Convert to number before dispatching
     }
 
     const nextIndex = Math.min(pastedData.length, 5);
@@ -63,18 +64,18 @@ export default function OTPVerification() {
   };
 
   const handleVerify = async () => {
-    const otpValue = otp.join("");
+    const otpValue = otp.join('');
     if (otpValue.length === 6) {
       if (email) {
         try {
-          const e = await verifyOtp({ email, otp: otpValue }).unwrap();
-          console.log(e);
-          router.replace("/set-password");
+          await verifyOtp({ email, otp: otpValue }).unwrap();
+
+          router.replace('/set-password');
         } catch (error) {
-          console.error("OTP verification failed:", error);
+          console.error('OTP verification failed:', error);
         }
       } else {
-        console.error("Email is missing!");
+        console.error('Email is missing!');
       }
     }
   };
@@ -83,20 +84,15 @@ export default function OTPVerification() {
   const handleResend = async () => {
     if (email) {
       try {
-        const news = await resendOtp({ email: email }).unwrap();
-        console.log("Resend OTP successful", news);
-      } catch (error) {
-        console.error("Error resending OTP:", error);
-      }
-    } else {
-      console.error("Email is missing for resending OTP!");
+        await resendOtp({ email: email }).unwrap();
+      } catch {}
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-8">
+    <div className="mx-auto mt-8 w-full max-w-md">
       {/* OTP Input Fields */}
-      <div className="mb-6 flex gap-3 justify-center">
+      <div className="mb-6 flex justify-center gap-3">
         {otp.map((digit, index) => (
           <div key={index} className="relative">
             <input
@@ -110,7 +106,7 @@ export default function OTPVerification() {
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
-              className="h-12 w-12 rounded-lg border border-gray-300 text-center font-poppins text-lg font-semibold text-gray-900 transition-all focus:border-[#111] focus:outline-none focus:ring-1 focus:ring-black sm:h-14 sm:w-14 sm:text-xl"
+              className="font-poppins h-12 w-12 rounded-lg border border-gray-300 text-center text-lg font-semibold text-gray-900 transition-all focus:border-[#111] focus:ring-1 focus:ring-black focus:outline-none sm:h-14 sm:w-14 sm:text-xl"
               aria-label={`OTP digit ${index + 1}`}
             />
           </div>
@@ -120,20 +116,20 @@ export default function OTPVerification() {
       {/* Verify Button */}
       <button
         onClick={handleVerify}
-        disabled={otp.join("").length !== 6 || isLoading}
-        className="mb-4 w-full rounded-lg bg-black py-3 font-poppins text-sm font-medium text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 sm:text-base"
+        disabled={otp.join('').length !== 6 || isLoading}
+        className="font-poppins mb-4 w-full rounded-lg bg-black py-3 text-sm font-medium text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 sm:py-3.5 sm:text-base"
       >
-        {isLoading ? "Verifying..." : "Verify"}
+        {isLoading ? 'Verifying...' : 'Verify'}
       </button>
 
       {/* Resend Link */}
-      <div className="text-center font-poppins text-sm text-gray-600 sm:text-base">
-        Didn&apos;t receive the code?{" "}
+      <div className="font-poppins text-center text-sm text-gray-600 sm:text-base">
+        Didn&apos;t receive the code?{' '}
         <button
           onClick={handleResend}
-          className="font-semibold text-gray-900 transition-colors hover:text-blue-600 focus:outline-none focus:underline"
+          className="font-semibold text-gray-900 transition-colors hover:text-blue-600 focus:underline focus:outline-none"
         >
-          {resendLoading ? "Resending..." : "Click to resend OTP"}
+          {resendLoading ? 'Resending...' : 'Click to resend OTP'}
         </button>
         {resendError && <p className="text-red-500">Failed to resend OTP. Try again.</p>}
         {resendSuccess && <p className="text-green-500">OTP resent successfully!</p>}
@@ -141,14 +137,10 @@ export default function OTPVerification() {
 
       {/* Error Handling */}
       {isError && (
-        <div className="text-red-500 text-center text-sm mt-4">
-          Invalid OTP. Please try again.
-        </div>
+        <div className="mt-4 text-center text-sm text-red-500">Invalid OTP. Please try again.</div>
       )}
       {isSuccess && (
-        <div className="text-green-500 text-center text-sm mt-4">
-          OTP Verified successfully!
-        </div>
+        <div className="mt-4 text-center text-sm text-green-500">OTP Verified successfully!</div>
       )}
     </div>
   );

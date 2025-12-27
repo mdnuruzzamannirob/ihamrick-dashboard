@@ -1,5 +1,6 @@
 'use client';
 import { formatDate } from '@/utils/formatDate';
+import { formatFileSize } from '@/utils/formatFileSize';
 import { Eye, X, Calendar, File, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -7,7 +8,6 @@ export function VideoViewModal({ video }: { video: any }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
   if (!video) return null;
-
   return (
     <>
       <button
@@ -68,7 +68,7 @@ export function VideoViewModal({ video }: { video: any }) {
                   <File className="h-5 w-5 text-gray-600" />
                   <div>
                     <p className="text-xs text-gray-500">File Size</p>
-                    <p className="text-sm font-medium">{video.formattedFileSize || 'N/A'}</p>
+                    <p className="text-sm font-medium"> {formatFileSize(video.fileSize)}</p>
                   </div>
                 </div>
               </div>

@@ -121,27 +121,21 @@ const QualityOfLifeModal: React.FC = () => {
   // Delete Decrease Item
   const deleteDecreaseItem = async (id: string) => {
     try {
-      const response = await deleteLifeSuggestion(id).unwrap();
-      console.log('Delete Success Response:', response);
+      await deleteLifeSuggestion(id).unwrap();
 
       // Dynamically update state after deletion
       setDecreaseItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error('Error deleting life suggestion:', error);
-    }
+    } catch {}
   };
 
   // Delete Increase Item
   const deleteIncreaseItem = async (id: string) => {
     try {
-      const response = await deleteLifeSuggestion(id).unwrap();
-      console.log('Delete Success Response:', response);
+      await deleteLifeSuggestion(id).unwrap();
 
       // Dynamically update state after deletion
       setIncreaseItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error('Error deleting life suggestion:', error);
-    }
+    } catch {}
   };
 
   // Handle key press for Decrease Item input

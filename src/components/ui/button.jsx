@@ -6,7 +6,6 @@ export default function Button() {
   const [isSaving, setIsSaving] = useState(false);
   const handleSaveChanges = async () => {
     setIsSaving(true);
-    console.log('firing...');
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 

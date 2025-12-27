@@ -64,7 +64,6 @@ const DashboardPage = () => {
         setShowResponseModal(true);
       })
       .catch((error) => {
-        console.log(error);
         setResponseMessage(error?.data?.message || 'An error occurred');
         setShowResponseModal(true);
       });
@@ -82,9 +81,7 @@ const DashboardPage = () => {
       // Show a success toast
       toast.success(`${platformName} Link updated successfully`);
       setEditableLinks((prev) => ({ ...prev, [id]: false })); // Set the link to non-editable after saving
-    } catch (err) {
-      console.log(err);
-      console.log('Error updating link:', err);
+    } catch {
       // Show an error toast
       toast.error('Failed to update the link');
     }

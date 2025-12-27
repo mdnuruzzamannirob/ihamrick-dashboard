@@ -220,16 +220,22 @@ export default function ManageBlogPage() {
                         {/* Date */}
                         <td className="px-6 py-4 text-sm text-neutral-500">
                           <div className="flex items-center gap-2">
-                            <Calendar size={14} className="text-neutral-300" />
+                            <Calendar size={14} className="min-w-3.5 text-neutral-300" />
                             <span className="font-medium">
-                              {new Date(blog.uploadDate || blog.createdAt).toLocaleDateString(
-                                'en-US',
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                },
-                              )}
+                              {blog?.status === 'scheduled'
+                                ? new Date(blog?.scheduledAt).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  })
+                                : new Date(blog.uploadDate || blog.createdAt).toLocaleDateString(
+                                    'en-US',
+                                    {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric',
+                                    },
+                                  )}
                             </span>
                           </div>
                         </td>
