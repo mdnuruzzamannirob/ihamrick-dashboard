@@ -224,7 +224,7 @@ export default function ManagePodcasts() {
                           <td className="px-6 py-4 text-sm text-neutral-500">
                             <div className="flex items-center gap-2">
                               <Calendar size={14} />
-                              {new Date(podcast.createdAt).toLocaleDateString('en-US', {
+                              {new Date(podcast.date).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric',

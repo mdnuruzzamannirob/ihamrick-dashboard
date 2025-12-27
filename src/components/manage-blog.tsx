@@ -1,6 +1,5 @@
 import { useSelector } from 'react-redux';
 import { RootState } from '../../services/store';
-import { Music } from 'lucide-react';
 
 export function ManageBlog() {
   // Fetch the blogs from the Redux state
@@ -19,10 +18,10 @@ export function ManageBlog() {
               <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Title
               </th>
-              <th className="font-poppins pb-3 text-center text-base font-bold text-[#383232]">
+              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Audio Track
               </th>
-              <th className="font-poppins pb-3 text-center text-base font-bold text-[#383232]">
+              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Status
               </th>
             </tr>
@@ -30,27 +29,21 @@ export function ManageBlog() {
           <tbody>
             {limitedBlogs.map((blog, index) => (
               <tr key={index} className="border-b border-neutral-100 last:border-0">
-                <td className="font-poppins py-3 text-base font-normal text-[#333333]">
+                <td className="font-poppins max-w-40 truncate py-3 pr-3 text-left text-base font-normal text-[#333333]">
                   {blog.title}
                 </td>
-                <td className="font-poppins py-3 text-base font-normal text-[#333333]">
+                <td className="font-poppins py-3 pr-3 text-left text-base font-normal text-[#333333]">
                   {blog.audioSignedUrl || blog.audioUrl ? (
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center text-neutral-400">
-                        <Music size={16} />
-                      </div>
-
-                      <audio
-                        controls
-                        src={blog.audioSignedUrl || blog.audioUrl}
-                        className="h-12 w-44 md:w-60"
-                      />
-                    </div>
+                    <audio
+                      controls
+                      src={blog.audioSignedUrl || blog.audioUrl}
+                      className="h-12 w-44 md:w-60"
+                    />
                   ) : (
                     <span className="text-xs text-neutral-400 italic">No Audio</span>
                   )}
                 </td>
-                <td className="font-poppins py-3 text-center text-base font-normal text-[#333333]">
+                <td className="font-poppins py-3 pr-3 text-left text-base font-normal text-[#333333]">
                   <span
                     className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
                       blog.status ? 'bg-[#D75757] text-white' : 'bg-[#262626] text-white'

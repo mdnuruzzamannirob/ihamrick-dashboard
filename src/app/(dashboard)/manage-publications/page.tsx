@@ -206,7 +206,7 @@ export default function ManagePublications() {
                                 : 'bg-neutral-100 text-neutral-400'
                             }`}
                           >
-                            {publication.status ? 'Published' : 'Draft'}
+                            {publication.status ? 'Published' : 'Unpublished'}
                           </span>
                         </td>
 

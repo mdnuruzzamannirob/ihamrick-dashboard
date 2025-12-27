@@ -7,7 +7,7 @@ import { Mic, MicOff, Square, Radio, ArrowLeft, ShieldCheck, Loader2 } from 'luc
 import { toast } from 'react-toastify';
 import { useEndPodcastMutation } from '../../../../services/allApi';
 
-const defaultServer = 'https://api.pg-65.com';
+const defaultServer = 'http://10.10.20.73:5005';
 
 export default function BroadcasterPage() {
   const searchParams = useSearchParams();

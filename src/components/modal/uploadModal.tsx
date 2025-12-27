@@ -119,7 +119,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       refetch();
       handleClose();
     } catch (err: any) {
-      toast.error(err?.data?.message || 'Something went wrong!');
+      toast.error(err?.message || err?.data?.message || 'Something went wrong!');
     }
   };
 

@@ -195,14 +195,14 @@ const QualityOfLifeModal: React.FC = () => {
                     ) : error ? (
                       <div>Error fetching suggestions</div>
                     ) : (
-                      decreaseItems.map((item) => (
+                      decreaseItems.map((item, index) => (
                         <div
-                          key={item.id}
+                          key={index}
                           className="flex items-center border-b border-gray-200 px-4 py-3 transition-colors hover:bg-gray-50"
                         >
                           <button
                             onClick={() => deleteDecreaseItem(item.id)}
-                            className="mr-3 shrink-0 text-gray-600 transition-colors hover:text-red-400"
+                            className="mr-3 flex size-7 min-w-7 shrink-0 items-center justify-center rounded-full text-red-400 transition hover:bg-black/5"
                           >
                             <Minus size={18} />
                           </button>
@@ -246,14 +246,14 @@ const QualityOfLifeModal: React.FC = () => {
                     ) : error ? (
                       <div>Error fetching suggestions</div>
                     ) : (
-                      increaseItems.map((item) => (
+                      increaseItems.map((item, index) => (
                         <div
-                          key={item.id}
+                          key={index}
                           className="flex items-center border-b border-gray-200 px-4 py-3 transition-colors hover:bg-gray-50"
                         >
                           <button
                             onClick={() => deleteIncreaseItem(item.id)}
-                            className="mr-3 shrink-0 text-gray-600 transition-colors hover:text-red-600"
+                            className="mr-3 flex size-7 min-w-7 shrink-0 items-center justify-center rounded-full text-red-400 transition hover:bg-black/5"
                           >
                             <Minus size={18} />
                           </button>

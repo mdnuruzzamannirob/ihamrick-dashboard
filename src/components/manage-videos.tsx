@@ -19,10 +19,10 @@ export function ManageVideos() {
               <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Thumbnail
               </th>
-              <th className="font-poppins hidden pb-3 text-center text-base font-bold text-[#383232] sm:table-cell">
+              <th className="font-poppins hidden pb-3 text-left text-base font-bold text-[#383232] sm:table-cell">
                 Views
               </th>
-              <th className="font-poppins pb-3 text-center text-base font-bold text-[#383232]">
+              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Status
               </th>
             </tr>
@@ -30,26 +30,22 @@ export function ManageVideos() {
           <tbody>
             {videos.slice(0, 5).map((video, index) => (
               <tr key={index} className="border-b border-neutral-100 last:border-0">
-                <td className="py-3">
-                  <div className="flex items-center gap-3">
-                    <span className="font-poppins text-base font-normal text-[#333]">
-                      {video.title}
-                    </span>
-                  </div>
+                <td className="font-poppins max-w-40 truncate py-3 pr-3 text-left text-base font-normal text-[#333333]">
+                  {video.title}
                 </td>
-                <td className="font-poppins py-3 text-left text-base text-[#333]">
+                <td className="font-poppins py-3 pr-3 text-left text-base text-[#333]">
                   <Image
-                    src={video.thumbnailUrl || '/path/to/default/thumbnail'} // Use fallback image if no thumbnail URL is provided
+                    src={video.thumbnailUrl || '/path/to/default/thumbnail'}
                     alt={video.title}
-                    width={50}
-                    height={50}
-                    className="rounded-lg object-cover"
+                    width={70}
+                    height={60}
+                    className="aspect-video w-20 rounded-lg object-cover"
                   />
                 </td>
-                <td className="font-poppins hidden py-3 text-center text-base font-medium text-black sm:table-cell">
+                <td className="font-poppins hidden py-3 pr-3 text-left text-base font-medium text-black sm:table-cell">
                   {video.views}
                 </td>
-                <td className="font-poppins py-3 text-center text-base font-normal text-[#333]">
+                <td className="font-poppins py-3 pr-3 text-left text-base font-normal text-[#333]">
                   <span
                     className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
                       video.status ? 'bg-[#D75757] text-white' : 'bg-[#262626] text-white'
