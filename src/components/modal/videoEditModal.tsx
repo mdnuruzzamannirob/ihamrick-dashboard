@@ -243,13 +243,18 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
                           className="object-cover"
                         />
                         <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/60 opacity-0 backdrop-blur-[2px] transition-all group-hover:opacity-100">
+                          {originalImage && (
+                            <button
+                              type="button"
+                              onClick={() => setShowCropper(true)}
+                              className="flex items-center gap-2 rounded-lg bg-white px-5 py-2 text-[11px] font-bold text-black transition-all hover:scale-105"
+                            >
+                              <CropIcon size={14} /> RESIZE
+                            </button>
+                          )}
+
                           <button
-                            onClick={() => setShowCropper(true)}
-                            className="flex items-center gap-2 rounded-lg bg-white px-5 py-2 text-[11px] font-bold text-black transition-all hover:scale-105"
-                          >
-                            <CropIcon size={14} /> RESIZE
-                          </button>
-                          <button
+                            type="button"
                             onClick={() => thumbnailInputRef.current?.click()}
                             className="flex items-center gap-2 rounded-lg border border-white/20 bg-zinc-800 px-5 py-2 text-[11px] font-bold text-white transition-all hover:scale-105 hover:bg-black"
                           >
@@ -377,6 +382,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
               image={originalImage}
               crop={crop}
               zoom={zoom}
+              zoomSpeed={0.2}
               aspect={ASPECT_RATIO}
               onCropChange={setCrop}
               onZoomChange={setZoom}
@@ -391,7 +397,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
                 type="range"
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.05}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
                 className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-800 accent-white"

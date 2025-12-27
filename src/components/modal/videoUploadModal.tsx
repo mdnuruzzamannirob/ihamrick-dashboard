@@ -390,6 +390,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
               image={originalImage}
               crop={crop}
               zoom={zoom}
+              zoomSpeed={0.2}
               aspect={ASPECT_RATIO}
               onCropChange={setCrop}
               onZoomChange={setZoom}
@@ -404,7 +405,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                 type="range"
                 min={1}
                 max={3}
-                step={0.1}
+                step={0.05}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
                 className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-800 accent-white"
