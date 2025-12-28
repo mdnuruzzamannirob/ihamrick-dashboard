@@ -1,6 +1,5 @@
 import { useSelector } from 'react-redux';
 import { RootState } from '../../services/store';
-import Image from 'next/image';
 
 export function ManagePodcasts() {
   // Access podcasts directly from state.media.podcasts.data.podcasts
@@ -19,9 +18,6 @@ export function ManagePodcasts() {
               <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Title
               </th>
-              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
-                Cover Image
-              </th>
 
               <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Status
@@ -35,15 +31,6 @@ export function ManagePodcasts() {
                 <tr key={index} className="border-b border-neutral-100 last:border-0">
                   <td className="font-poppins max-w-40 truncate py-3 pr-3 text-left text-base font-normal text-[#333333]">
                     {podcast.title}
-                  </td>
-                  <td className="font-poppins py-3 pr-3 text-left text-base text-[#333333]">
-                    <Image
-                      src={podcast.coverImage || '/path/to/default/thumbnail'}
-                      alt={podcast.title}
-                      width={70}
-                      height={60}
-                      className="aspect-video w-20 rounded-lg object-cover"
-                    />
                   </td>
 
                   <td className="font-poppins py-3 pr-3 text-left text-base font-normal text-[#333333]">

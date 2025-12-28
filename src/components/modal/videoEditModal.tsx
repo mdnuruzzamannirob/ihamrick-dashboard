@@ -1,26 +1,12 @@
 'use client';
 
-import type React from 'react';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import {
-  X,
-  Crop as CropIcon,
-  Play,
-  Calendar,
-  FileText,
-  Check,
-  Edit3,
-  Image as ImageIcon,
-  RotateCcw,
-  Loader2,
-  Pencil,
-} from 'lucide-react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { X, Check, Loader2, Pencil, Play, ImageIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Cropper from 'react-easy-crop';
 import { toast } from 'react-toastify';
 import { useUpdateVideoMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
+import { SmartMediaUpload } from '../SmartMediaUpload';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -38,114 +24,48 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
   });
 
   // Media States
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPreview, setVideoPreview] = useState('');
-
-  // Thumbnail/Crop States
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [finalThumbnailPreview, setFinalThumbnailPreview] = useState<string>('');
-  const [finalBlob, setFinalBlob] = useState<Blob | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const thumbnailInputRef = useRef<HTMLInputElement>(null);
-  const ASPECT_RATIO = 16 / 9;
+  const [videoData, setVideoData] = useState<{ file: File | Blob | null; preview: string }>({
+    file: null,
+    preview: '',
+  });
+  const [imageData, setImageData] = useState<{ file: File | Blob | null; preview: string }>({
+    file: null,
+    preview: '',
+  });
 
   // Initialize data when modal opens
   useEffect(() => {
     if (video && isModalOpen) {
       setFormData({
         title: video.title || '',
-        uploadDate: video.uploadDate || '',
+        uploadDate: video.uploadDate ? new Date(video.uploadDate).toISOString().split('T')[0] : '',
         status: video.status === 'published' || video.status === true ? 'published' : 'unpublished',
         description: video.description || '',
         transcription: video.transcription || '',
       });
-      setVideoPreview(video.signedUrl || video.videoUrl || '');
-      setFinalThumbnailPreview(video.thumbnailUrl || '');
+
+      setVideoData({ file: null, preview: video.signedUrl || video.videoUrl || '' });
+      setImageData({ file: null, preview: video.thumbnailUrl || '' });
     }
   }, [video, isModalOpen]);
-
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setVideoFile(file);
-      setVideoPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setOriginalImage(reader.result as string);
-        setShowCropper(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const onCropComplete = useCallback((_: any, pixels: any) => {
-    setCroppedAreaPixels(pixels);
-  }, []);
-
-  const saveCrop = async () => {
-    try {
-      if (!originalImage || !croppedAreaPixels) return;
-      const image = new window.Image();
-      image.src = originalImage;
-      await new Promise((res) => (image.onload = res));
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = croppedAreaPixels.width;
-      canvas.height = croppedAreaPixels.height;
-
-      ctx?.drawImage(
-        image,
-        croppedAreaPixels.x,
-        croppedAreaPixels.y,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height,
-        0,
-        0,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height,
-      );
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            setFinalBlob(blob);
-            setFinalThumbnailPreview(URL.createObjectURL(blob));
-            setShowCropper(false);
-          }
-        },
-        'image/jpeg',
-        0.95,
-      );
-    } catch {
-      toast.error('Crop failed!');
-    }
-  };
 
   const handleSave = async () => {
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
-    const utcDate = new Date(formData.uploadDate).toISOString();
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    payload.append('uploadDate', utcDate);
+    payload.append('uploadDate', new Date(formData.uploadDate).toISOString());
     payload.append('status', formData.status);
 
-    if (videoFile) payload.append('video', videoFile);
-    if (finalBlob) payload.append('coverImage', finalBlob);
+    if (videoData.file) {
+      payload.append('video', videoData.file);
+    }
+
+    if (imageData.file) {
+      payload.append('coverImage', imageData.file);
+    }
 
     try {
       await updateVideo({ id: video._id, data: payload as any }).unwrap();
@@ -167,152 +87,91 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
       </button>
 
       {isModalOpen && (
-        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-gray-950/40 p-4 backdrop-blur-sm duration-200">
-          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
-          <div className="z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 px-8 py-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-4 backdrop-blur-md">
+          <div className="z-10 flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-4xl border border-white/10 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-6">
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-gray-900">
-                  Edit Video Details
-                </h2>
-                <p className="text-[13px] font-medium text-gray-500">
-                  Update your video content and configuration.
+                <h2 className="text-2xl font-black tracking-tight text-zinc-900">Edit Content</h2>
+                <p className="mt-1 text-xs font-medium tracking-widest text-zinc-400 uppercase">
+                  Video ID: {video._id.slice(-6)}
                 </p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-black"
+                className="rounded-full p-2 hover:bg-zinc-100"
               >
-                <X size={22} />
+                <X size={24} />
               </button>
             </div>
 
-            <div className="flex-1 space-y-8 overflow-y-auto p-6">
-              {/* Media Upload Row */}
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Video Preview */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
-                    <Play size={12} /> Video Content
+            <div className="flex-1 overflow-y-auto p-10">
+              {/* Media Section: New Smart Uploader Applied Here */}
+              <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+                {/* 1. Video Edit Section */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                    <Play size={14} className="text-zinc-900" /> Video Content
                   </label>
-                  <div className="group relative aspect-video w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-gray-400">
-                    {videoPreview ? (
-                      <div className="relative h-full w-full">
-                        <video
-                          src={videoPreview}
-                          controls
-                          className="h-full w-full bg-black object-contain"
-                        />
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="absolute top-3 right-3 flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-[11px] font-bold text-black opacity-0 shadow-lg backdrop-blur-sm transition-all group-hover:opacity-100 hover:scale-105 hover:bg-white"
-                        >
-                          <Edit3 size={12} /> CHANGE VIDEO
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 flex flex-col items-center justify-center text-gray-400"
-                      >
-                        <Loader2 className="animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    hidden
-                    accept="video/*"
-                    onChange={handleVideoChange}
+                  <SmartMediaUpload
+                    label="Change Video File"
+                    allowedFormats={['video/*']}
+                    className="aspect-video"
+                    onFileChange={(file, preview) => setVideoData({ file, preview })}
+                    initialUrl={videoData.preview}
+                    // thumbnail={imageData.preview}
                   />
                 </div>
 
-                {/* Thumbnail Preview */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
-                    <ImageIcon size={12} /> Thumbnail
+                {/* 2. Thumbnail Edit Section */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                    <ImageIcon size={14} className="text-zinc-900" /> Cover Thumbnail
                   </label>
-                  <div className="group relative aspect-video w-full overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-gray-400">
-                    {finalThumbnailPreview ? (
-                      <div className="relative h-full w-full">
-                        <Image
-                          src={finalThumbnailPreview}
-                          alt="Cover"
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/60 opacity-0 backdrop-blur-[2px] transition-all group-hover:opacity-100">
-                          {originalImage && (
-                            <button
-                              type="button"
-                              onClick={() => setShowCropper(true)}
-                              className="flex items-center gap-2 rounded-lg bg-white px-5 py-2 text-[11px] font-bold text-black transition-all hover:scale-105"
-                            >
-                              <CropIcon size={14} /> RESIZE
-                            </button>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => thumbnailInputRef.current?.click()}
-                            className="flex items-center gap-2 rounded-lg border border-white/20 bg-zinc-800 px-5 py-2 text-[11px] font-bold text-white transition-all hover:scale-105 hover:bg-black"
-                          >
-                            <RotateCcw size={14} /> CHANGE
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => thumbnailInputRef.current?.click()}
-                        className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center text-gray-400"
-                      >
-                        <ImageIcon size={24} className="mb-2 opacity-40" />
-                        <span className="text-xs font-semibold">Select Cover Image</span>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    ref={thumbnailInputRef}
-                    hidden
-                    accept="image/*"
-                    onChange={handleThumbnailSelect}
+                  <SmartMediaUpload
+                    label="Change Thumbnail"
+                    allowedFormats={['image/*']}
+                    className="aspect-video"
+                    onFileChange={(file, preview) => setImageData({ file, preview })}
+                    initialUrl={imageData.preview}
                   />
                 </div>
               </div>
 
-              {/* Form Fields */}
-              <div className="space-y-6 border-t border-gray-100 pt-2">
+              {/* Form Details Section */}
+              <div className="mt-12 space-y-8 border-t border-zinc-100 pt-10">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-600">Video Title</label>
+                  <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                    Video Title
+                  </label>
                   <input
                     type="text"
-                    className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm ring-gray-100 transition-all outline-none focus:bg-white focus:ring-2"
+                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm font-medium transition-all outline-none focus:border-black focus:bg-white"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
-                      <Calendar size={14} /> Release Date
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Release Date
                     </label>
                     <input
                       type="date"
-                      className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100 disabled:opacity-50"
+                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm outline-none focus:bg-white"
                       value={formData.uploadDate}
                       onChange={(e) => setFormData({ ...formData, uploadDate: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-600">Content Status</label>
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Visibility Status
+                    </label>
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full cursor-pointer rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100"
+                      className="w-full cursor-pointer appearance-none rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm outline-none focus:bg-white"
                     >
                       <option value="published">Published</option>
                       <option value="unpublished">Unpublished</option>
@@ -320,103 +179,46 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
-                    <FileText size={14} /> Description
-                  </label>
-                  <JoditEditor
-                    value={formData.description}
-                    config={joditConfig}
-                    onBlur={(v) => setFormData({ ...formData, description: v })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-600">Transcription</label>
-                  <JoditEditor
-                    value={formData.transcription}
-                    config={joditConfig}
-                    onBlur={(v) => setFormData({ ...formData, transcription: v })}
-                  />
+                <div className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Description
+                    </label>
+                    <JoditEditor
+                      value={formData.description}
+                      config={joditConfig}
+                      onBlur={(v) => setFormData({ ...formData, description: v })}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Transcription
+                    </label>
+                    <JoditEditor
+                      value={formData.transcription}
+                      config={joditConfig}
+                      onBlur={(v) => setFormData({ ...formData, transcription: v })}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 p-5 px-8">
+            <div className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/50 px-10 py-6">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-5 py-2 text-[11px] font-black tracking-widest text-gray-400 uppercase transition-colors hover:text-gray-700"
+                className="px-6 py-2 text-xs font-black tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-900"
               >
-                CANCEL
+                DISCARD
               </button>
               <button
                 onClick={handleSave}
                 disabled={isUpdating}
-                className="flex items-center gap-2 rounded-xl bg-black px-10 py-3 text-xs font-bold text-white shadow-lg shadow-gray-200 transition-all hover:bg-gray-800 disabled:bg-gray-200"
+                className="flex items-center gap-3 rounded-2xl bg-black px-12 py-4 text-xs font-black tracking-[2px] text-white uppercase shadow-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:bg-zinc-200"
               >
-                {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check size={14} />}
-                {isUpdating ? 'SAVING...' : 'SAVE CHANGES'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- CROP OVERLAY --- */}
-      {showCropper && originalImage && (
-        <div className="animate-in fade-in fixed inset-0 z-100 flex flex-col bg-gray-950 duration-300">
-          <div className="flex items-center justify-between bg-gray-950/50 p-5 text-white backdrop-blur-md">
-            <div className="flex items-center gap-3 text-sm font-bold tracking-tight uppercase">
-              <CropIcon size={16} className="text-gray-400" /> Adjust Thumbnail (16:9)
-            </div>
-            <button
-              onClick={() => setShowCropper(false)}
-              className="rounded-full p-2 hover:bg-white/10"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="relative flex-1">
-            <Cropper
-              image={originalImage}
-              crop={crop}
-              zoom={zoom}
-              zoomSpeed={0.2}
-              aspect={ASPECT_RATIO}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-            />
-          </div>
-
-          <div className="flex flex-col items-center gap-6 border-t border-white/10 bg-gray-950 p-8">
-            <div className="flex w-full max-w-sm items-center gap-6 text-white">
-              <span className="text-[10px] font-bold tracking-widest opacity-30">ZOOM</span>
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.05}
-                value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
-                className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-800 accent-white"
-              />
-              <span className="font-mono text-[10px] opacity-30">{Math.round(zoom * 100)}%</span>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowCropper(false)}
-                className="px-8 py-2 text-[11px] font-bold tracking-widest text-white/50 hover:text-white"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={saveCrop}
-                className="rounded-xl bg-white px-12 py-3 text-[11px] font-black tracking-widest text-black shadow-2xl transition-all hover:bg-gray-100"
-              >
-                SAVE CROP
+                {isUpdating ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
+                {isUpdating ? 'SAVING...' : 'UPDATE VIDEO'}
               </button>
             </div>
           </div>

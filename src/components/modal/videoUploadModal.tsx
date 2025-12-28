@@ -1,148 +1,57 @@
 'use client';
 
-import type React from 'react';
-import { useState, useRef, useCallback } from 'react';
-import {
-  Upload,
-  X,
-  Crop as CropIcon,
-  Play,
-  Calendar,
-  FileText,
-  Check,
-  Edit3,
-  Image as ImageIcon,
-  RotateCcw,
-} from 'lucide-react';
-import Image from 'next/image';
+import { useState } from 'react';
+import { Upload, X, Play, FileText, Check } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Cropper from 'react-easy-crop';
-import { useUploadVideoMutation } from '../../../services/allApi';
 import { toast } from 'react-toastify';
 import { joditConfig } from '@/utils/joditConfig';
+import { useUploadVideoMutation } from '../../../services/allApi';
+import { SmartMediaUpload } from '../SmartMediaUpload';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 const VideoUploadModal = ({ refetch }: { refetch: any }) => {
-  const initialFormState = {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [uploadVideo, { isLoading }] = useUploadVideoMutation();
+
+  // Form States
+  const [formData, setFormData] = useState({
     title: '',
     date: '',
     status: 'published',
     description: '',
     transcriptions: '',
-  };
+  });
 
-  const [formData, setFormData] = useState(initialFormState);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [videoPreview, setVideoPreview] = useState('');
+  // Media States
+  const [videoData, setVideoData] = useState<{ file: File | Blob | null; preview: string }>({
+    file: null,
+    preview: '',
+  });
+  const [imageData, setImageData] = useState<{ file: File | Blob | null; preview: string }>({
+    file: null,
+    preview: '',
+  });
 
-  // Thumbnail States
-  const [originalImage, setOriginalImage] = useState<string | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
-  const [finalThumbnailPreview, setFinalThumbnailPreview] = useState<string>('');
-  const [finalBlob, setFinalBlob] = useState<Blob | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-
-  const [uploadVideo, { isLoading }] = useUploadVideoMutation();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const thumbnailInputRef = useRef<HTMLInputElement>(null);
-
-  const ASPECT_RATIO = 16 / 9;
-
-  // Reset Function
   const resetForm = () => {
-    setFormData(initialFormState);
-    setVideoFile(null);
-    setVideoPreview('');
-    setOriginalImage(null);
-    setFinalThumbnailPreview('');
-    setFinalBlob(null);
-  };
-
-  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setVideoFile(file);
-      setVideoPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setOriginalImage(reader.result as string);
-        setShowCropper(true);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const onCropComplete = useCallback((_: any, pixels: any) => {
-    setCroppedAreaPixels(pixels);
-  }, []);
-
-  const saveCrop = async () => {
-    try {
-      if (!originalImage || !croppedAreaPixels) return;
-      const image = new window.Image();
-      image.src = originalImage;
-      await new Promise((res) => (image.onload = res));
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = croppedAreaPixels.width;
-      canvas.height = croppedAreaPixels.height;
-
-      ctx?.drawImage(
-        image,
-        croppedAreaPixels.x,
-        croppedAreaPixels.y,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height,
-        0,
-        0,
-        croppedAreaPixels.width,
-        croppedAreaPixels.height,
-      );
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            setFinalBlob(blob);
-            setFinalThumbnailPreview(URL.createObjectURL(blob));
-            setShowCropper(false);
-          }
-        },
-        'image/jpeg',
-        0.95,
-      );
-    } catch {
-      toast.error('Crop failed!');
-    }
+    setFormData({ title: '', date: '', status: 'published', description: '', transcriptions: '' });
+    setVideoData({ file: null, preview: '' });
+    setImageData({ file: null, preview: '' });
   };
 
   const handleSubmit = async () => {
-    // --- Validation ---
-    if (!videoFile) return toast.error('Please select a video file');
-    if (!finalBlob) return toast.error('Please select a thumbnail');
-    if (!formData.title.trim()) return toast.error('Video title is required');
-    if (!formData.date) return toast.error('Release date is required');
+    if (!videoData.file) return toast.error('Please upload a video');
+    if (!imageData.file) return toast.error('Please upload a thumbnail');
+    if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
-    const utcDate = new Date(formData.date).toISOString();
-
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcriptions);
-    payload.append('uploadDate', utcDate);
+    payload.append('uploadDate', new Date(formData.date).toISOString());
     payload.append('status', formData.status);
-    payload.append('video', videoFile);
-    payload.append('coverImage', finalBlob);
+    payload.append('video', videoData.file);
+    payload.append('coverImage', imageData.file);
 
     try {
       await uploadVideo(payload).unwrap();
@@ -151,7 +60,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
       refetch();
       resetForm();
     } catch (err: any) {
-      toast.error(err.message || err.data?.message || 'Upload failed. Please try again.');
+      toast.error(err.message || 'Upload failed.');
     }
   };
 
@@ -159,167 +68,111 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 rounded-lg bg-black px-5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-gray-800 active:scale-95"
+        className="flex items-center gap-2 rounded-xl bg-black px-6 py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-zinc-800"
       >
-        <Upload size={16} /> Upload Video
+        <Upload size={18} /> Upload Video
       </button>
 
       {isModalOpen && (
-        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-gray-950/40 p-4 backdrop-blur-sm duration-200">
-          <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
-          <div className="z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 px-8 py-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-4 backdrop-blur-md">
+          <div className="z-10 flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-4xl border border-white/10 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-6">
               <div>
-                <h2 className="text-xl font-bold tracking-tight text-gray-900">Upload New Video</h2>
-                <p className="text-[13px] font-medium text-gray-500">
-                  Upload and configure your video details for publishing.
+                <h2 className="text-2xl font-black tracking-tight text-zinc-900">
+                  Publish Content
+                </h2>
+                <p className="mt-1 text-xs font-medium tracking-widest text-zinc-400 uppercase">
+                  Video & Media Management
                 </p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-black"
+                className="rounded-full p-2 transition-colors hover:bg-zinc-100"
               >
-                <X size={22} />
+                <X size={24} />
               </button>
             </div>
 
-            <div className="flex-1 space-y-8 overflow-y-auto p-6">
-              {/* Media Upload Row */}
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Video */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
-                    <Play size={12} /> Video Content
+            <div className="flex-1 overflow-y-auto p-10">
+              <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+                {/* 1. Video Upload Section */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                    <Play size={14} className="text-zinc-900" /> Video Source
                   </label>
-                  <div className="group relative aspect-video w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-gray-400">
-                    {videoPreview ? (
-                      <div className="relative h-full w-full">
-                        <video
-                          src={videoPreview}
-                          controls
-                          className="h-full w-full bg-black object-contain"
-                        />
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="absolute top-3 right-3 flex items-center gap-2 rounded-lg bg-white/95 px-3 py-2 text-[11px] font-bold text-black opacity-0 shadow-lg backdrop-blur-sm transition-all group-hover:opacity-100 hover:scale-105 hover:bg-white"
-                        >
-                          <Edit3 size={12} /> CHANGE VIDEO
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 transition group-hover:text-black"
-                      >
-                        <Upload size={24} className="mb-2 opacity-40" />
-                        <span className="text-xs font-semibold">Click to upload Video</span>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    hidden
-                    accept="video/*"
-                    onChange={handleVideoChange}
+                  <SmartMediaUpload
+                    label="Drop Video File"
+                    allowedFormats={['video/*']}
+                    className="aspect-video"
+                    onFileChange={(file: any, preview: any) => setVideoData({ file, preview })}
+                    initialUrl={videoData.preview}
                   />
                 </div>
 
-                {/* Thumbnail */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
-                    <ImageIcon size={12} /> Thumbnail
+                {/* 2. Thumbnail Upload Section */}
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                    <FileText size={14} className="text-zinc-900" /> Cover Thumbnail
                   </label>
-                  <div className="group relative aspect-video w-full overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition hover:border-gray-400">
-                    {finalThumbnailPreview ? (
-                      <div className="relative h-full w-full">
-                        <Image
-                          src={finalThumbnailPreview}
-                          alt="Cover"
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/60 opacity-0 backdrop-blur-[2px] transition-all group-hover:opacity-100">
-                          <button
-                            onClick={() => setShowCropper(true)}
-                            className="flex items-center gap-2 rounded-lg bg-white px-5 py-2 text-[11px] font-bold text-black transition-all hover:scale-105"
-                          >
-                            <CropIcon size={14} /> RESIZE
-                          </button>
-                          <button
-                            onClick={() => thumbnailInputRef.current?.click()}
-                            className="flex items-center gap-2 rounded-lg border border-white/20 bg-zinc-800 px-5 py-2 text-[11px] font-bold text-white transition-all hover:scale-105 hover:bg-black"
-                          >
-                            <RotateCcw size={14} /> CHANGE
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => thumbnailInputRef.current?.click()}
-                        className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center text-gray-400 transition group-hover:text-black"
-                      >
-                        <ImageIcon size={24} className="mb-2 opacity-40" />
-                        <span className="text-xs font-semibold">Select Cover Image</span>
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    ref={thumbnailInputRef}
-                    hidden
-                    accept="image/*"
-                    onChange={handleThumbnailSelect}
+                  <SmartMediaUpload
+                    label="Drop Cover Image"
+                    allowedFormats={['image/*']}
+                    className="aspect-video"
+                    onFileChange={(file: any, preview: any) => setImageData({ file, preview })}
+                    initialUrl={imageData.preview}
                   />
                 </div>
               </div>
 
-              {/* Form Fields */}
-              <div className="space-y-6 border-t border-gray-100 pt-2">
+              {/* 3. Form Details Section */}
+              <div className="mt-12 space-y-8 border-t border-zinc-100 pt-10">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-600">Video Title </label>
+                  <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                    Video Title
+                  </label>
                   <input
                     type="text"
-                    placeholder="Enter video title..."
-                    className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm ring-gray-100 transition-all outline-none focus:bg-white focus:ring-2"
+                    placeholder="Enter a catchy title..."
+                    className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm font-medium transition-all outline-none focus:border-black focus:bg-white"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   />
                 </div>
 
-                {/* Date and Status Row */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
-                      <Calendar size={14} /> Release Date
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Release Date
                     </label>
                     <input
                       type="date"
-                      className="w-full rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100"
+                      className="w-full rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm outline-none focus:bg-white"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-600">Content Status</label>
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Visibility Status
+                    </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                      className="w-full cursor-pointer rounded border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-100"
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      className="w-full cursor-pointer appearance-none rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm outline-none focus:bg-white"
                     >
-                      <option value="published">Published</option>
-                      <option value="unpublished">Unpublished</option>
+                      <option value="published">Live / Published</option>
+                      <option value="unpublished">Draft / Private</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-bold text-gray-600">
-                      <FileText size={14} /> Description
+                <div className="grid grid-cols-1 gap-8">
+                  <div className="space-y-3">
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Description
                     </label>
-                    <div className="overflow-hidden rounded">
+                    <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
                       <JoditEditor
                         value={formData.description}
                         config={joditConfig}
@@ -327,11 +180,12 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold tracking-tight text-gray-600">
-                      Transcription
+
+                  <div className="space-y-3">
+                    <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
+                      Video Transcription
                     </label>
-                    <div className="overflow-hidden rounded">
+                    <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
                       <JoditEditor
                         value={formData.transcriptions}
                         config={joditConfig}
@@ -343,89 +197,29 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 p-5 px-8">
+            {/* Footer Action Buttons */}
+            <div className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/50 px-10 py-6">
               <button
                 onClick={() => {
                   setIsModalOpen(false);
                   resetForm();
                 }}
-                className="px-5 py-2 text-[11px] font-black tracking-widest text-gray-400 uppercase transition-colors hover:text-gray-700"
+                className="px-6 py-2 text-xs font-black tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-900"
               >
-                DISCARD
+                Discard Changes
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex items-center gap-2 rounded-xl bg-black px-10 py-3 text-xs font-bold text-white shadow-lg shadow-gray-200 transition-all hover:bg-gray-800 disabled:bg-gray-200"
+                className="flex items-center gap-3 rounded-2xl bg-black px-12 py-4 text-xs font-black tracking-[2px] text-white uppercase shadow-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:bg-zinc-200 disabled:text-zinc-400"
               >
                 {isLoading ? (
                   'UPLOADING...'
                 ) : (
                   <>
-                    <Check size={14} /> PUBLISH VIDEO
+                    <Check size={18} /> Publish Video
                   </>
                 )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- CROP OVERLAY (No Logic Changes) --- */}
-      {showCropper && originalImage && (
-        <div className="animate-in fade-in fixed inset-0 z-100 flex flex-col bg-gray-950 duration-300">
-          <div className="flex items-center justify-between bg-gray-950/50 p-5 text-white backdrop-blur-md">
-            <div className="flex items-center gap-3 text-sm font-bold tracking-tight uppercase">
-              <CropIcon size={16} className="text-gray-400" /> Adjust Thumbnail (16:9)
-            </div>
-            <button
-              onClick={() => setShowCropper(false)}
-              className="rounded-full p-2 hover:bg-white/10"
-            >
-              <X size={24} />
-            </button>
-          </div>
-
-          <div className="relative flex-1">
-            <Cropper
-              image={originalImage}
-              crop={crop}
-              zoom={zoom}
-              zoomSpeed={0.2}
-              aspect={ASPECT_RATIO}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-            />
-          </div>
-
-          <div className="flex flex-col items-center gap-6 border-t border-white/10 bg-gray-950 p-8">
-            <div className="flex w-full max-w-sm items-center gap-6 text-white">
-              <span className="text-[10px] font-bold tracking-widest opacity-30">ZOOM</span>
-              <input
-                type="range"
-                min={1}
-                max={3}
-                step={0.05}
-                value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
-                className="h-1 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-800 accent-white"
-              />
-              <span className="font-mono text-[10px] opacity-30">{Math.round(zoom * 100)}%</span>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowCropper(false)}
-                className="px-8 py-2 text-[11px] font-bold tracking-widest text-white/50 hover:text-white"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={saveCrop}
-                className="rounded-xl bg-white px-12 py-3 text-[11px] font-black tracking-widest text-black shadow-2xl transition-all hover:bg-gray-100"
-              >
-                SAVE CROP
               </button>
             </div>
           </div>

@@ -33,7 +33,6 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
     description: '',
   });
 
-  console.log(formState);
   // Updated state for Audio
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
