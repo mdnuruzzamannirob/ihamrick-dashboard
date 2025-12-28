@@ -1,20 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import {
-  X,
-  Calendar,
-  Clock,
-  Music,
-  FileText,
-  Loader2,
-  Plus,
-  Trash2,
-  Headphones,
-} from 'lucide-react';
+import { X, Calendar, Clock, FileText, Loader2, Plus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { joditConfig } from '@/utils/joditConfig';
 import { toast } from 'react-toastify';
 import { useCreateBlogMutation, useUpdateBlogMutation } from '../../../services/allApi';
+import { SmartMediaUpload } from '../SmartMediaUpload'; // Imported SmartMediaUpload
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -33,10 +24,10 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
     description: '',
   });
 
-  // Updated state for Audio
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [audioPreview, setAudioPreview] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [audioData, setAudioData] = useState<{ file: File | Blob | null; preview: string }>({
+    file: null,
+    preview: '',
+  });
 
   const [createBlog, { isLoading: isCreating }] = useCreateBlogMutation();
   const [updateBlog, { isLoading: isUpdating }] = useUpdateBlogMutation();
@@ -59,7 +50,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       });
 
       const existingAudio = selectedBlog.audioSignedUrl || selectedBlog.audioUrl;
-      setAudioPreview(existingAudio || null);
+      setAudioData({ file: null, preview: existingAudio || '' });
 
       setIsOpen(true);
     }
@@ -68,8 +59,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
   const handleClose = () => {
     setIsOpen(false);
     setFormState({ title: '', status: 'published', date: '', description: '' });
-    setAudioFile(null);
-    setAudioPreview(null);
+    setAudioData({ file: null, preview: '' });
     if (onCloseTrigger) onCloseTrigger();
   };
 
@@ -110,8 +100,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       }
     }
 
-    // Changed property name to 'audio'
-    if (audioFile) formData.append('audio', audioFile);
+    if (audioData.file) formData.append('audio', audioData.file);
 
     try {
       if (selectedBlog) {
@@ -125,15 +114,6 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       handleClose();
     } catch (err: any) {
       toast.error(err?.message || err?.data?.message || 'Something went wrong!');
-    }
-  };
-
-  const handleFileChange = (file: File) => {
-    if (file && file.type.startsWith('audio/')) {
-      setAudioFile(file);
-      setAudioPreview(URL.createObjectURL(file));
-    } else {
-      toast.error('Please upload a valid audio file!');
     }
   };
 
@@ -230,91 +210,20 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
                   className="w-full rounded border border-neutral-200 bg-white px-5 py-4 font-medium transition-all outline-none focus:border-black disabled:cursor-default! disabled:opacity-30"
                 />
               </div>
-              {/* Updated Audio Upload Area */}
+
               <div className="space-y-3">
                 <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
                   Audio File (Optional)
                 </label>
-                <label
-                  htmlFor="audio-upload"
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragging(true);
-                  }}
-                  onDragLeave={() => setIsDragging(false)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setIsDragging(false);
-                    const file = e.dataTransfer.files[0];
-                    if (file) handleFileChange(file);
-                  }}
-                  className={`group relative flex min-h-[180px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed transition-all duration-500 ${
-                    isDragging
-                      ? 'scale-[0.98] border-black bg-neutral-100'
-                      : 'border-neutral-200 hover:border-neutral-400 hover:bg-white'
-                  }`}
-                >
-                  <input
-                    id="audio-upload"
-                    type="file"
-                    className="hidden"
-                    accept="audio/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleFileChange(file);
-                    }}
-                  />
-
-                  {audioPreview ? (
-                    <div className="flex w-full flex-col items-center gap-4 p-6">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-white shadow-lg">
-                        <Headphones size={30} />
-                      </div>
-                      <div className="w-full max-w-md">
-                        <audio
-                          key={audioPreview}
-                          src={audioPreview}
-                          controls
-                          className="h-10 w-full"
-                        />
-                      </div>
-                      <div className="text-center">
-                        <p className="max-w-[250px] truncate text-xs font-bold text-neutral-800">
-                          {audioFile
-                            ? audioFile.name
-                            : selectedBlog?.audioFileName?.split('/').pop() || 'Existing Audio'}
-                        </p>
-                        <p className="mt-1 text-[10px] text-neutral-400">
-                          {audioFile ? 'New file selected' : 'File from server'}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setAudioFile(null);
-                          setAudioPreview(null);
-                        }}
-                        className="flex items-center gap-2 text-[10px] font-bold text-red-500 uppercase transition-colors hover:text-red-700"
-                      >
-                        <Trash2 size={14} /> Remove & Change
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center py-8">
-                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-neutral-100 bg-neutral-50 shadow-sm transition-all duration-500 group-hover:scale-105">
-                        <Music className="text-neutral-400" size={28} />
-                      </div>
-                      <p className="text-sm font-bold text-neutral-800">
-                        Drag & Drop Audio or Click
-                      </p>
-                      <p className="mt-1 text-xs font-medium text-neutral-400">
-                        MP3, WAV, or AAC supported
-                      </p>
-                    </div>
-                  )}
-                </label>
+                <SmartMediaUpload
+                  label="Drop Audio Track or Click"
+                  allowedFormats={['audio/*']}
+                  className="h-[180px]"
+                  onFileChange={(file, preview) => setAudioData({ file, preview })}
+                  initialUrl={audioData.preview}
+                />
               </div>
+
               <div className="space-y-2">
                 <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
                   Description
@@ -344,7 +253,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={18} className="animate-spin" /> Syncing...
+                    <Loader2 size={18} className="animate-spin" />
                   </>
                 ) : selectedBlog ? (
                   'Update Blog'

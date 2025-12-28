@@ -1,13 +1,13 @@
 'use client';
 
 import type React from 'react';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Plus } from 'lucide-react';
-import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useCreatePodcastMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
+import { SmartMediaUpload } from '../SmartMediaUpload';
 
 interface PodcastFormState {
   title: string;
@@ -15,7 +15,7 @@ interface PodcastFormState {
   status: 'scheduled' | 'live' | 'ended' | 'cancelled';
   description: string;
   transcription: string;
-  coverImage: File | null;
+  coverImage: File | Blob | null;
 }
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
@@ -33,21 +33,11 @@ const PodcastUploadModal = ({ refetch }: any) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [createPodcast, { isLoading }] = useCreatePodcastMutation();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((p) => ({ ...p, [name]: value }));
-  };
-
-  const handleImageChange = (file?: File) => {
-    if (!file) return;
-    setFormData((p) => ({ ...p, coverImage: file }));
-
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async () => {
@@ -64,7 +54,10 @@ const PodcastUploadModal = ({ refetch }: any) => {
     payload.append('transcription', formData.transcription);
     payload.append('date', utcDate);
     payload.append('status', formData.status);
-    payload.append('coverImage', formData.coverImage ?? '');
+
+    if (formData.coverImage) {
+      payload.append('coverImage', formData.coverImage);
+    }
 
     try {
       await createPodcast(payload).unwrap();
@@ -145,31 +138,17 @@ const PodcastUploadModal = ({ refetch }: any) => {
                   </div>
                 </div>
 
-                {/* Cover Image */}
                 <div className="mb-6">
                   <label className="mb-2 block text-sm font-medium">Cover Image (optional)</label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex h-full min-h-[140px] cursor-pointer items-center justify-center rounded border-2 border-dashed border-gray-200 text-sm transition-colors hover:border-inherit"
-                  >
-                    {imagePreview ? (
-                      <Image
-                        src={imagePreview}
-                        alt="cover"
-                        width={600}
-                        height={200}
-                        className="h-full w-full rounded object-cover"
-                      />
-                    ) : (
-                      'Click to upload image'
-                    )}
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={(e) => handleImageChange(e.target.files?.[0])}
+                  <SmartMediaUpload
+                    label="Click to upload image"
+                    allowedFormats={['image/*']}
+                    className="h-full max-h-48"
+                    onFileChange={(file, preview) => {
+                      setFormData((p) => ({ ...p, coverImage: file }));
+                      setImagePreview(preview);
+                    }}
+                    initialUrl={imagePreview}
                   />
                 </div>
               </div>

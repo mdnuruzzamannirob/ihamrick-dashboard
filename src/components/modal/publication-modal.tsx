@@ -1,13 +1,13 @@
 'use client';
 
 import type React from 'react';
-import { useState, useRef } from 'react';
-import { ChevronDown, X, FileText, ImageIcon, Loader2, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, X, Loader2, Plus } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useCreatePublicationMutation } from '../../../services/allApi';
-import Image from 'next/image';
 import { joditConfig } from '@/utils/joditConfig';
+import { SmartMediaUpload } from '../SmartMediaUpload';
 
 interface PublicationFormState {
   title: string;
@@ -15,8 +15,8 @@ interface PublicationFormState {
   publicationDate: string;
   status: 'Published' | 'Unpublished';
   description: string;
-  cover: File | null;
-  file: File | null;
+  cover: File | Blob | null;
+  file: File | Blob | null;
 }
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
@@ -34,10 +34,9 @@ export function PublicationModal({ refetch }: { refetch: any }) {
 
   const [isOpen, setIsOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
-  const coverInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Previews for SmartMediaUpload
+  const [previews, setPreviews] = useState({ cover: '', file: '' });
 
   const [createPublication, { isLoading }] = useCreatePublicationMutation();
 
@@ -61,16 +60,22 @@ export function PublicationModal({ refetch }: { refetch: any }) {
     }
 
     const payload = new FormData();
-    const utcDate = new Date(formData.publicationDate).toISOString();
+    const utcDate = formData.publicationDate
+      ? new Date(formData.publicationDate).toISOString()
+      : '';
 
     payload.append('title', formData.title);
     payload.append('author', formData.author);
-    payload.append('publicationDate', utcDate);
+    if (utcDate) payload.append('publicationDate', utcDate);
     payload.append('status', String(formData.status === 'Published'));
     payload.append('description', formData.description);
+
     if (formData.cover) payload.append('coverImage', formData.cover);
     payload.append('file', formData.file);
-    payload.append('fileType', formData.file.name.split('.').pop() || '');
+
+    // Extracting extension from file name if available
+    const fileName = (formData.file as File).name || 'document.pdf';
+    payload.append('fileType', fileName.split('.').pop() || 'pdf');
 
     try {
       await createPublication(payload).unwrap();
@@ -93,7 +98,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
       cover: null,
       file: null,
     });
-    setCoverPreview(null);
+    setPreviews({ cover: '', file: '' });
   };
 
   return (
@@ -130,86 +135,39 @@ export function PublicationModal({ refetch }: { refetch: any }) {
 
             {/* Scrollable Body */}
             <div className="flex-1 space-y-8 overflow-y-auto px-8 py-8">
-              {/* Media Section */}
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Cover Upload */}
+                {/* --- SMART MEDIA UPLOADER FOR COVER IMAGE --- */}
                 <div className="space-y-2">
                   <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                     Cover Image (optional)
                   </label>
-                  <div
-                    onClick={() => coverInputRef.current?.click()}
-                    className="group relative flex h-44 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-black hover:bg-gray-100"
-                  >
-                    {coverPreview ? (
-                      <Image src={coverPreview} alt="Preview" fill className="object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <div className="mb-3 rounded bg-white p-3 text-gray-400 shadow-sm transition-all group-hover:bg-black group-hover:text-white">
-                          <ImageIcon size={24} />
-                        </div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">
-                          Select Cover Photo
-                        </p>
-                        <p className="mt-1 text-[10px] text-gray-400">JPG, PNG up to 5MB</p>
-                      </div>
-                    )}
-                    <input
-                      ref={coverInputRef}
-                      type="file"
-                      accept="image/*"
-                      hidden
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setFormData((p) => ({ ...p, cover: file }));
-                          setCoverPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                    />
-                  </div>
+                  <SmartMediaUpload
+                    label="Select Cover Photo"
+                    allowedFormats={['image/*']}
+                    className="aspect-video rounded-3xl"
+                    onFileChange={(file, preview) => {
+                      setFormData((p) => ({ ...p, cover: file }));
+                      setPreviews((p) => ({ ...p, cover: preview }));
+                    }}
+                    initialUrl={previews.cover}
+                  />
                 </div>
 
-                {/* PDF Upload */}
+                {/* --- SMART MEDIA UPLOADER FOR PDF FILE --- */}
                 <div className="space-y-2">
                   <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                     PDF Document
                   </label>
-
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="group flex h-44 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-black hover:bg-gray-100"
-                  >
-                    <div className="mb-3 rounded bg-white p-3 text-blue-600 shadow-sm transition-all group-hover:bg-black group-hover:text-white">
-                      <FileText size={24} />
-                    </div>
-
-                    {/* TEXT CONTAINER */}
-                    <div className="w-full min-w-0 px-6 text-center">
-                      {/* FILE NAME */}
-                      <p
-                        title={formData.file?.name}
-                        className="w-full truncate text-xs font-bold text-gray-700"
-                      >
-                        {formData.file ? formData.file.name : 'CHOOSE PDF FILE'}
-                      </p>
-
-                      {/* HELPER TEXT */}
-                      <p className="mt-1 text-[10px] font-bold tracking-tighter text-gray-400 uppercase">
-                        {formData.file ? 'File Selected' : 'Click to browse your computer'}
-                      </p>
-                    </div>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf"
-                      hidden
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, file: e.target.files?.[0] || null }))
-                      }
-                    />
-                  </div>
+                  <SmartMediaUpload
+                    label={formData.file ? (formData.file as File).name : 'CHOOSE PDF FILE'}
+                    allowedFormats={['application/pdf']}
+                    className="aspect-video rounded-3xl"
+                    onFileChange={(file, preview) => {
+                      setFormData((p) => ({ ...p, file: file }));
+                      setPreviews((p) => ({ ...p, file: preview }));
+                    }}
+                    initialUrl={previews.file}
+                  />
                 </div>
               </div>
 

@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Pencil, Loader2, X, UploadCloud, Image as ImageIcon } from 'lucide-react';
-import Image from 'next/image';
+import React, { useState, useEffect } from 'react';
+import { Pencil, Loader2, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useUpdatePodcastMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
+import { SmartMediaUpload } from '../SmartMediaUpload';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -22,11 +22,9 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
     transcription: '',
   });
 
-  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [coverImage, setCoverImage] = useState<File | Blob | null>(null);
   const [imagePreview, setImagePreview] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync data when modal opens
   useEffect(() => {
     if (podcast && isModalOpen) {
       setFormData({
@@ -45,29 +43,24 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  const handleImageChange = (file?: File) => {
-    if (!file) return;
-    setCoverImage(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
-
   const handleSave = async () => {
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
-    const utcDate = new Date(formData.date).toISOString();
+    const utcDate = formData.date ? new Date(formData.date).toISOString() : '';
 
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    payload.append('date', utcDate);
+    if (utcDate) payload.append('date', utcDate);
     payload.append('status', String(formData.status));
-    payload.append('coverImage', coverImage ?? '');
+
+    if (coverImage) {
+      payload.append('coverImage', coverImage);
+    }
 
     try {
-      await updatePodcast({ id: podcast.id, data: payload }).unwrap();
+      await updatePodcast({ id: podcast._id || podcast.id, data: payload }).unwrap();
       refetch();
       toast.success('Podcast updated successfully');
       setIsModalOpen(false);
@@ -134,33 +127,19 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
                   </div>
                 </div>
 
-                {/* Image Upload */}
                 <div className="mb-6">
                   <label className="mb-1.5 block text-sm font-semibold text-gray-700">
                     Cover Image (optional)
                   </label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="group relative flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-black"
-                  >
-                    {imagePreview && imagePreview !== 'default-podcast-cover.jpg' ? (
-                      <Image src={imagePreview} alt="Preview" fill className="object-cover" />
-                    ) : (
-                      <div className="text-center">
-                        <ImageIcon className="mx-auto h-8 w-8 text-gray-300" />
-                        <p className="mt-1 text-xs text-gray-500">Change Cover</p>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                      <UploadCloud className="text-white" />
-                    </div>
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={(e) => handleImageChange(e.target.files?.[0])}
+                  <SmartMediaUpload
+                    label="Click or drag to change cover"
+                    allowedFormats={['image/*']}
+                    className="h-full max-h-48"
+                    onFileChange={(file, preview) => {
+                      setCoverImage(file);
+                      setImagePreview(preview);
+                    }}
+                    initialUrl={imagePreview}
                   />
                 </div>
               </div>

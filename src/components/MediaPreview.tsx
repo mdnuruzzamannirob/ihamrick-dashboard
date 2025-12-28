@@ -1,3 +1,6 @@
+'use client';
+
+import { Edit3, RotateCcw } from 'lucide-react';
 import Image from 'next/image';
 
 export const MediaPreview = ({
@@ -6,7 +9,7 @@ export const MediaPreview = ({
   thumbnail,
   onResize,
   onChange,
-  currentAspect,
+  currentAspect = 16 / 9,
 }: any) => {
   const getFileType = () => {
     if (file?.type) return file.type;
@@ -15,31 +18,29 @@ export const MediaPreview = ({
     const cleanUrl = previewUrl.split('?')[0].toLowerCase();
     const extension = cleanUrl.split('.').pop();
 
-    if (['mp4', 'webm', 'ogg', 'mov'].includes(extension!) || previewUrl.includes('/videos/'))
+    if (['mp4', 'webm', 'mov'].includes(extension!) || previewUrl.includes('/videos/'))
       return 'video/mp4';
-    if (
-      ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension!) ||
-      previewUrl.includes('/images/')
-    )
+    if (['jpg', 'jpeg', 'png', 'webp'].includes(extension!) || previewUrl.includes('/images/'))
       return 'image/jpeg';
     if (['pdf'].includes(extension!) || previewUrl.includes('/pdfs/')) return 'application/pdf';
-    if (['mp3', 'wav', 'mpeg'].includes(extension!) || previewUrl.includes('/audios/'))
-      return 'audio/mpeg';
+    if (['mp3', 'wav'].includes(extension!) || previewUrl.includes('/audios/')) return 'audio/mpeg';
 
     return '';
   };
 
   const type = getFileType();
-  const isVideo = type.startsWith('video/');
   const isImage = type.startsWith('image/');
+  const isVideo = type.startsWith('video/');
   const isAudio = type.startsWith('audio/');
   const isPDF = type.includes('pdf');
 
+  const canResize = isImage && file !== null;
+
   return (
-    <div className="group relative flex h-full w-full items-center justify-center overflow-hidden rounded-3xl bg-zinc-950">
+    <div className="group relative size-full overflow-hidden rounded-3xl">
       <div
-        style={{ aspectRatio: currentAspect || '16/9' }}
-        className="relative h-full w-full transition-all duration-500"
+        style={{ aspectRatio: currentAspect }}
+        className="relative h-full w-full overflow-hidden transition-all duration-500"
       >
         {isImage && (
           <Image fill src={previewUrl} alt="preview" className="h-full w-full object-cover" />
@@ -82,45 +83,25 @@ export const MediaPreview = ({
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="absolute top-6 right-6 flex flex-col gap-3 opacity-0 transition-all group-hover:opacity-100">
-        {isImage && (
+      {/* Control Buttons */}
+      <div className="absolute top-4 right-4 flex translate-y-2 flex-col gap-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        {canResize && (
           <button
+            type="button"
             onClick={onResize}
-            className="rounded-2xl bg-white p-3 text-black shadow-xl transition-all hover:scale-110 active:scale-95"
+            className="rounded-2xl bg-white/95 p-3 text-zinc-900 shadow-xl backdrop-blur transition-all hover:bg-white active:scale-90"
+            title="Resize New Upload"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
+            <Edit3 size={18} strokeWidth={2.5} />
           </button>
         )}
         <button
+          type="button"
           onClick={onChange}
-          className="rounded-2xl bg-white p-3 text-black shadow-xl transition-all hover:scale-110 active:scale-95"
+          className="rounded-2xl bg-white/95 p-3 text-zinc-900 shadow-xl backdrop-blur transition-all hover:bg-white active:scale-90"
+          title="Change File"
         >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
-            <path d="M21 3v5h-5"></path>
-          </svg>
+          <RotateCcw size={18} strokeWidth={2.5} />
         </button>
       </div>
     </div>
