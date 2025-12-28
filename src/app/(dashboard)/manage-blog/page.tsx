@@ -19,6 +19,7 @@ import { ViewBlogModal } from '@/components/modal/viewModal';
 import DeleteConfirmationModal from '@/components/modal/deleteModal';
 import { useGetBlogsQuery, useDeleteBlogMutation } from '../../../../services/allApi';
 import { toast } from 'react-toastify';
+import { dateFormatter } from '@/utils/dateFormatter';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -223,19 +224,8 @@ export default function ManageBlogPage() {
                             <Calendar size={14} className="min-w-3.5 text-neutral-300" />
                             <span className="font-medium">
                               {blog?.status === 'scheduled'
-                                ? new Date(blog?.scheduledAt).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric',
-                                  })
-                                : new Date(blog.uploadDate || blog.createdAt).toLocaleDateString(
-                                    'en-US',
-                                    {
-                                      month: 'short',
-                                      day: 'numeric',
-                                      year: 'numeric',
-                                    },
-                                  )}
+                                ? dateFormatter(blog?.scheduledAt)
+                                : dateFormatter(blog.uploadDate)}
                             </span>
                           </div>
                         </td>

@@ -61,14 +61,11 @@ export function PublicationModal({ refetch }: { refetch: any }) {
     }
 
     const payload = new FormData();
+    const utcDate = new Date(formData.publicationDate).toISOString();
+
     payload.append('title', formData.title);
     payload.append('author', formData.author);
-    payload.append(
-      'publicationDate',
-      formData.publicationDate
-        ? new Date(formData.publicationDate).toISOString()
-        : new Date().toISOString(),
-    );
+    payload.append('publicationDate', utcDate);
     payload.append('status', String(formData.status === 'Published'));
     payload.append('description', formData.description);
     if (formData.cover) payload.append('coverImage', formData.cover);

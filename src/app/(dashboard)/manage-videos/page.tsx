@@ -17,6 +17,7 @@ import { toast } from 'react-toastify';
 import { VideoViewModal } from '@/components/modal/videoViewModal';
 import VideoEditModal from '@/components/modal/videoEditModal';
 import { useGetVideosQuery, useDeleteVideoMutation } from '../../../../services/allApi';
+import { dateFormatter } from '@/utils/dateFormatter';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -166,11 +167,7 @@ export default function ManageVideos() {
                         <td className="px-6 py-4 text-sm text-neutral-600">
                           <div className="flex items-center gap-2">
                             <Calendar size={14} className="text-neutral-400" />
-                            {new Date(video.uploadDate).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                            })}
+                            {dateFormatter(video.uploadDate)}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center">

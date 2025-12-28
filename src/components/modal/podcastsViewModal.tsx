@@ -19,16 +19,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useStartPodcastMutation, useEndPodcastMutation } from '../../../services/allApi';
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
+import { dateFormatter } from '@/utils/dateFormatter';
 
 export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch: () => void }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -87,37 +78,58 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
           <div className="absolute inset-0" onClick={() => setViewModalOpen(false)} />
 
           <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-4xl bg-white shadow-2xl ring-1 ring-slate-900/5">
-            {/* Header / Cover Image */}
-            <div className="relative h-64 w-full shrink-0 bg-slate-900">
-              <Image
-                src={podcast.coverImage || '/placeholder.jpg'}
-                alt={podcast.title}
-                fill
-                className="object-cover opacity-70"
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-white via-transparent to-black/30" />
+            {/* Header / Cover Image Area */}
+            <div className="relative h-72 w-full shrink-0 overflow-hidden bg-slate-900">
+              {podcast?.coverImage && podcast?.coverImage !== 'default-podcast-cover.jpg' ? (
+                <>
+                  <Image
+                    src={podcast?.coverImage}
+                    alt={podcast.title}
+                    fill
+                    className="object-cover opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-white via-slate-900/40 to-slate-900/20" />
+                </>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-indigo-600 via-purple-700 to-slate-900">
+                  <div className="absolute -top-10 -right-10 opacity-10">
+                    <Mic2 size={300} className="rotate-12 text-white" />
+                  </div>
+                  <div className="absolute -bottom-10 -left-10 opacity-10">
+                    <Radio size={250} className="-rotate-12 text-white" />
+                  </div>
 
+                  <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white/10 ring-1 ring-white/20 backdrop-blur-xl">
+                    <FileAudio size={48} className="text-white/80" />
+                  </div>
+
+                  <div className="absolute inset-0 bg-linear-to-t from-white to-transparent opacity-100" />
+                </div>
+              )}
+
+              {/* Close Button */}
               <button
                 onClick={() => setViewModalOpen(false)}
-                className="absolute top-6 right-6 flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md transition-colors hover:bg-white hover:text-black"
+                className="absolute top-6 right-6 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md transition-all hover:scale-110 hover:bg-white hover:text-black"
               >
                 <X size={20} />
               </button>
 
-              <div className="absolute right-8 bottom-6 left-8">
+              {/* Title and Status Overlay */}
+              <div className="absolute right-8 bottom-6 left-8 z-10">
                 <div
-                  className={`mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold tracking-widest uppercase backdrop-blur-md ${
+                  className={`mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[10px] font-black tracking-[0.2em] uppercase shadow-2xl backdrop-blur-md ${
                     isLive
-                      ? 'animate-pulse bg-red-600 text-white'
+                      ? 'bg-red-600 text-white ring-4 ring-red-600/20'
                       : isScheduled
-                        ? 'bg-blue-600/90 text-white'
-                        : 'bg-slate-800/80 text-slate-200'
+                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-600/20'
+                        : 'bg-slate-800 text-slate-200'
                   }`}
                 >
-                  {isLive && <span className="h-2 w-2 rounded-full bg-white" />}
+                  {isLive && <span className="h-2 w-2 animate-ping rounded-full bg-white" />}
                   {podcast.status}
                 </div>
-                <h1 className="text-4xl font-black tracking-tight text-slate-900 lg:text-5xl">
+                <h1 className="max-w-2xl text-4xl font-black tracking-tighter text-slate-900 drop-shadow-sm lg:text-5xl">
                   {podcast.title}
                 </h1>
               </div>
@@ -150,7 +162,7 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
                       <MetaRow
                         icon={<Calendar size={16} />}
                         label="Date"
-                        value={formatDate(podcast.date)}
+                        value={dateFormatter(podcast.date)}
                       />
                       <MetaRow
                         icon={<FileAudio size={16} />}

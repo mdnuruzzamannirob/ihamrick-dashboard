@@ -31,12 +31,12 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
     if (podcast && isModalOpen) {
       setFormData({
         title: podcast.title || '',
-        date: podcast.date ? new Date(podcast.date).toISOString().split('T')[0] : '',
+        date: podcast.date ? podcast.date.split('T')[0] : '',
         status: podcast.status,
         description: podcast.description || '',
         transcription: podcast.transcription || '',
       });
-      setImagePreview(podcast.coverImageUrl || podcast.coverImage || '');
+      setImagePreview(podcast?.coverImageUrl || podcast?.coverImage || '');
     }
   }, [podcast, isModalOpen]);
 
@@ -57,18 +57,14 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
+    const utcDate = new Date(formData.date).toISOString();
+
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    payload.append(
-      'date',
-      formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
-    );
+    payload.append('date', utcDate);
     payload.append('status', String(formData.status));
-
-    if (coverImage) {
-      payload.append('coverImage', coverImage);
-    }
+    payload.append('coverImage', coverImage ?? '');
 
     try {
       await updatePodcast({ id: podcast.id, data: payload }).unwrap();
@@ -132,7 +128,6 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
                       type="date"
                       name="date"
                       value={formData.date}
-                      disabled
                       onChange={handleInputChange}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm transition-all outline-none focus:border-black disabled:bg-gray-100 disabled:opacity-50"
                     />
@@ -142,13 +137,13 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
                 {/* Image Upload */}
                 <div className="mb-6">
                   <label className="mb-1.5 block text-sm font-semibold text-gray-700">
-                    Cover Image
+                    Cover Image (optional)
                   </label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className="group relative flex aspect-video cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 transition-all hover:border-black"
                   >
-                    {imagePreview ? (
+                    {imagePreview && imagePreview !== 'default-podcast-cover.jpg' ? (
                       <Image src={imagePreview} alt="Preview" fill className="object-cover" />
                     ) : (
                       <div className="text-center">

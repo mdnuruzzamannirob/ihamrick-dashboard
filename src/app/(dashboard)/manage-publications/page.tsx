@@ -19,6 +19,7 @@ import { EditPublicationModal } from '@/components/modal/edit-publications';
 import { ViewPublicationModal } from '@/components/modal/ViewPublicationModal';
 import { PublicationModal } from '@/components/modal/publication-modal';
 import { useGetPublicationsQuery, useDeletePublicationMutation } from '../../../../services/allApi';
+import { dateFormatter } from '@/utils/dateFormatter';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -189,11 +190,7 @@ export default function ManagePublications() {
                           <div className="flex items-center gap-2">
                             <Calendar size={14} className="text-neutral-300" />
                             <span className="font-medium">
-                              {new Date(publication.publicationDate).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
+                              {dateFormatter(publication.publicationDate)}
                             </span>
                           </div>
                         </td>

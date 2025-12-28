@@ -1,61 +1,26 @@
 'use client';
 
+import { dateFormatter } from '@/utils/dateFormatter';
 import { X, Calendar, User, Music, Headphones } from 'lucide-react';
-
-interface Blog {
-  _id: string | number;
-  title: string;
-  author?: string;
-  createdAt: string;
-  updatedAt: string;
-  scheduledAt?: string;
-  status: string;
-  description: string;
-  // Updated fields for audio support
-  audioUrl?: string;
-  audioSignedUrl?: string;
-  audioFileName?: string;
-  readTime?: string;
-  category?: string;
-  tags?: string[];
-  views?: number;
-}
 
 interface ViewBlogModalProps {
   isOpen: boolean;
   onClose: () => void;
-  blog: Blog | null;
+  blog: any;
 }
 
 export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
   if (!isOpen || !blog) return null;
 
-  const currentBlog = blog;
-  // Prefer signed URL if available, otherwise fallback to public URL
-  const audioSrc = currentBlog.audioSignedUrl || currentBlog.audioUrl;
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const isScheduled = currentBlog.status === 'scheduled';
+  const audioSrc = blog.audioSignedUrl || blog.audioUrl;
+  const isScheduled = blog.status === 'scheduled';
   const dateLabel = isScheduled ? 'Scheduled Date' : 'Upload Date';
-  const displayDate = isScheduled
-    ? currentBlog.scheduledAt || currentBlog.updatedAt
-    : currentBlog.createdAt;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm md:p-5">
+      <div className="absolute inset-0" onClick={onClose} />
       <div
-        className="font-poppins relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl"
+        className="font-poppins relative z-10 max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -77,14 +42,14 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
             </div>
             <span
               className={`inline-block shrink-0 rounded-full px-4 py-1.5 text-xs font-bold tracking-wider text-white uppercase shadow-md ${
-                currentBlog.status === 'published'
+                blog.status === 'published'
                   ? 'bg-black'
-                  : currentBlog.status === 'scheduled'
+                  : blog.status === 'scheduled'
                     ? 'bg-blue-600'
                     : 'bg-red-500'
               }`}
             >
-              {currentBlog.status}
+              {blog.status}
             </span>
           </div>
         </div>
@@ -94,11 +59,9 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
           {/* Title Area */}
           <div>
             <label className="mb-2 block text-xs font-bold tracking-widest text-neutral-400 uppercase">
-              Article Title
+              Title
             </label>
-            <h1 className="text-xl font-medium text-neutral-800 md:text-2xl">
-              {currentBlog.title}
-            </h1>
+            <h1 className="text-xl font-medium text-neutral-800 md:text-2xl">{blog.title}</h1>
           </div>
 
           {/* Meta Grid */}
@@ -111,7 +74,7 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
                 <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
                   Author
                 </p>
-                <p className="font-semibold text-neutral-900">{currentBlog.author || 'Admin'}</p>
+                <p className="font-semibold text-neutral-900">{blog.author || 'Admin'}</p>
               </div>
             </div>
 
@@ -124,7 +87,12 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
                 <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
                   {dateLabel}
                 </p>
-                <p className="font-semibold text-neutral-900">{formatDate(displayDate)}</p>
+                <p className="font-semibold text-neutral-900">
+                  {' '}
+                  {blog?.status === 'scheduled'
+                    ? dateFormatter(blog?.scheduledAt)
+                    : dateFormatter(blog.uploadDate)}
+                </p>
               </div>
             </div>
           </div>
@@ -132,7 +100,7 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
           {/* Audio Player Section (Replaced Image) */}
           <div className="space-y-3">
             <label className="flex items-center gap-2 text-xs font-bold tracking-widest text-neutral-400 uppercase">
-              <Music size={14} /> Audio Content
+              <Music size={14} /> Audio File
             </label>
             <div className="flex flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-neutral-50 px-6 py-10">
               {audioSrc ? (
@@ -144,17 +112,10 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
                   </div>
                   <div className="text-center">
                     <p className="truncate px-4 text-sm font-medium text-neutral-600">
-                      {currentBlog.audioFileName
-                        ? currentBlog.audioFileName.split('/').pop()
-                        : 'Audio Track'}
+                      {blog.audioFileName ? blog.audioFileName.split('/').pop() : 'Audio Track'}
                     </p>
                   </div>
-                  <audio
-                    controls
-                    src={audioSrc}
-                    className="h-12 w-full rounded-lg"
-                    controlsList="nodownload"
-                  />
+                  <audio controls src={audioSrc} className="h-12 w-full rounded-lg" />
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-2 text-neutral-400">
@@ -168,12 +129,12 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
           {/* Description */}
           <div className="space-y-3">
             <label className="block text-xs font-bold tracking-widest text-neutral-400 uppercase">
-              Content Preview
+              Description
             </label>
-            <div className="prose prose-neutral prose-sm max-w-none rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
               <div
-                className="leading-relaxed text-neutral-600"
-                dangerouslySetInnerHTML={{ __html: currentBlog.description }}
+                className="prose prose-sm max-w-none leading-relaxed font-normal text-gray-600"
+                dangerouslySetInnerHTML={{ __html: blog.description }}
               />
             </div>
           </div>

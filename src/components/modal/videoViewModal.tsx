@@ -1,5 +1,5 @@
 'use client';
-import { formatDate } from '@/utils/formatDate';
+import { dateFormatter } from '@/utils/dateFormatter';
 import { formatFileSize } from '@/utils/formatFileSize';
 import { Eye, X, Calendar, File, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
@@ -54,7 +54,7 @@ export function VideoViewModal({ video }: { video: any }) {
                   <Calendar className="h-5 w-5 text-gray-600" />
                   <div>
                     <p className="text-xs text-gray-500">Upload Date</p>
-                    <p className="text-sm font-medium">{formatDate(video.uploadDate)}</p>
+                    <p className="text-sm font-medium"> {dateFormatter(video.uploadDate)}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3 rounded-lg bg-gray-50 p-3">

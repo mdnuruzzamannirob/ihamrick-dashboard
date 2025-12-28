@@ -59,7 +59,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     if (video && isModalOpen) {
       setFormData({
         title: video.title || '',
-        uploadDate: video.uploadDate ? new Date(video.uploadDate).toISOString().split('T')[0] : '',
+        uploadDate: video.uploadDate || '',
         status: video.status === 'published' || video.status === true ? 'published' : 'unpublished',
         description: video.description || '',
         transcription: video.transcription || '',
@@ -137,10 +137,11 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
+    const utcDate = new Date(formData.uploadDate).toISOString();
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    payload.append('uploadDate', formData.uploadDate);
+    payload.append('uploadDate', utcDate);
     payload.append('status', formData.status);
 
     if (videoFile) payload.append('video', videoFile);

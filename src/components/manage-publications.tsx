@@ -1,9 +1,7 @@
 import { useSelector } from 'react-redux';
-import { RootState } from '../../services/store'; // Adjust path if necessary
-import Image from 'next/image';
+import { RootState } from '../../services/store';
 
 export function ManagePublications() {
-  // Fetch publications from Redux state
   const publications = useSelector((state: RootState) => state.media.publications.data);
 
   return (
@@ -16,9 +14,7 @@ export function ManagePublications() {
               <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Title
               </th>
-              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
-                Cover Image
-              </th>
+
               <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
                 Author
               </th>
@@ -33,15 +29,7 @@ export function ManagePublications() {
                 <td className="font-poppins max-w-40 truncate py-3 pr-3 text-left text-base font-normal text-[#333]">
                   {publication.title}
                 </td>
-                <td className="font-poppins py-3 pr-3 text-base font-normal text-[#333]">
-                  <Image
-                    src={publication.coverImage}
-                    alt={publication.title}
-                    width={70}
-                    height={60}
-                    className="aspect-video w-20 rounded-lg object-cover"
-                  />
-                </td>
+
                 <td className="font-poppins max-w-36 truncate py-3 pr-3 text-base font-normal text-[#333]">
                   {publication.author}
                 </td>

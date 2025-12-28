@@ -1,7 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from 'js-cookie';
 
-const baseUrl = 'https://api.pg-65.com/api/';
+const baseUrl = 'http://10.10.20.73:5005/api/';
+// const baseUrl = 'http://10.10.20.73:5005/api/';
 
 // --- Interfaces ---
 interface LoginRequest {

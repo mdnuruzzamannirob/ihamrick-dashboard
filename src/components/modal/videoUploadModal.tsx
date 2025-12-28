@@ -134,10 +134,12 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
     if (!formData.date) return toast.error('Release date is required');
 
     const payload = new FormData();
+    const utcDate = new Date(formData.date).toISOString();
+
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcriptions);
-    payload.append('uploadDate', formData.date || new Date().toISOString());
+    payload.append('uploadDate', utcDate);
     payload.append('status', formData.status);
     payload.append('video', videoFile);
     payload.append('coverImage', finalBlob);

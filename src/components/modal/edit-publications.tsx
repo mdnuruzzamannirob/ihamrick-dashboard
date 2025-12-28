@@ -60,9 +60,11 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
 
   const handleUpdate = async () => {
     const payload = new FormData();
+    const utcDate = new Date(formData.publicationDate).toISOString();
+
     payload.append('title', formData.title);
     payload.append('author', formData.author);
-    payload.append('publicationDate', formData.publicationDate);
+    payload.append('publicationDate', utcDate);
     payload.append('description', formData.description);
     payload.append('status', String(formData.status === 'Published'));
 

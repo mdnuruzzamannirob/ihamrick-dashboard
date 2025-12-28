@@ -51,21 +51,20 @@ const PodcastUploadModal = ({ refetch }: any) => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.coverImage) {
-      toast.error('Cover image is required');
+    if (!formData.date) {
+      toast.error('Date is required');
       return;
     }
 
     const payload = new FormData();
+    const utcDate = new Date(formData.date).toISOString();
+
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    payload.append(
-      'date',
-      formData.date ? new Date(formData.date).toISOString() : new Date().toISOString(),
-    );
+    payload.append('date', utcDate);
     payload.append('status', formData.status);
-    if (formData.coverImage) payload.append('coverImage', formData.coverImage);
+    payload.append('coverImage', formData.coverImage ?? '');
 
     try {
       await createPodcast(payload).unwrap();
@@ -148,7 +147,7 @@ const PodcastUploadModal = ({ refetch }: any) => {
 
                 {/* Cover Image */}
                 <div className="mb-6">
-                  <label className="mb-2 block text-sm font-medium">Cover Image</label>
+                  <label className="mb-2 block text-sm font-medium">Cover Image (optional)</label>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className="flex h-full min-h-[140px] cursor-pointer items-center justify-center rounded border-2 border-dashed border-gray-200 text-sm transition-colors hover:border-inherit"

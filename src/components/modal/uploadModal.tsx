@@ -33,6 +33,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
     description: '',
   });
 
+  console.log(formState);
   // Updated state for Audio
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
@@ -48,14 +49,14 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
         selectedBlog.status === 'scheduled' ? selectedBlog.scheduledAt : selectedBlog.uploadDate;
 
       setFormState({
-        title: selectedBlog.title || '',
+        title: selectedBlog.title,
         status: selectedBlog.status,
         date: postDate
           ? selectedBlog.status === 'scheduled'
-            ? postDate.substring(0, 16)
-            : postDate.split('T')[0]
+            ? postDate?.substring(0, 16)
+            : postDate?.split('T')[0]
           : '',
-        description: selectedBlog.description || '',
+        description: selectedBlog.description,
       });
 
       const existingAudio = selectedBlog.audioSignedUrl || selectedBlog.audioUrl;
@@ -78,12 +79,15 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       toast.error('Title is required!');
       return false;
     }
-    if (!formState.date) {
+    if (!formState.date && (formState.status === 'published' || formState.status === 'scheduled')) {
       toast.error('Please select a date!');
       return false;
     }
-    if (!formState.description.trim()) {
-      toast.error('Content is empty!');
+    if (
+      (!formState.description.trim() || formState.description === '<p><br></p>') &&
+      (formState.status === 'published' || formState.status === 'scheduled')
+    ) {
+      toast.error('Description is empty!');
       return false;
     }
     return true;
@@ -93,16 +97,18 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
     if (!validateForm()) return;
 
     const formData = new FormData();
-    const utcDate = new Date(formState.date).toISOString();
+    const utcDate = formState?.date ? new Date(formState?.date)?.toISOString() : null;
 
     formData.append('title', formState.title);
     formData.append('description', formState.description);
     formData.append('status', formState.status);
 
-    if (formState.status === 'scheduled') {
-      formData.append('scheduledAt', utcDate);
-    } else {
-      formData.append('uploadDate', utcDate);
+    if (utcDate) {
+      if (formState.status === 'scheduled') {
+        formData.append('scheduledAt', utcDate);
+      } else {
+        formData.append('uploadDate', utcDate);
+      }
     }
 
     // Changed property name to 'audio'
@@ -158,7 +164,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
                   <FileText size={22} />
                 </div>
                 <h2 className="text-xl font-bold tracking-tight text-neutral-800">
-                  {selectedBlog ? 'Modify Article' : 'Create Article'}
+                  {selectedBlog ? 'Modify Blog' : 'Create Blog'}
                 </h2>
               </div>
               <button
@@ -175,7 +181,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                   <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                    Article Title
+                    Title
                   </label>
                   <input
                     type="text"
@@ -199,7 +205,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
                     >
                       <option value="scheduled">Scheduled</option>
                       <option value="published">Published</option>
-                      {selectedBlog && <option value="unpublished">Unpublished</option>}
+                      <option value="unpublished">Unpublished</option>
                     </select>
                     <Clock
                       className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 text-neutral-400"
@@ -213,32 +219,18 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
                 <label className="ml-1 flex items-center gap-2 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
                   {formState.status === 'scheduled' ? <Clock size={14} /> : <Calendar size={14} />}
                   {formState.status === 'scheduled'
-                    ? 'Scheduling Time (UTC)'
-                    : 'Target Publication Date'}
+                    ? 'Scheduling Time'
+                    : formState.status === 'unpublished'
+                      ? 'Publication Date (optional)'
+                      : 'Publication Date'}
                 </label>
                 <input
                   type={formState.status === 'scheduled' ? 'datetime-local' : 'date'}
                   value={formState.date}
                   onChange={(e) => setFormState((p) => ({ ...p, date: e.target.value }))}
-                  className="w-full rounded border border-neutral-200 bg-white px-5 py-4 font-medium transition-all outline-none focus:border-black"
+                  className="w-full rounded border border-neutral-200 bg-white px-5 py-4 font-medium transition-all outline-none focus:border-black disabled:cursor-default! disabled:opacity-30"
                 />
               </div>
-
-              <div className="space-y-2">
-                <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                  Main Content
-                </label>
-                <div className="overflow-hidden rounded border border-neutral-200 bg-white shadow-inner">
-                  <JoditEditor
-                    value={formState.description}
-                    config={joditConfig}
-                    onBlur={(newContent) =>
-                      setFormState((p) => ({ ...p, description: newContent }))
-                    }
-                  />
-                </div>
-              </div>
-
               {/* Updated Audio Upload Area */}
               <div className="space-y-3">
                 <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
@@ -323,6 +315,17 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
                     </div>
                   )}
                 </label>
+              </div>
+              <div className="space-y-2">
+                <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
+                  Description
+                </label>
+
+                <JoditEditor
+                  value={formState.description}
+                  config={joditConfig}
+                  onBlur={(newContent) => setFormState((p) => ({ ...p, description: newContent }))}
+                />
               </div>
             </div>
 
