@@ -137,6 +137,7 @@ export default function ManagePublications() {
                     <th className="cursor-pointer px-6 py-5" onClick={() => handleSort('author')}>
                       <div className="flex items-center">Author {renderSortIcon('author')}</div>
                     </th>
+
                     <th
                       className="cursor-pointer px-6 py-5"
                       onClick={() => handleSort('publicationDate')}
@@ -144,6 +145,9 @@ export default function ManagePublications() {
                       <div className="flex items-center">
                         Date {renderSortIcon('publicationDate')}
                       </div>
+                    </th>
+                    <th className="cursor-pointer px-6 py-5" onClick={() => handleSort('status')}>
+                      <div className="flex items-center">Status {renderSortIcon('status')}</div>
                     </th>
                     <th className="px-6 py-5 text-center">Manage</th>
                   </tr>
@@ -286,11 +290,21 @@ function PublicationTableCells({ pub, isPinned, setSelectedId, setModal, refetch
           <span className="truncate font-medium">{pub.author}</span>
         </div>
       </td>
+
       <td className="px-6 py-4 text-sm text-neutral-500">
         <div className="flex items-center gap-2">
           <Calendar size={14} className="text-neutral-300" />
           <span className="font-medium">{dateFormatter(pub.publicationDate)}</span>
         </div>
+      </td>
+      <td className="px-6 py-4">
+        <span
+          className={`rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase ${
+            pub.status ? 'bg-black text-white' : 'bg-neutral-200 text-neutral-500'
+          }`}
+        >
+          {pub.status ? 'Published' : 'Unpublished'}
+        </span>
       </td>
       <td className="px-6 py-4">
         <div className="flex justify-center gap-2">
