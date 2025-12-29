@@ -257,6 +257,8 @@ const allApi = createApi({
     'SocialLink',
     'AboutUs',
     'PrivacyPolicy',
+    'Motivations',
+    'Images',
   ],
 
   endpoints: (builder) => ({
@@ -566,6 +568,70 @@ const allApi = createApi({
       invalidatesTags: ['PrivacyPolicy'],
     }),
 
+    // WEBSITE IMAGES
+    getImages: builder.query({
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
+        url: `/website-images/?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+        method: 'GET',
+      }),
+      providesTags: ['Images'],
+    }),
+    createImage: builder.mutation({
+      query: (newImage) => ({
+        url: '/website-images/create',
+        method: 'POST',
+        body: newImage,
+      }),
+      invalidatesTags: ['Images'],
+    }),
+    updateImage: builder.mutation({
+      query: ({ id, updatedImage }) => ({
+        url: `/website-images/update/${id}`,
+        method: 'PUT',
+        body: updatedImage,
+      }),
+      invalidatesTags: ['Images'],
+    }),
+    deleteImage: builder.mutation({
+      query: (id) => ({
+        url: `/website-images/delete/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Images'],
+    }),
+
+    // MOTIVATION
+    getMotivations: builder.query({
+      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
+        url: `/motivations/?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+        method: 'GET',
+      }),
+      providesTags: ['Motivations'],
+    }),
+    createMotivation: builder.mutation({
+      query: (body) => ({
+        url: '/motivations/create',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Motivations'],
+    }),
+    updateMotivation: builder.mutation({
+      query: ({ id, ...body }) => ({
+        url: `/motivations/update/${id}`,
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Motivations'],
+    }),
+    deleteMotivation: builder.mutation({
+      query: (id) => ({
+        url: `/motivations/delete/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Motivations'],
+    }),
+
     // NOTIFICATIONS
     sentNotifications: builder.mutation<SendNotifications, void>({
       query: () => ({
@@ -616,6 +682,14 @@ export const {
   useEndPodcastMutation,
   useGetAboutUsQuery,
   useGetPrivacyPolicyQuery,
+  useGetMotivationsQuery,
+  useCreateMotivationMutation,
+  useUpdateMotivationMutation,
+  useDeleteMotivationMutation,
+  useGetImagesQuery,
+  useCreateImageMutation,
+  useUpdateImageMutation,
+  useDeleteImageMutation,
 } = allApi;
 
 export default allApi;

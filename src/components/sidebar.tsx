@@ -20,6 +20,8 @@ import {
   User,
   Info,
   Shield,
+  Quote,
+  ImageIcon,
 } from 'lucide-react';
 import { useLogoutMutation } from '../../services/allApi';
 import Cookies from 'js-cookie'; // For cookie management
@@ -38,6 +40,8 @@ const menuItems = [
 
 const settingsSubItems = [
   { icon: User, label: 'Profile', href: '/settings/profile' },
+  { icon: Quote, label: 'Motivation', href: '/settings/motivation' },
+  { icon: ImageIcon, label: 'Website Image', href: '/settings/website-image' },
   { icon: Info, label: 'About Us', href: '/settings/about-us' },
   { icon: Shield, label: 'Privacy', href: '/settings/privacy' },
 ];
