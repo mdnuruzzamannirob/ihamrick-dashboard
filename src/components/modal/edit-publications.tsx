@@ -27,7 +27,7 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
 
   // For displaying existing or newly selected previews
   const [previews, setPreviews] = useState({ cover: '', file: '' });
-
+  console.log({ publication, formData, previews });
   useEffect(() => {
     if (publication && isOpen) {
       setFormData({
@@ -132,7 +132,7 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
                   <SmartMediaUpload
                     label="Change Cover Photo"
                     allowedFormats={['image/*']}
-                    className="aspect-video rounded-3xl"
+                    className="aspect-video"
                     onFileChange={(file, preview) => {
                       setFormData((p) => ({ ...p, cover: file }));
                       setPreviews((p) => ({ ...p, cover: preview }));

@@ -332,7 +332,7 @@ const allApi = createApi({
 
     getPinnedBlogs: builder.query<any, void>({
       query: () => ({
-        url: '/blog/pinned',
+        url: '/blog/admin-pinned',
         method: 'GET',
       }),
       providesTags: ['PinnedBlog'],
@@ -383,7 +383,7 @@ const allApi = createApi({
     }),
     getPinnedVideos: builder.query<any, void>({
       query: () => ({
-        url: '/videos/pinned',
+        url: '/videos/admin-pinned',
         method: 'GET',
       }),
       providesTags: ['PinnedVideo'],
@@ -447,7 +447,7 @@ const allApi = createApi({
 
     getPinnedPodcasts: builder.query<any, void>({
       query: () => ({
-        url: '/podcasts/pinned',
+        url: '/podcasts/admin-pinned',
         method: 'GET',
       }),
       providesTags: ['PinnedPodcast'],
@@ -516,7 +516,7 @@ const allApi = createApi({
 
     getPinnedPublications: builder.query<any, void>({
       query: () => ({
-        url: '/publications/pinned',
+        url: '/publications/admin-pinned',
         method: 'GET',
       }),
       providesTags: ['PinnedPublication'],

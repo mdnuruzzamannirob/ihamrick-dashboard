@@ -161,8 +161,8 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                       className="w-full cursor-pointer appearance-none rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm outline-none focus:bg-white"
                     >
-                      <option value="published">Live / Published</option>
-                      <option value="unpublished">Draft / Private</option>
+                      <option value="published">Published</option>
+                      <option value="unpublished">Private</option>
                     </select>
                   </div>
                 </div>

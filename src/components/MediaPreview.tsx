@@ -16,16 +16,17 @@ export const MediaPreview = ({
     if (!previewUrl) return '';
 
     const cleanUrl = previewUrl.split('?')[0].toLowerCase();
-    const extension = cleanUrl.split('.').pop();
 
-    if (['mp4', 'webm', 'mov'].includes(extension!) || previewUrl.includes('/videos/'))
+    if (cleanUrl.endsWith('.pdf') || previewUrl.includes('pdf')) return 'application/pdf';
+    if (
+      ['mp4', 'webm', 'mov'].some((ext) => cleanUrl.endsWith(ext)) ||
+      previewUrl.includes('/videos/')
+    )
       return 'video/mp4';
-    if (['jpg', 'jpeg', 'png', 'webp'].includes(extension!) || previewUrl.includes('/images/'))
-      return 'image/jpeg';
-    if (['pdf'].includes(extension!) || previewUrl.includes('/pdfs/')) return 'application/pdf';
-    if (['mp3', 'wav'].includes(extension!) || previewUrl.includes('/audios/')) return 'audio/mpeg';
+    if (['mp3', 'wav'].some((ext) => cleanUrl.endsWith(ext)) || previewUrl.includes('/audios/'))
+      return 'audio/mpeg';
 
-    return '';
+    return 'image/jpeg';
   };
 
   const type = getFileType();
