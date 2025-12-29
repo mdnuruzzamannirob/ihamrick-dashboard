@@ -250,9 +250,13 @@ const allApi = createApi({
   tagTypes: [
     'User',
     'Blog',
+    'PinnedBlog',
     'Video',
+    'PinnedVideo',
     'Podcast',
+    'PinnedPodcast',
     'Publication',
+    'PinnedPublication',
     'LifeSuggestion',
     'SocialLink',
     'AboutUs',
@@ -326,6 +330,22 @@ const allApi = createApi({
       providesTags: ['Blog'],
     }),
 
+    getPinnedBlogs: builder.query<any, void>({
+      query: () => ({
+        url: '/blog/pinned',
+        method: 'GET',
+      }),
+      providesTags: ['PinnedBlog'],
+    }),
+
+    togglePinBlog: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/blog/pin/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Blog', 'PinnedBlog'],
+    }),
+
     createBlog: builder.mutation<void, { data: FormData }>({
       query: ({ data }) => ({
         url: '/blog/create-blog',
@@ -361,6 +381,22 @@ const allApi = createApi({
       }),
       providesTags: ['Video'],
     }),
+    getPinnedVideos: builder.query<any, void>({
+      query: () => ({
+        url: '/videos/pinned',
+        method: 'GET',
+      }),
+      providesTags: ['PinnedVideo'],
+    }),
+
+    togglePinVideos: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/videos/pin/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Video', 'PinnedVideo'],
+    }),
+
     getVideoById: builder.query<Video, string>({
       query: (videoId) => ({
         url: `/videos/${videoId}`,
@@ -407,6 +443,22 @@ const allApi = createApi({
         method: 'GET',
       }),
       providesTags: ['Podcast'],
+    }),
+
+    getPinnedPodcasts: builder.query<any, void>({
+      query: () => ({
+        url: '/podcasts/pinned',
+        method: 'GET',
+      }),
+      providesTags: ['PinnedPodcast'],
+    }),
+
+    togglePinPodcasts: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/podcasts/pin/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Podcast', 'PinnedPodcast'],
     }),
 
     createPodcast: builder.mutation<void, FormData>({
@@ -460,6 +512,22 @@ const allApi = createApi({
         method: 'GET',
       }),
       providesTags: ['Publication'],
+    }),
+
+    getPinnedPublications: builder.query<any, void>({
+      query: () => ({
+        url: '/publications/pinned',
+        method: 'GET',
+      }),
+      providesTags: ['PinnedPublication'],
+    }),
+
+    togglePinPublications: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/publications/pin/${id}`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Publication', 'PinnedPublication'],
     }),
 
     createPublication: builder.mutation<void, FormData>({
@@ -653,6 +721,8 @@ export const {
   useGetPodcastsQuery,
   useGetPublicationsQuery,
   useGetBlogsQuery,
+  useGetPinnedBlogsQuery,
+  useTogglePinBlogMutation,
   useCreateLifeSuggestionMutation,
   useGetLifeSuggestionsQuery,
   useDeleteLifeSuggestionMutation,
@@ -690,6 +760,12 @@ export const {
   useCreateImageMutation,
   useUpdateImageMutation,
   useDeleteImageMutation,
+  useGetPinnedPodcastsQuery,
+  useGetPinnedPublicationsQuery,
+  useGetPinnedVideosQuery,
+  useTogglePinPodcastsMutation,
+  useTogglePinPublicationsMutation,
+  useTogglePinVideosMutation,
 } = allApi;
 
 export default allApi;
