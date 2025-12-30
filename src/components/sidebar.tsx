@@ -22,6 +22,8 @@ import {
   Shield,
   Quote,
   ImageIcon,
+  Layers,
+  Layers2,
 } from 'lucide-react';
 import { useLogoutMutation } from '../../services/allApi';
 import Cookies from 'js-cookie'; // For cookie management
@@ -40,10 +42,13 @@ const menuItems = [
 
 const settingsSubItems = [
   { icon: User, label: 'Profile', href: '/settings/profile' },
-  { icon: Quote, label: 'Motivation', href: '/settings/motivation' },
-  { icon: ImageIcon, label: 'Website Image', href: '/settings/website-image' },
   { icon: Info, label: 'About Us', href: '/settings/about-us' },
   { icon: Shield, label: 'Privacy', href: '/settings/privacy' },
+  { icon: FileText, label: 'Disclaimer', href: '/settings/disclaimer' },
+  { icon: ImageIcon, label: 'Banner', href: '/settings/banner' },
+  { icon: Quote, label: 'Motivation', href: '/settings/motivation' },
+  { icon: Layers, label: 'Footer 1', href: '/settings/footer-text-1' },
+  { icon: Layers2, label: 'Footer 2', href: '/settings/footer-text-2' },
 ];
 
 export function Sidebar() {

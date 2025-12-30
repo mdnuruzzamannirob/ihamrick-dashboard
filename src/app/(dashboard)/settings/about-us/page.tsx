@@ -2,7 +2,7 @@
 
 import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
-import AboutUsEditor from '@/components/ui/about-us-editor';
+import Editor from '@/components/ui/editor';
 import { toast } from 'react-toastify';
 import { useGetAboutUsQuery, useUpdateAboutUsMutation } from '../../../../../services/allApi';
 
@@ -30,7 +30,7 @@ export default function AboutUs() {
           <UserProfile />
         </div>
 
-        <AboutUsEditor
+        <Editor
           title="About Us"
           initialContent={content}
           onSave={handleSave}

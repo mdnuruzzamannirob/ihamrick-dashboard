@@ -5,22 +5,22 @@ import { UserProfile } from '@/components/user-profile';
 import Editor from '@/components/ui/editor';
 import { toast } from 'react-toastify';
 import {
-  useGetPrivacyPolicyQuery,
-  useUpdatePrivacyPolicyMutation,
+  useGetFooterText2Query,
+  useUpdateFooterText2Mutation,
 } from '../../../../../services/allApi';
 
-export default function PrivacyPolicy() {
+export default function FooterText2() {
   const { data: { data: { content = '' } = {} } = {}, isLoading: isFetching } =
-    useGetPrivacyPolicyQuery();
+    useGetFooterText2Query();
 
-  const [updatePrivacyPolicy, { isLoading: isSaving }] = useUpdatePrivacyPolicyMutation();
+  const [updatePrivacyPolicy, { isLoading: isSaving }] = useUpdateFooterText2Mutation();
 
   const handleSave = async (updatedContent: string) => {
     try {
       await updatePrivacyPolicy({ content: updatedContent }).unwrap();
-      toast.success('Privacy Policy updated successfully');
+      toast.success('Footer text 2 updated successfully');
     } catch {
-      toast.error('Failed to update Privacy Policy');
+      toast.error('Failed to update footer text 2');
     }
   };
 
@@ -34,7 +34,7 @@ export default function PrivacyPolicy() {
         </div>
 
         <Editor
-          title="Privacy Policy"
+          title="Footer text 2"
           initialContent={content}
           onSave={handleSave}
           isFetching={isFetching}

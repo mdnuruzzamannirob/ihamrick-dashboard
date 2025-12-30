@@ -262,6 +262,11 @@ const allApi = createApi({
     'AboutUs',
     'PrivacyPolicy',
     'Motivations',
+    'FooterText1',
+    'FooterText2',
+    'Banner',
+    'Disclaimer',
+    'Motivation',
     'Images',
   ],
 
@@ -636,68 +641,89 @@ const allApi = createApi({
       invalidatesTags: ['PrivacyPolicy'],
     }),
 
-    // WEBSITE IMAGES
-    getImages: builder.query({
-      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
-        url: `/website-images/?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+    // MOTIVATION
+    getMotivation: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/motivation',
         method: 'GET',
       }),
-      providesTags: ['Images'],
+      providesTags: ['Motivation'],
     }),
-    createImage: builder.mutation({
-      query: (newImage) => ({
-        url: '/website-images/create',
-        method: 'POST',
-        body: newImage,
+    updateMotivation: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/motivation',
+        method: 'PATCH',
+        body,
       }),
-      invalidatesTags: ['Images'],
+      invalidatesTags: ['Motivation'],
     }),
-    updateImage: builder.mutation({
+
+    // FOOTER-1
+    getFooterText1: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/footer-text-1',
+        method: 'GET',
+      }),
+      providesTags: ['FooterText1'],
+    }),
+    updateFooterText1: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/footer-text-1',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['FooterText1'],
+    }),
+
+    // FOOTER-2
+    getFooterText2: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/footer-text-2',
+        method: 'GET',
+      }),
+      providesTags: ['FooterText2'],
+    }),
+    updateFooterText2: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/footer-text-2',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['FooterText2'],
+    }),
+
+    // DISCLAIMER
+    getDisclaimer: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/disclaimer',
+        method: 'GET',
+      }),
+      providesTags: ['Disclaimer'],
+    }),
+    updateDisclaimer: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/disclaimer',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['Disclaimer'],
+    }),
+
+    // WEBSITE IMAGE
+    getWebsiteImages: builder.query<any, void>({
+      query: () => ({
+        url: '/website-images',
+        method: 'GET',
+      }),
+      providesTags: ['Banner'],
+    }),
+    updateWebsiteImages: builder.mutation<void, { id: string; updatedImage: FormData }>({
       query: ({ id, updatedImage }) => ({
         url: `/website-images/update/${id}`,
         method: 'PUT',
         body: updatedImage,
       }),
-      invalidatesTags: ['Images'],
-    }),
-    deleteImage: builder.mutation({
-      query: (id) => ({
-        url: `/website-images/delete/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Images'],
-    }),
-
-    // MOTIVATION
-    getMotivations: builder.query({
-      query: ({ page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' }) => ({
-        url: `/motivations/?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
-        method: 'GET',
-      }),
-      providesTags: ['Motivations'],
-    }),
-    createMotivation: builder.mutation({
-      query: (body) => ({
-        url: '/motivations/create',
-        method: 'POST',
-        body,
-      }),
-      invalidatesTags: ['Motivations'],
-    }),
-    updateMotivation: builder.mutation({
-      query: ({ id, ...body }) => ({
-        url: `/motivations/update/${id}`,
-        method: 'PUT',
-        body,
-      }),
-      invalidatesTags: ['Motivations'],
-    }),
-    deleteMotivation: builder.mutation({
-      query: (id) => ({
-        url: `/motivations/delete/${id}`,
-        method: 'DELETE',
-      }),
-      invalidatesTags: ['Motivations'],
+      invalidatesTags: ['Banner'],
     }),
 
     // NOTIFICATIONS
@@ -752,20 +778,22 @@ export const {
   useEndPodcastMutation,
   useGetAboutUsQuery,
   useGetPrivacyPolicyQuery,
-  useGetMotivationsQuery,
-  useCreateMotivationMutation,
   useUpdateMotivationMutation,
-  useDeleteMotivationMutation,
-  useGetImagesQuery,
-  useCreateImageMutation,
-  useUpdateImageMutation,
-  useDeleteImageMutation,
   useGetPinnedPodcastsQuery,
   useGetPinnedPublicationsQuery,
   useGetPinnedVideosQuery,
   useTogglePinPodcastsMutation,
   useTogglePinPublicationsMutation,
   useTogglePinVideosMutation,
+  useGetDisclaimerQuery,
+  useGetFooterText1Query,
+  useGetFooterText2Query,
+  useGetMotivationQuery,
+  useGetWebsiteImagesQuery,
+  useUpdateDisclaimerMutation,
+  useUpdateFooterText1Mutation,
+  useUpdateFooterText2Mutation,
+  useUpdateWebsiteImagesMutation,
 } = allApi;
 
 export default allApi;

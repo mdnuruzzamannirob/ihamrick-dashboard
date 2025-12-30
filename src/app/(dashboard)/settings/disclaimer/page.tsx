@@ -4,23 +4,20 @@ import { Sidebar } from '@/components/sidebar';
 import { UserProfile } from '@/components/user-profile';
 import Editor from '@/components/ui/editor';
 import { toast } from 'react-toastify';
-import {
-  useGetPrivacyPolicyQuery,
-  useUpdatePrivacyPolicyMutation,
-} from '../../../../../services/allApi';
+import { useGetDisclaimerQuery, useUpdateDisclaimerMutation } from '../../../../../services/allApi';
 
-export default function PrivacyPolicy() {
+export default function Disclaimer() {
   const { data: { data: { content = '' } = {} } = {}, isLoading: isFetching } =
-    useGetPrivacyPolicyQuery();
+    useGetDisclaimerQuery();
 
-  const [updatePrivacyPolicy, { isLoading: isSaving }] = useUpdatePrivacyPolicyMutation();
+  const [updatePrivacyPolicy, { isLoading: isSaving }] = useUpdateDisclaimerMutation();
 
   const handleSave = async (updatedContent: string) => {
     try {
       await updatePrivacyPolicy({ content: updatedContent }).unwrap();
-      toast.success('Privacy Policy updated successfully');
+      toast.success('Disclaimer updated successfully');
     } catch {
-      toast.error('Failed to update Privacy Policy');
+      toast.error('Failed to update disclaimer');
     }
   };
 
@@ -34,7 +31,7 @@ export default function PrivacyPolicy() {
         </div>
 
         <Editor
-          title="Privacy Policy"
+          title="Disclaimer"
           initialContent={content}
           onSave={handleSave}
           isFetching={isFetching}
