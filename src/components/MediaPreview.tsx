@@ -1,16 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { Edit3, RotateCcw } from 'lucide-react';
-import Image from 'next/image';
+import Link from 'next/link';
 
-export const MediaPreview = ({
-  file,
-  previewUrl,
-  thumbnail,
-  onResize,
-  onChange,
-  currentAspect = 16 / 9,
-}: any) => {
+export const MediaPreview = ({ file, previewUrl, thumbnail, onResize, onChange }: any) => {
   const getFileType = () => {
     if (file?.type) return file.type;
     if (!previewUrl) return '';
@@ -39,12 +33,13 @@ export const MediaPreview = ({
 
   return (
     <div className="group relative size-full overflow-hidden rounded-3xl">
-      <div
-        style={{ aspectRatio: currentAspect }}
-        className="relative h-full w-full overflow-hidden transition-all duration-500"
-      >
+      <div className="relative size-full overflow-hidden transition-all duration-500">
         {isImage && (
-          <Image fill src={previewUrl} alt="preview" className="h-full w-full object-cover" />
+          <img
+            src={previewUrl}
+            alt="preview"
+            className="size-full object-contain transition-all duration-500"
+          />
         )}
 
         {isVideo && (
@@ -72,37 +67,46 @@ export const MediaPreview = ({
             <div className="mb-4 flex h-20 w-16 items-center justify-center rounded-lg border-2 border-red-100 bg-red-50">
               <span className="text-xs font-bold text-red-500">PDF</span>
             </div>
-            <a
+            <Link
               href={previewUrl}
               target="_blank"
               rel="noreferrer"
               className="rounded-xl bg-zinc-900 px-6 py-2 text-[11px] font-bold tracking-widest text-white uppercase transition-colors hover:bg-black"
             >
               Preview Document
-            </a>
+            </Link>
           </div>
         )}
       </div>
 
       {/* Control Buttons */}
-      <div className="absolute top-4 right-4 flex translate-y-2 flex-col gap-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+      <div className="absolute top-4 right-4 flex flex-col gap-2 transition-all duration-300">
         {canResize && (
           <button
             type="button"
-            onClick={onResize}
-            className="rounded-2xl bg-white/95 p-3 text-zinc-900 shadow-xl backdrop-blur transition-all hover:bg-white active:scale-90"
+            onClick={(e) => {
+              e.stopPropagation();
+              onResize();
+            }}
+            className="group/btn relative flex items-center justify-center rounded-2xl bg-linear-to-tr from-indigo-600 to-violet-500 p-3.5 text-white shadow-[0_10px_20px_-5px_rgba(79,70,229,0.4)] transition-all duration-300 hover:scale-110 hover:shadow-[0_15px_25px_-5px_rgba(79,70,229,0.5)] active:scale-95"
             title="Resize New Upload"
           >
-            <Edit3 size={18} strokeWidth={2.5} />
+            <Edit3 size={18} strokeWidth={2.5} className="drop-shadow-md" />
+            <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 transition-opacity group-hover/btn:opacity-100" />
           </button>
         )}
+
         <button
           type="button"
-          onClick={onChange}
-          className="rounded-2xl bg-white/95 p-3 text-zinc-900 shadow-xl backdrop-blur transition-all hover:bg-white active:scale-90"
+          onClick={(e) => {
+            e.stopPropagation();
+            onChange();
+          }}
+          className="group/btn relative flex items-center justify-center rounded-2xl bg-linear-to-tr from-rose-600 to-pink-500 p-3.5 text-white shadow-[0_10px_20px_-5px_rgba(225,29,72,0.4)] transition-all duration-300 hover:scale-110 hover:shadow-[0_15px_25px_-5px_rgba(225,29,72,0.5)] active:scale-95"
           title="Change File"
         >
-          <RotateCcw size={18} strokeWidth={2.5} />
+          <RotateCcw size={18} strokeWidth={2.5} className="drop-shadow-md" />
+          <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 transition-opacity group-hover/btn:opacity-100" />
         </button>
       </div>
     </div>

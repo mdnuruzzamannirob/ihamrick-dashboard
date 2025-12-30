@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
-import { X, Monitor, Tablet, Smartphone, Square, Image as ImageIcon } from 'lucide-react';
+import {
+  X,
+  Monitor,
+  Tablet,
+  Smartphone,
+  Square,
+  Image as ImageIcon,
+  RectangleVertical,
+  Tv,
+  Film,
+} from 'lucide-react';
 
 export const AdvancedCropper = ({ image, onSave, onClose }: any) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
-  const [aspect, setAspect] = useState<number | undefined>(16 / 9);
+  const [aspect, setAspect] = useState<number | undefined>(undefined);
   const [pixels, setPixels] = useState(null);
   const [originalAspect, setOriginalAspect] = useState<number | undefined>(undefined);
 
@@ -13,16 +23,21 @@ export const AdvancedCropper = ({ image, onSave, onClose }: any) => {
     const img = new Image();
     img.src = image;
     img.onload = () => {
-      setOriginalAspect(img.width / img.height);
+      const ratio = img.width / img.height;
+      setOriginalAspect(ratio);
+      setAspect(ratio);
     };
   }, [image]);
 
   const RATIOS = [
+    { label: 'Original', value: originalAspect, icon: <ImageIcon size={14} /> },
     { label: 'Desktop (16:9)', value: 16 / 9, icon: <Monitor size={14} /> },
     { label: 'Laptop (3:2)', value: 3 / 2, icon: <Tablet size={14} /> },
+    { label: 'Social (4:5)', value: 4 / 5, icon: <RectangleVertical size={14} /> },
+    { label: 'Tablet (4:3)', value: 4 / 3, icon: <Tv size={14} /> },
     { label: 'Mobile (9:16)', value: 9 / 16, icon: <Smartphone size={14} /> },
     { label: 'Square (1:1)', value: 1, icon: <Square size={14} /> },
-    { label: 'Original', value: originalAspect, icon: <ImageIcon size={14} /> },
+    { label: 'Cinematic (21:9)', value: 21 / 9, icon: <Film size={14} /> },
   ];
 
   const handleSave = async () => {
