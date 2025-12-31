@@ -269,6 +269,7 @@ const allApi = createApi({
     'Disclaimer',
     'Motivation',
     'Images',
+    'RSS',
   ],
 
   endpoints: (builder) => ({
@@ -308,7 +309,7 @@ const allApi = createApi({
         url: '/auth/logout',
         method: 'POST',
       }),
-      invalidatesTags: ['User', 'Blog', 'Video', 'Podcast', 'Publication'],
+      invalidatesTags: ['User', 'Blog', 'Video', 'Podcast', 'Publication', 'RSS'],
     }),
 
     forgotPassword: builder.mutation<ForgotPasswordResponse, ForgotPasswordRequest>({
@@ -322,6 +323,15 @@ const allApi = createApi({
     }),
     resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
       query: (body) => ({ url: '/auth/reset-password', method: 'POST', body }),
+    }),
+
+    getRSSSubscriptions: builder.query({
+      query: (params) => ({
+        url: '/rss-feed/',
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['RSS'],
     }),
 
     // BLOGS
@@ -814,6 +824,7 @@ export const {
   useUpdateWebsiteImagesMutation,
   useGetContactTextQuery,
   useUpdateContactTextMutation,
+  useGetRSSSubscriptionsQuery,
 } = allApi;
 
 export default allApi;

@@ -128,8 +128,8 @@ export default function ManagePublications() {
           <div className="overflow-hidden rounded-4xl border border-neutral-100 bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
-                <thead className="bg-neutral-50/50">
-                  <tr className="border-b border-neutral-100 text-left text-[10px] font-black tracking-[0.2em] text-neutral-400 uppercase">
+                <thead className="border-b border-neutral-100 bg-neutral-50">
+                  <tr className="text-left text-xs font-black tracking-widest text-neutral-500 uppercase">
                     <th className="w-14 px-6 py-5 text-center">Pin</th>
                     <th className="cursor-pointer px-6 py-5" onClick={() => handleSort('title')}>
                       <div className="flex items-center">Title {renderSortIcon('title')}</div>

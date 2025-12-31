@@ -39,6 +39,11 @@ const menuItems = [
     label: 'Manage Publications',
     href: '/manage-publications',
   },
+  {
+    icon: User,
+    label: 'RSS',
+    href: '/rss',
+  },
 ];
 
 const settingsSubItems = [
