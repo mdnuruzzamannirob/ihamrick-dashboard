@@ -24,6 +24,7 @@ import {
   ImageIcon,
   Layers,
   Layers2,
+  Contact,
 } from 'lucide-react';
 import { useLogoutMutation } from '../../services/allApi';
 import Cookies from 'js-cookie'; // For cookie management
@@ -47,8 +48,9 @@ const settingsSubItems = [
   { icon: FileText, label: 'Disclaimer', href: '/settings/disclaimer' },
   { icon: ImageIcon, label: 'Banner', href: '/settings/banner' },
   { icon: Quote, label: 'Motivation', href: '/settings/motivation' },
-  { icon: Layers, label: 'Footer 1', href: '/settings/footer-text-1' },
-  { icon: Layers2, label: 'Footer 2', href: '/settings/footer-text-2' },
+  { icon: Contact, label: 'Contact Text', href: '/settings/contact-text' },
+  { icon: Layers, label: 'Footer Text 1', href: '/settings/footer-text-1' },
+  { icon: Layers2, label: 'Footer Text 2', href: '/settings/footer-text-2' },
 ];
 
 export function Sidebar() {

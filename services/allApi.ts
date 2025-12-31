@@ -262,6 +262,7 @@ const allApi = createApi({
     'AboutUs',
     'PrivacyPolicy',
     'Motivations',
+    'ContactText',
     'FooterText1',
     'FooterText2',
     'Banner',
@@ -658,6 +659,23 @@ const allApi = createApi({
       invalidatesTags: ['Motivation'],
     }),
 
+    // Contact
+    getContactText: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/contact-text',
+        method: 'GET',
+      }),
+      providesTags: ['ContactText'],
+    }),
+    updateContactText: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/contact-text',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['ContactText'],
+    }),
+
     // FOOTER-1
     getFooterText1: builder.query<any, void>({
       query: () => ({
@@ -794,6 +812,8 @@ export const {
   useUpdateFooterText1Mutation,
   useUpdateFooterText2Mutation,
   useUpdateWebsiteImagesMutation,
+  useGetContactTextQuery,
+  useUpdateContactTextMutation,
 } = allApi;
 
 export default allApi;
