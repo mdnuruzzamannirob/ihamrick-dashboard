@@ -25,7 +25,7 @@ import {
   useGetPinnedPublicationsQuery,
   useTogglePinPublicationsMutation,
 } from '../../../../services/allApi';
-import { dateFormatter } from '@/utils/dateFormatter';
+import { newDateFormatter } from '@/utils/newDateFormatter';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -294,7 +294,7 @@ function PublicationTableCells({ pub, isPinned, setSelectedId, setModal, refetch
       <td className="px-6 py-4 text-sm text-neutral-500">
         <div className="flex items-center gap-2">
           <Calendar size={14} className="text-neutral-300" />
-          <span className="font-medium">{dateFormatter(pub.publicationDate)}</span>
+          <span className="font-medium">{newDateFormatter(pub.publicationDate)}</span>
         </div>
       </td>
       <td className="px-6 py-4">

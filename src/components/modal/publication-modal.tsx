@@ -63,7 +63,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
     const utcDate = formData.publicationDate
       ? new Date(formData.publicationDate).toISOString()
       : '';
-
+    console.log(utcDate);
     payload.append('title', formData.title);
     payload.append('author', formData.author);
     if (utcDate) payload.append('publicationDate', utcDate);
