@@ -25,6 +25,8 @@ import {
   Unlink,
   PaintBucket,
   Heading1,
+  Heading2,
+  Heading3,
   FileImage,
   ExternalLink,
   TextQuote,
@@ -41,7 +43,7 @@ const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
   };
 
   const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => setIsOpen(false), 150); // Faster close for snappy feel
+    timeoutRef.current = setTimeout(() => setIsOpen(false), 150);
   };
 
   return (
@@ -58,7 +60,7 @@ const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
         }`}
       >
         {Icon && <Icon size={18} strokeWidth={2.5} />}
-        {label && <span className="text-xs font-semibold">{label}</span>}
+        {label && <span className="max-w-20 truncate text-xs font-semibold">{label}</span>}
         <ChevronDown
           size={11}
           className={`opacity-50 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
@@ -67,7 +69,6 @@ const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
 
       {isOpen && (
         <div className="absolute top-full left-0 z-50 pt-1.5">
-          {/* Bridge to keep menu open */}
           <div className="absolute -top-2 left-0 h-4 w-full" />
 
           <div className="animate-in fade-in slide-in-from-top-1 min-w-[220px] overflow-hidden rounded-xl border border-slate-100 bg-white p-2 shadow-xl duration-150">
@@ -99,7 +100,18 @@ const ToolbarButton = ({ onClick, active, icon: Icon, title, danger }: any) => (
 export default function Toolbar({ editor }: { editor: Editor | null }) {
   if (!editor) return null;
 
-  // --- Configuration Data ---
+  // --- Dynamic Icon Logic for Headings ---
+  const getActiveHeadingIcon = () => {
+    if (editor.isActive('heading', { level: 1 })) return Heading1;
+    if (editor.isActive('heading', { level: 2 })) return Heading2;
+    if (editor.isActive('heading', { level: 3 })) return Heading3;
+    return Type;
+  };
+
+  // Get current active values for label display
+  const currentFont = editor.getAttributes('textStyle').fontFamily || 'Inter';
+  const currentSize = editor.getAttributes('textStyle').fontSize || '16px';
+
   const fontFamilies = [
     'Inter',
     'Arial',
@@ -190,33 +202,37 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         />
       </div>
 
-      {/* 2. Text Style (Headings) */}
-      <Dropdown icon={Heading1} title="Headings">
+      {/* 2. Text Style */}
+      <Dropdown icon={getActiveHeadingIcon()} title="Headings">
         <button
           onClick={() => editor.chain().focus().setParagraph().run()}
-          className="dropdown-item"
+          className="dropdown-item flex items-center gap-2"
         >
-          Paragraph
+          <Type size={16} /> Paragraph
         </button>
-        {[1, 2, 3, 4, 5, 6].map((l) => (
-          <button
-            key={l}
-            onClick={() =>
-              editor
-                .chain()
-                .focus()
-                .toggleHeading({ level: l as any })
-                .run()
-            }
-            className="dropdown-item font-bold"
-          >
-            Heading {l}
-          </button>
-        ))}
+        {[1, 2, 3].map((l) => {
+          const HIcons: any = [Heading1, Heading2, Heading3];
+          const HIcon = HIcons[l - 1];
+          return (
+            <button
+              key={l}
+              onClick={() =>
+                editor
+                  .chain()
+                  .focus()
+                  .toggleHeading({ level: l as any })
+                  .run()
+              }
+              className="dropdown-item flex items-center gap-2 font-bold"
+            >
+              <HIcon size={16} /> Heading {l}
+            </button>
+          );
+        })}
       </Dropdown>
 
-      {/* 3. Fonts (Expanded) */}
-      <Dropdown label="Font">
+      {/* 3. Font Family*/}
+      <Dropdown label={currentFont} title="Font Family">
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
           {fontFamilies.map((f) => (
             <button
@@ -231,7 +247,8 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         </div>
       </Dropdown>
 
-      <Dropdown label="Size">
+      {/* 4. Font Size: No Icon in Display, No Icon in Dropdown */}
+      <Dropdown label={currentSize} title="Font Size">
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
           <button
             onClick={() => editor.chain().focus().unsetFontSize().run()}
