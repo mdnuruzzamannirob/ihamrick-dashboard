@@ -32,6 +32,66 @@ import {
   TextQuote,
 } from 'lucide-react';
 
+const fontFamilies = [
+  'Inter',
+  'Arial',
+  'Helvetica',
+  'Times New Roman',
+  'Georgia',
+  'Garamond',
+  'Courier New',
+  'Verdana',
+  'Trebuchet MS',
+  'Comic Sans MS',
+  'Impact',
+];
+
+const fontSizes = [
+  '2px',
+  '4px',
+  '6px',
+  '8px',
+  '10px',
+  '12px',
+  '14px',
+  '16px',
+  '18px',
+  '20px',
+  '24px',
+  '28px',
+  '32px',
+  '36px',
+  '40px',
+  '44px',
+  '48px',
+  '52px',
+  '60px',
+  '72px',
+];
+
+const presetColors = [
+  '#000000',
+  '#475569',
+  '#EF4444',
+  '#F97316',
+  '#F59E0B',
+  '#10B981',
+  '#3B82F6',
+  '#8B5CF6',
+  '#EC4899',
+  '#7dd3fc',
+];
+const presetHighlights = [
+  '#FEF08A',
+  '#BBF7D0',
+  '#BFDBFE',
+  '#DDD6FE',
+  '#FBCFE8',
+  '#FECACA',
+  '#e2e8f0',
+  '#ffedd5',
+];
+
 // --- Smart Dropdown: Prevents accidental closing ---
 const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -109,68 +169,12 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
   };
 
   // Get current active values for label display
-  const currentFont = editor.getAttributes('textStyle').fontFamily || 'Inter';
-  const currentSize = editor.getAttributes('textStyle').fontSize || '16px';
+  const detectedFont = editor.getAttributes('textStyle')?.fontFamily;
+  const detectedSize = editor.getAttributes('textStyle')?.fontSize;
 
-  const fontFamilies = [
-    'Inter',
-    'Arial',
-    'Helvetica',
-    'Times New Roman',
-    'Georgia',
-    'Garamond',
-    'Courier New',
-    'Verdana',
-    'Trebuchet MS',
-    'Comic Sans MS',
-    'Impact',
-  ];
+  const currentFont = detectedFont && fontFamilies.includes(detectedFont) ? detectedFont : 'Font';
 
-  const fontSizes = [
-    '2px',
-    '4px',
-    '6px',
-    '8px',
-    '10px',
-    '12px',
-    '14px',
-    '16px',
-    '18px',
-    '20px',
-    '24px',
-    '28px',
-    '32px',
-    '36px',
-    '40px',
-    '44px',
-    '48px',
-    '52px',
-    '60px',
-    '72px',
-  ];
-
-  const presetColors = [
-    '#000000',
-    '#475569',
-    '#EF4444',
-    '#F97316',
-    '#F59E0B',
-    '#10B981',
-    '#3B82F6',
-    '#8B5CF6',
-    '#EC4899',
-    '#7dd3fc',
-  ];
-  const presetHighlights = [
-    '#FEF08A',
-    '#BBF7D0',
-    '#BFDBFE',
-    '#DDD6FE',
-    '#FBCFE8',
-    '#FECACA',
-    '#e2e8f0',
-    '#ffedd5',
-  ];
+  const currentSize = detectedSize && fontSizes.includes(detectedSize) ? detectedSize : 'Text';
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -234,16 +238,29 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
       {/* 3. Font Family*/}
       <Dropdown label={currentFont} title="Font Family">
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
-          {fontFamilies.map((f) => (
-            <button
-              key={f}
-              onClick={() => editor.chain().focus().setFontFamily(f).run()}
-              className="dropdown-item"
-              style={{ fontFamily: f }}
-            >
-              {f}
-            </button>
-          ))}
+          <button
+            onClick={() => editor.chain().focus().unsetFontFamily().run()}
+            className="dropdown-item text-gray-400 italic"
+          >
+            Default
+          </button>
+          <hr className="my-2 text-gray-100" />
+          {fontFamilies.map((f) => {
+            const isActive = detectedFont === f;
+
+            return (
+              <button
+                key={f}
+                onClick={() => editor.chain().focus().setFontFamily(f).run()}
+                className={`dropdown-item ${
+                  isActive ? 'bg-indigo-50 font-semibold text-indigo-600' : ''
+                }`}
+                style={{ fontFamily: f }}
+              >
+                {f}
+              </button>
+            );
+          })}
         </div>
       </Dropdown>
 
@@ -256,15 +273,22 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           >
             Default
           </button>
-          {fontSizes.map((s) => (
-            <button
-              key={s}
-              onClick={() => editor.chain().focus().setFontSize(s).run()}
-              className="dropdown-item"
-            >
-              {s}
-            </button>
-          ))}
+          <hr className="my-2 text-gray-100" />
+          {fontSizes.map((s) => {
+            const isActive = detectedSize === s;
+
+            return (
+              <button
+                key={s}
+                onClick={() => editor.chain().focus().setFontSize(s).run()}
+                className={`dropdown-item ${
+                  isActive ? 'bg-indigo-50 font-semibold text-indigo-600' : ''
+                }`}
+              >
+                {s}
+              </button>
+            );
+          })}
         </div>
       </Dropdown>
 
