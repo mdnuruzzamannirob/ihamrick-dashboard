@@ -7,6 +7,8 @@ import { toast } from 'react-toastify';
 import { useUpdatePodcastMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
+import { fromZonedTime } from 'date-fns-tz';
+import { dateFormatter } from '@/utils/dateFormatter';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -29,7 +31,7 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
     if (podcast && isModalOpen) {
       setFormData({
         title: podcast.title || '',
-        date: podcast.date ? podcast.date.split('T')[0] : '',
+        date: podcast.date ? dateFormatter(podcast.date).split('T')[0] : '',
         status: podcast.status,
         description: podcast.description || '',
         transcription: podcast.transcription || '',
@@ -47,7 +49,16 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
-    const utcDate = formData.date ? new Date(formData.date).toISOString() : '';
+
+    const utcDate = formData?.date
+      ? (() => {
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const now = new Date();
+          const localDateTime = `${formData.date}T${now.toTimeString().slice(0, 8)}`;
+
+          return fromZonedTime(localDateTime, timeZone).toISOString();
+        })()
+      : null;
 
     payload.append('title', formData.title);
     payload.append('description', formData.description);

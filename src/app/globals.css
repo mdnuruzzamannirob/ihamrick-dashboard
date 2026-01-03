@@ -30,3 +30,94 @@ button {
 .prose a:hover {
   color: #1e40af;
 }
+
+
+/* --- Cute Dropdown Items --- */
+.dropdown-item {
+  @apply flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600 text-left;
+}
+
+/* --- Scrollbar for Font Lists --- */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+/* --- Editor Core --- */
+.ProseMirror {
+  @apply outline-none p-12 max-w-4xl mx-auto text-slate-800 leading-7;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Headings */
+.ProseMirror h1 {
+  @apply text-4xl font-extrabold mb-4 mt-8 text-slate-900;
+}
+
+.ProseMirror h2 {
+  @apply text-3xl font-bold mb-3 mt-6 text-slate-800;
+}
+
+.ProseMirror h3 {
+  @apply text-2xl font-semibold mb-3 mt-5 text-slate-800;
+}
+
+/* Blockquote - Fixed missing style */
+.ProseMirror blockquote {
+  @apply border-l-4 border-indigo-500 pl-4 py-2 italic bg-indigo-50/50 text-slate-700 rounded-r-lg my-4;
+}
+
+/* Lists (Roman Support) */
+.ProseMirror ol {
+  @apply list-decimal pl-6 my-4;
+}
+
+.ProseMirror ol ol {
+  list-style-type: lower-alpha;
+}
+
+.ProseMirror ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.ProseMirror ul {
+  @apply list-disc pl-6 my-4;
+}
+
+/* Task Lists */
+.ProseMirror ul[data-type="taskList"] {
+  @apply list-none p-0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  @apply flex items-start gap-3 my-2;
+}
+
+.ProseMirror ul[data-type="taskList"] input[type="checkbox"] {
+  @apply mt-1.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500;
+}
+
+/* Alignment */
+.ProseMirror [style*="text-align: justify"] {
+  text-align: justify;
+}
+
+.ProseMirror [style*="text-align: center"] {
+  text-align: center;
+}
+
+.ProseMirror [style*="text-align: right"] {
+  text-align: right;
+}

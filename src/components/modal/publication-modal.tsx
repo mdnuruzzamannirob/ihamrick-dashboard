@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { useCreatePublicationMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
+import { fromZonedTime } from 'date-fns-tz';
 
 interface PublicationFormState {
   title: string;
@@ -60,10 +61,17 @@ export function PublicationModal({ refetch }: { refetch: any }) {
     }
 
     const payload = new FormData();
-    const utcDate = formData.publicationDate
-      ? new Date(formData.publicationDate).toISOString()
-      : '';
-    console.log(utcDate);
+
+    const utcDate = formData?.publicationDate
+      ? (() => {
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const now = new Date();
+          const localDateTime = `${formData.publicationDate}T${now.toTimeString().slice(0, 8)}`;
+
+          return fromZonedTime(localDateTime, timeZone).toISOString();
+        })()
+      : null;
+
     payload.append('title', formData.title);
     payload.append('author', formData.author);
     if (utcDate) payload.append('publicationDate', utcDate);

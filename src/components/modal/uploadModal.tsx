@@ -1,13 +1,12 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, Clock, FileText, Loader2, Plus } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { joditConfig } from '@/utils/joditConfig';
 import { toast } from 'react-toastify';
 import { useCreateBlogMutation, useUpdateBlogMutation } from '../../../services/allApi';
-import { SmartMediaUpload } from '../SmartMediaUpload'; // Imported SmartMediaUpload
-
-const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
+import { SmartMediaUpload } from '../SmartMediaUpload';
+import TiptapEditor from '../TiptapEditor';
+import { fromZonedTime } from 'date-fns-tz';
+import { dateFormatter } from '@/utils/dateFormatter';
 
 interface UploadModalProps {
   selectedBlog?: any | null;
@@ -36,7 +35,9 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
   useEffect(() => {
     if (selectedBlog) {
       const postDate =
-        selectedBlog.status === 'scheduled' ? selectedBlog.scheduledAt : selectedBlog.uploadDate;
+        selectedBlog.status === 'scheduled'
+          ? dateFormatter(selectedBlog.scheduledAt, { unformatted: true })
+          : dateFormatter(selectedBlog.uploadDate, { unformatted: true });
 
       setFormState({
         title: selectedBlog.title,
@@ -86,7 +87,16 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
     if (!validateForm()) return;
 
     const formData = new FormData();
-    const utcDate = formState?.date ? new Date(formState?.date)?.toISOString() : null;
+
+    const utcDate = formState?.date
+      ? (() => {
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const now = new Date();
+          const localDateTime = `${formState.date}T${now.toTimeString().slice(0, 8)}`;
+
+          return fromZonedTime(localDateTime, timeZone).toISOString();
+        })()
+      : null;
 
     formData.append('title', formState.title);
     formData.append('description', formState.description);
@@ -129,12 +139,12 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-black/60 p-4 backdrop-blur-md">
+        <div className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-black/60 backdrop-blur-md">
           <div className="absolute inset-0" onClick={handleClose} />
 
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative flex max-h-[95vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-neutral-100 bg-white shadow-2xl"
+            className="relative flex size-full flex-col overflow-hidden bg-white"
           >
             {/* Header */}
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-50 bg-white/90 px-8 py-6 backdrop-blur-md">
@@ -229,16 +239,17 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
                   Description
                 </label>
 
-                <JoditEditor
+                <TiptapEditor
                   value={formState.description}
-                  config={joditConfig}
-                  onBlur={(newContent) => setFormState((p) => ({ ...p, description: newContent }))}
+                  onChange={(newContent) =>
+                    setFormState((p) => ({ ...p, description: newContent }))
+                  }
                 />
               </div>
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-4 border-t border-neutral-50 bg-white px-8 py-6">
+            <div className="flex items-center justify-end gap-4 border-t border-neutral-100 bg-white px-8 py-5">
               <button
                 disabled={isLoading}
                 onClick={handleClose}

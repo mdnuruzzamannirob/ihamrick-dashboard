@@ -7,6 +7,8 @@ import { toast } from 'react-toastify';
 import { useUpdateVideoMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
+import { fromZonedTime } from 'date-fns-tz';
+import { dateFormatter } from '@/utils/dateFormatter';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -38,7 +40,9 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     if (video && isModalOpen) {
       setFormData({
         title: video.title || '',
-        uploadDate: video.uploadDate ? new Date(video.uploadDate).toISOString().split('T')[0] : '',
+        uploadDate: video.uploadDate
+          ? dateFormatter(video.uploadDate, { unformatted: true }).split('T')[0]
+          : '',
         status: video.status === 'published' || video.status === true ? 'published' : 'unpublished',
         description: video.description || '',
         transcription: video.transcription || '',
@@ -53,10 +57,23 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
+
+    const utcDate = formData?.uploadDate
+      ? (() => {
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const now = new Date();
+          const localDateTime = `${formData.uploadDate}T${now.toTimeString().slice(0, 8)}`;
+
+          return fromZonedTime(localDateTime, timeZone).toISOString();
+        })()
+      : null;
+
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    payload.append('uploadDate', new Date(formData.uploadDate).toISOString());
+    if (utcDate) {
+      payload.append('uploadDate', utcDate);
+    }
     payload.append('status', formData.status);
 
     if (videoData.file) {

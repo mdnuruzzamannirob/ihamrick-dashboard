@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { joditConfig } from '@/utils/joditConfig';
 import { useUploadVideoMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
+import { fromZonedTime } from 'date-fns-tz';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -45,10 +46,24 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
+
+    const utcDate = formData?.date
+      ? (() => {
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const now = new Date();
+          const localDateTime = `${formData.date}T${now.toTimeString().slice(0, 8)}`;
+
+          return fromZonedTime(localDateTime, timeZone).toISOString();
+        })()
+      : null;
+
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcriptions);
-    payload.append('uploadDate', new Date(formData.date).toISOString());
+    if (utcDate) {
+      payload.append('uploadDate', utcDate);
+    }
+
     payload.append('status', formData.status);
     payload.append('video', videoData.file);
     payload.append('coverImage', imageData.file);

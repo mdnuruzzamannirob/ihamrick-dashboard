@@ -7,6 +7,8 @@ import { toast } from 'react-toastify';
 import { useUpdatePublicationMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
+import { fromZonedTime } from 'date-fns-tz';
+import { dateFormatter } from '@/utils/dateFormatter';
 
 const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
@@ -27,14 +29,14 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
 
   // For displaying existing or newly selected previews
   const [previews, setPreviews] = useState({ cover: '', file: '' });
-  console.log({ publication, formData, previews });
+
   useEffect(() => {
     if (publication && isOpen) {
       setFormData({
         title: publication.title || '',
         author: publication.author || '',
         publicationDate: publication.publicationDate
-          ? publication.publicationDate.split('T')[0]
+          ? dateFormatter(publication.publicationDate, { unformatted: true }).split('T')[0]
           : '',
         status: publication.status ? 'Published' : 'Unpublished',
         description: publication.description || '',
@@ -59,14 +61,20 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
     }
 
     const payload = new FormData();
-    // Use the existing date if not changed, ensuring ISO format
-    const formattedDate = formData.publicationDate
-      ? new Date(formData.publicationDate).toISOString()
-      : new Date().toISOString();
+
+    const utcDate = formData?.publicationDate
+      ? (() => {
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const now = new Date();
+          const localDateTime = `${formData.publicationDate}T${now.toTimeString().slice(0, 8)}`;
+
+          return fromZonedTime(localDateTime, timeZone).toISOString();
+        })()
+      : null;
 
     payload.append('title', formData.title);
     payload.append('author', formData.author);
-    payload.append('publicationDate', formattedDate);
+    if (utcDate) payload.append('publicationDate', utcDate);
     payload.append('description', formData.description);
     payload.append('status', String(formData.status === 'Published'));
 

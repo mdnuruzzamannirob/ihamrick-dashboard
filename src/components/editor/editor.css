@@ -1,0 +1,30 @@
+.editor-shell {
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .06);
+}
+
+
+.editor-content {
+    padding: 3rem;
+    min-height: 400px;
+    font-family: Inter, sans-serif;
+}
+
+
+.ProseMirror h1 {
+    font-size: 2.5rem;
+    font-weight: 800
+}
+
+.ProseMirror h2 {
+    font-size: 2rem;
+    font-weight: 700
+}
+
+.ProseMirror blockquote {
+    border-left: 4px solid #6366f1;
+    padding-left: 1rem;
+    background: #eef2ff;
+}

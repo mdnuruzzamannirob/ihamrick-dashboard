@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { useCreatePodcastMutation } from '../../../services/allApi';
 import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
+import { fromZonedTime } from 'date-fns-tz';
 
 interface PodcastFormState {
   title: string;
@@ -47,12 +48,21 @@ const PodcastUploadModal = ({ refetch }: any) => {
     }
 
     const payload = new FormData();
-    const utcDate = new Date(formData.date).toISOString();
+
+    const utcDate = formData?.date
+      ? (() => {
+          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const now = new Date();
+          const localDateTime = `${formData.date}T${now.toTimeString().slice(0, 8)}`;
+
+          return fromZonedTime(localDateTime, timeZone).toISOString();
+        })()
+      : null;
 
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    payload.append('date', utcDate);
+    if (utcDate) payload.append('date', utcDate);
     payload.append('status', formData.status);
 
     if (formData.coverImage) {

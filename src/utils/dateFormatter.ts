@@ -1,24 +1,34 @@
-export const dateFormatter = (
-  utcDate: string | Date,
-  options: {
-    locale?: string;
-    timeZone?: string;
-    showTime?: boolean;
-    showSeconds?: boolean;
-  } = {},
-): string => {
-  if (!utcDate) return '-';
+type DateFormatterOptions = {
+  locale?: string;
+  timeZone?: string;
+  showTime?: boolean;
+  showSeconds?: boolean;
+  unformatted?: boolean;
+};
 
-  const date = typeof utcDate === 'string' ? new Date(utcDate) : utcDate;
+export const dateFormatter = (dateInput: string | Date, options: DateFormatterOptions = {}) => {
+  if (!dateInput) return '-';
 
-  // Default values
   const {
     locale = navigator.language,
     timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
     showTime = false,
     showSeconds = false,
+    unformatted = false,
   } = options;
 
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+
+  if (unformatted) {
+    // unformatted → yyyy-MM-ddT00:00:00
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T00:00:00`;
+  }
+
+  // formatted → Intl.DateTimeFormat
   const formatOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'short',
