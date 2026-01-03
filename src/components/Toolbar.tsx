@@ -117,7 +117,7 @@ const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
         type="button"
         title={title}
         className={`flex items-center gap-1 rounded-lg p-2 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 ${
-          active || isOpen ? 'bg-indigo-100 text-indigo-700 shadow-sm' : 'text-slate-600'
+          active || isOpen ? 'bg-indigo-100 font-bold text-indigo-700 shadow-sm' : 'text-slate-600'
         }`}
       >
         {Icon && <Icon size={18} strokeWidth={2.5} />}
@@ -173,13 +173,28 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
     };
   }, [editor]);
 
+  // --- Helpers for Dynamic Icons & Active States ---
+  const getActiveAlignIcon = () => {
+    if (editor.isActive({ textAlign: 'center' })) return AlignCenter;
+    if (editor.isActive({ textAlign: 'right' })) return AlignRight;
+    if (editor.isActive({ textAlign: 'justify' })) return AlignJustify;
+    return AlignLeft;
+  };
+
+  const getActiveListIcon = () => {
+    if (editor.isActive('bulletList')) return List;
+    if (editor.isActive('orderedList')) return ListOrdered;
+    if (editor.isActive('taskList')) return CheckSquare;
+    return List;
+  };
+
   const getActiveHeadingIcon = () => {
-    if (editor.isActive('heading', { level: 1 })) return Heading1;
-    if (editor.isActive('heading', { level: 2 })) return Heading2;
-    if (editor.isActive('heading', { level: 3 })) return Heading3;
-    if (editor.isActive('heading', { level: 4 })) return Heading4;
-    if (editor.isActive('heading', { level: 5 })) return Heading5;
-    if (editor.isActive('heading', { level: 6 })) return Heading6;
+    for (let l = 1; l <= 6; l++) {
+      if (editor.isActive('heading', { level: l })) {
+        const icons = [Heading1, Heading2, Heading3, Heading4, Heading5, Heading6];
+        return icons[l - 1];
+      }
+    }
     return Heading1;
   };
 
@@ -204,6 +219,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
   return (
     <div className="sticky top-0 z-30 flex flex-wrap items-center gap-1 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-md">
+      {/* 1. History */}
       <div className="mr-1 flex items-center gap-0.5 border-r border-slate-200 pr-2">
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
@@ -217,6 +233,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         />
       </div>
 
+      {/* Paragraph (Standalone) */}
       <ToolbarButton
         onClick={() => editor.chain().focus().setParagraph().run()}
         active={!editor.isActive('heading')}
@@ -224,9 +241,11 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         title="Paragraph"
       />
 
+      {/* 2. Heading Dropdown (Now Dynamic & Colorful) */}
       <Dropdown icon={getActiveHeadingIcon()} title="Headings" active={editor.isActive('heading')}>
         {[1, 2, 3, 4, 5, 6].map((l) => {
           const HIcons: any = [Heading1, Heading2, Heading3, Heading4, Heading5, Heading6];
+          const isActive = editor.isActive('heading', { level: l });
           return (
             <button
               key={l}
@@ -237,7 +256,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
                   .toggleHeading({ level: l as any })
                   .run()
               }
-              className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive('heading', { level: l }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'text-slate-700 hover:bg-slate-50'}`}
+              className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${isActive ? 'bg-indigo-50 font-bold text-indigo-600' : 'text-slate-700 hover:bg-slate-50'}`}
             >
               {React.createElement(HIcons[l - 1], { size: 16 })} Heading {l}
             </button>
@@ -245,8 +264,10 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         })}
       </Dropdown>
 
-      <Dropdown label={currentFont} title="Font Family">
+      {/* Font Family & Size (Colorful when active) */}
+      <Dropdown label={currentFont} title="Font Family" active={detectedFont}>
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
+          {' '}
           <button
             onClick={() => editor.chain().focus().unsetFontFamily().run()}
             className="dropdown-item text-gray-400 italic"
@@ -254,27 +275,22 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
             Default
           </button>
           <hr className="my-2 text-gray-100" />
-          {fontFamilies.map((f) => {
-            const isActive = detectedFont === f;
-
-            return (
-              <button
-                key={f}
-                onClick={() => editor.chain().focus().setFontFamily(f).run()}
-                className={`dropdown-item ${
-                  isActive ? 'bg-indigo-50 font-semibold text-indigo-600' : ''
-                }`}
-                style={{ fontFamily: f }}
-              >
-                {f}
-              </button>
-            );
-          })}
+          {fontFamilies.map((f) => (
+            <button
+              key={f}
+              onClick={() => editor.chain().focus().setFontFamily(f).run()}
+              className={`dropdown-item w-full px-3 py-2 text-left text-sm ${detectedFont === f ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
+              style={{ fontFamily: f }}
+            >
+              {f}
+            </button>
+          ))}
         </div>
       </Dropdown>
 
-      <Dropdown label={currentSize} title="Font Size">
+      <Dropdown label={currentSize} title="Font Size" active={detectedSize}>
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
+          {' '}
           <button
             onClick={() => editor.chain().focus().unsetFontSize().run()}
             className="dropdown-item text-gray-400 italic"
@@ -282,26 +298,21 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
             Default
           </button>
           <hr className="my-2 text-gray-100" />
-          {fontSizes.map((s) => {
-            const isActive = detectedSize === s;
-
-            return (
-              <button
-                key={s}
-                onClick={() => editor.chain().focus().setFontSize(s).run()}
-                className={`dropdown-item ${
-                  isActive ? 'bg-indigo-50 font-semibold text-indigo-600' : ''
-                }`}
-              >
-                {s}
-              </button>
-            );
-          })}
+          {fontSizes.map((s) => (
+            <button
+              key={s}
+              onClick={() => editor.chain().focus().setFontSize(s).run()}
+              className={`dropdown-item w-full px-3 py-2 text-left text-sm ${detectedSize === s ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
+            >
+              {s}
+            </button>
+          ))}
         </div>
       </Dropdown>
 
       <div className="mx-1 h-5 w-px bg-slate-200" />
 
+      {/* 3. Basic Formatting */}
       <div className="flex items-center gap-0.5">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -333,8 +344,9 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
       <div className="mx-1 h-5 w-px bg-slate-200" />
 
+      {/* 4. Colors (Highlight icon when active) */}
       <div className="flex items-center gap-1">
-        <Dropdown icon={Type} title="Text Color">
+        <Dropdown icon={Type} title="Text Color" active={editor.getAttributes('textStyle').color}>
           <div className="p-2">
             <div className="mb-2 grid grid-cols-5 gap-1.5">
               {googleDocsColors.map((c) => (
@@ -345,7 +357,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
                   style={{ backgroundColor: c }}
                 />
               ))}
-            </div>
+            </div>{' '}
             <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
               <Plus size={14} className="text-gray-400" />
               <span className="text-xs text-gray-600">Custom</span>
@@ -358,7 +370,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           </div>
         </Dropdown>
 
-        <Dropdown icon={PaintBucket} title="Highlighter">
+        <Dropdown icon={PaintBucket} title="Highlighter" active={editor.isActive('highlight')}>
           <div className="p-2">
             <div className="mb-2 grid grid-cols-5 gap-1.5">
               {googleDocsColors.map((c) => (
@@ -375,7 +387,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
               className="mb-1 w-full rounded border py-1 text-xs text-slate-500"
             >
               None
-            </button>
+            </button>{' '}
             <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
               <Plus size={14} className="text-gray-400" />
               <span className="text-xs text-gray-600">Custom</span>
@@ -393,56 +405,75 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
       <div className="mx-1 h-5 w-px bg-slate-200" />
 
-      <Dropdown icon={AlignLeft} title="Alignment">
+      {/* 5. Alignment Dropdown (Now Dynamic & Colorful) */}
+      <Dropdown
+        icon={getActiveAlignIcon()}
+        title="Alignment"
+        active={
+          editor.isActive({ textAlign: 'center' }) ||
+          editor.isActive({ textAlign: 'right' }) ||
+          editor.isActive({ textAlign: 'justify' })
+        }
+      >
         <button
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'left' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
           <AlignLeft size={16} /> Left
         </button>
         <button
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'center' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
           <AlignCenter size={16} /> Center
         </button>
         <button
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'right' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
           <AlignRight size={16} /> Right
         </button>
         <button
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'justify' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
           <AlignJustify size={16} /> Justify
         </button>
       </Dropdown>
 
-      <Dropdown icon={List} title="Lists">
+      {/* 6. List Dropdown (Now Dynamic & Colorful) */}
+      <Dropdown
+        icon={getActiveListIcon()}
+        title="Lists"
+        active={
+          editor.isActive('bulletList') ||
+          editor.isActive('orderedList') ||
+          editor.isActive('taskList')
+        }
+      >
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive('bulletList') ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
           <List size={16} /> Bullet List
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive('orderedList') ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
           <ListOrdered size={16} /> Order List
         </button>
         <button
           onClick={() => editor.chain().focus().toggleTaskList().run()}
-          className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive('taskList') ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
           <CheckSquare size={16} /> Task List
         </button>
       </Dropdown>
 
+      {/* 7. Link & Image */}
       <div className="ml-1 flex items-center gap-1 border-l border-slate-200 pl-2">
-        <Dropdown icon={Link2} title="Link Options">
+        <Dropdown icon={Link2} title="Link Options" active={editor.isActive('link')}>
           <button
             onClick={() => {
               const url = prompt('Enter URL');
@@ -491,6 +522,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         title="Subscript"
       />
 
+      {/* 8. Eraser at Right Side */}
       <div className="ml-auto">
         <ToolbarButton
           onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
