@@ -34,6 +34,7 @@ import {
   Heading5,
   Heading4,
   Plus,
+  Check,
 } from 'lucide-react';
 
 const fontFamilies = [
@@ -161,6 +162,9 @@ const ToolbarButton = ({ onClick, active, icon: Icon, title, danger, disabled }:
 );
 
 export default function Toolbar({ editor }: { editor: Editor | null }) {
+  const [linkInput, setLinkInput] = useState('');
+  const [imageInput, setImageInput] = useState('');
+
   if (!editor) return null;
 
   const [, setUpdate] = React.useState(0);
@@ -173,7 +177,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
     };
   }, [editor]);
 
-  // --- Helpers for Dynamic Icons & Active States ---
   const getActiveAlignIcon = () => {
     if (editor.isActive({ textAlign: 'center' })) return AlignCenter;
     if (editor.isActive({ textAlign: 'right' })) return AlignRight;
@@ -198,11 +201,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
     return Heading1;
   };
 
-  const detectedFont = editor.getAttributes('textStyle')?.fontFamily;
-  const detectedSize = editor.getAttributes('textStyle')?.fontSize;
-  const currentFont = detectedFont && fontFamilies.includes(detectedFont) ? detectedFont : 'Font';
-  const currentSize = detectedSize && fontSizes.includes(detectedSize) ? detectedSize : 'Text';
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -216,6 +214,11 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
       reader.readAsDataURL(file);
     }
   };
+
+  const detectedFont = editor.getAttributes('textStyle')?.fontFamily;
+  const detectedSize = editor.getAttributes('textStyle')?.fontSize;
+  const currentFont = detectedFont && fontFamilies.includes(detectedFont) ? detectedFont : 'Font';
+  const currentSize = detectedSize && fontSizes.includes(detectedSize) ? detectedSize : 'Text';
 
   return (
     <div className="sticky top-0 z-30 flex flex-wrap items-center gap-1 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-md">
@@ -267,7 +270,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
       {/* Font Family & Size (Colorful when active) */}
       <Dropdown label={currentFont} title="Font Family" active={detectedFont}>
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
-          {' '}
           <button
             onClick={() => editor.chain().focus().unsetFontFamily().run()}
             className="dropdown-item text-gray-400 italic"
@@ -290,7 +292,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
       <Dropdown label={currentSize} title="Font Size" active={detectedSize}>
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
-          {' '}
           <button
             onClick={() => editor.chain().focus().unsetFontSize().run()}
             className="dropdown-item text-gray-400 italic"
@@ -357,7 +358,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
                   style={{ backgroundColor: c }}
                 />
               ))}
-            </div>{' '}
+            </div>
             <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
               <Plus size={14} className="text-gray-400" />
               <span className="text-xs text-gray-600">Custom</span>
@@ -387,7 +388,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
               className="mb-1 w-full rounded border py-1 text-xs text-slate-500"
             >
               None
-            </button>{' '}
+            </button>
             <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
               <Plus size={14} className="text-gray-400" />
               <span className="text-xs text-gray-600">Custom</span>
@@ -473,39 +474,114 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
       {/* 7. Link & Image */}
       <div className="ml-1 flex items-center gap-1 border-l border-slate-200 pl-2">
+        {/* Updated Link Dropdown */}
         <Dropdown icon={Link2} title="Link Options" active={editor.isActive('link')}>
-          <button
-            onClick={() => {
-              const url = prompt('Enter URL');
-              if (url) editor.chain().focus().setLink({ href: url }).run();
-            }}
-            className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
-          >
-            <Link2 size={16} /> Insert Link
-          </button>
-          <button
-            onClick={() => editor.chain().focus().unsetLink().run()}
-            disabled={!editor.isActive('link')}
-            className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${editor.isActive('link') ? 'text-rose-500 hover:bg-rose-50' : 'cursor-not-allowed opacity-30'}`}
-          >
-            <Unlink size={16} /> Unlink
-          </button>
+          <div className="flex min-w-[260px] flex-col gap-2 p-3">
+            <h4 className="px-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+              {editor.isActive('link') ? 'Edit Link' : 'Insert Link'}
+            </h4>
+
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 p-1.5 transition-all focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
+              <div className="pl-1 text-slate-400">
+                <ExternalLink size={14} />
+              </div>
+              <input
+                type="text"
+                placeholder="https://example.com"
+                className="flex-1 bg-transparent py-1 text-xs text-slate-700 outline-none placeholder:text-slate-400"
+                value={linkInput || editor.getAttributes('link').href || ''}
+                onChange={(e) => setLinkInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const finalUrl = linkInput || editor.getAttributes('link').href;
+                    if (finalUrl) {
+                      editor.chain().focus().setLink({ href: finalUrl }).run();
+                      setLinkInput('');
+                    }
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  const finalUrl = linkInput || editor.getAttributes('link').href;
+                  if (finalUrl) {
+                    editor.chain().focus().setLink({ href: finalUrl }).run();
+                    setLinkInput('');
+                  }
+                }}
+                className="rounded-lg bg-indigo-600 p-1.5 text-white shadow-sm transition-transform hover:bg-indigo-700 active:scale-95"
+              >
+                <Check size={14} strokeWidth={3} />
+              </button>
+            </div>
+
+            {/* লিঙ্ক থাকলে শুধুমাত্র তখনই Unlink বাটন দেখাবে */}
+            {editor.isActive('link') && (
+              <button
+                onClick={() => {
+                  editor.chain().focus().unsetLink().run();
+                  setLinkInput(''); // ইনপুট ক্লিয়ার করে দিবে
+                }}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg border border-transparent py-2 text-xs font-semibold text-rose-500 transition-colors hover:border-rose-100 hover:bg-rose-50"
+              >
+                <Unlink size={14} /> Remove Link
+              </button>
+            )}
+          </div>
         </Dropdown>
 
+        {/* Updated Image Dropdown */}
         <Dropdown icon={ImageIcon} title="Image Options">
-          <label className="dropdown-item flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50">
-            <FileImage size={16} /> Upload Image
-            <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-          </label>
-          <button
-            onClick={() => {
-              const url = prompt('Enter Image URL');
-              if (url) editor.chain().focus().setImage({ src: url }).run();
-            }}
-            className="dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-50"
-          >
-            <ExternalLink size={16} /> Via URL
-          </button>
+          <div className="flex min-w-[260px] flex-col gap-3 p-3">
+            <div>
+              <h4 className="mb-2 px-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                Image URL
+              </h4>
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 p-1.5 transition-all focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
+                <div className="pl-1 text-slate-400">
+                  <ImageIcon size={14} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Paste image link..."
+                  className="flex-1 bg-transparent py-1 text-xs text-slate-700 outline-none placeholder:text-slate-400"
+                  value={imageInput}
+                  onChange={(e) => setImageInput(e.target.value)}
+                />
+                <button
+                  onClick={() => {
+                    if (imageInput) {
+                      editor.chain().focus().setImage({ src: imageInput }).run();
+                      setImageInput('');
+                    }
+                  }}
+                  className="rounded-lg bg-indigo-600 p-1.5 text-white shadow-sm transition-transform hover:bg-indigo-700 active:scale-95"
+                >
+                  <Check size={14} strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-slate-100"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-2 text-[10px] font-medium text-slate-300 uppercase">
+                  OR
+                </span>
+              </div>
+            </div>
+
+            <label className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-medium text-slate-600 transition-all hover:border-indigo-400 hover:bg-indigo-50/30">
+              <FileImage
+                size={18}
+                className="text-slate-400 transition-colors group-hover:text-indigo-500"
+              />
+              <span className="text-xs group-hover:text-indigo-600">Upload from Device</span>
+              <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+            </label>
+          </div>
         </Dropdown>
       </div>
 
