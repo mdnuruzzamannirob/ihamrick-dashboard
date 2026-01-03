@@ -30,6 +30,9 @@ import {
   FileImage,
   ExternalLink,
   TextQuote,
+  Heading6,
+  Heading5,
+  Heading4,
 } from 'lucide-react';
 
 const fontFamilies = [
@@ -160,11 +163,30 @@ const ToolbarButton = ({ onClick, active, icon: Icon, title, danger }: any) => (
 export default function Toolbar({ editor }: { editor: Editor | null }) {
   if (!editor) return null;
 
+  const [, setUpdate] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!editor) return;
+
+    const handler = () => {
+      setUpdate((prev) => prev + 1);
+    };
+
+    editor.on('transaction', handler);
+
+    return () => {
+      editor.off('transaction', handler);
+    };
+  }, [editor]);
+
   // --- Dynamic Icon Logic for Headings ---
   const getActiveHeadingIcon = () => {
     if (editor.isActive('heading', { level: 1 })) return Heading1;
     if (editor.isActive('heading', { level: 2 })) return Heading2;
     if (editor.isActive('heading', { level: 3 })) return Heading3;
+    if (editor.isActive('heading', { level: 4 })) return Heading4;
+    if (editor.isActive('heading', { level: 5 })) return Heading5;
+    if (editor.isActive('heading', { level: 6 })) return Heading6;
     return Type;
   };
 
@@ -214,8 +236,8 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         >
           <Type size={16} /> Paragraph
         </button>
-        {[1, 2, 3].map((l) => {
-          const HIcons: any = [Heading1, Heading2, Heading3];
+        {[1, 2, 3, 4, 5, 6].map((l) => {
+          const HIcons: any = [Heading1, Heading2, Heading3, Heading4, Heading5, Heading6];
           const HIcon = HIcons[l - 1];
           return (
             <button

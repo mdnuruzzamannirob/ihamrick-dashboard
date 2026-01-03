@@ -77,7 +77,7 @@ export default function TiptapEditor({
 
   return (
     <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl ring-4 ring-slate-50/50">
-      <Toolbar editor={editor} />
+      {editor && <Toolbar editor={editor} />}
       <div className="custom-scrollbar max-h-[75vh] min-h-[500px] overflow-y-auto bg-white">
         <EditorContent editor={editor} />
       </div>

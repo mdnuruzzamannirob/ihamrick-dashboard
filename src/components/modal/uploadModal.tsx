@@ -147,7 +147,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
             className="relative flex size-full flex-col overflow-hidden bg-white"
           >
             {/* Header */}
-            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-50 bg-white/90 px-8 py-6 backdrop-blur-md">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-50 bg-white/90 px-8 py-5 backdrop-blur-md">
               <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-black p-2.5 text-white shadow-xl shadow-black/20">
                   <FileText size={22} />

@@ -63,15 +63,27 @@ button {
 
 /* Headings */
 .ProseMirror h1 {
-  @apply text-4xl font-extrabold mb-4 mt-8 text-slate-900;
+  @apply text-5xl font-black mb-6 mt-12 text-slate-900;
 }
 
 .ProseMirror h2 {
-  @apply text-3xl font-bold mb-3 mt-6 text-slate-800;
+  @apply text-4xl font-extrabold mb-5 mt-10 text-slate-900;
 }
 
 .ProseMirror h3 {
-  @apply text-2xl font-semibold mb-3 mt-5 text-slate-800;
+  @apply text-3xl font-bold mb-4 mt-8 text-slate-900;
+}
+
+.ProseMirror h4 {
+  @apply text-2xl font-semibold mb-3 mt-6 text-slate-900;
+}
+
+.ProseMirror h5 {
+  @apply text-xl font-medium mb-2 mt-4 text-slate-900;
+}
+
+.ProseMirror h6 {
+  @apply text-lg font-medium mb-1 mt-2 text-slate-900;
 }
 
 /* Blockquote - Fixed missing style */
