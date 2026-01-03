@@ -39,16 +39,22 @@ import {
 
 const fontFamilies = [
   'Inter',
+  'Roboto',
   'Arial',
+  'Arial Black',
   'Helvetica',
+  'Verdana',
+  'Trebuchet MS',
+  'Tahoma',
   'Times New Roman',
   'Georgia',
   'Garamond',
   'Courier New',
-  'Verdana',
-  'Trebuchet MS',
+  'Brush Script MT',
   'Comic Sans MS',
   'Impact',
+  'Lucida Console',
+  'Palatino',
 ];
 
 const fontSizes = [
@@ -75,24 +81,101 @@ const fontSizes = [
 ];
 
 const googleDocsColors = [
+  // Row 1: Grayscale & Basics
   '#000000',
-  '#424242',
-  '#757575',
-  '#BDBDBD',
-  '#F5F5F5',
+  '#434343',
+  '#666666',
+  '#999999',
+  '#B7B7B7',
+  '#CCCCCC',
+  '#D9D9D9',
+  '#EFEFEF',
+  '#F3F3F3',
   '#FFFFFF',
-  '#D32F2F',
-  '#F57C00',
-  '#FBC02D',
-  '#388E3C',
-  '#1976D2',
-  '#7B1FA2',
-  '#E91E63',
-  '#9C27B0',
-  '#673AB7',
-  '#3F51B5',
-  '#03A9F4',
-  '#00BCD4',
+
+  // Row 2: Red & Berries
+  '#980000',
+  '#FF0000',
+  '#FF9900',
+  '#FFFF00',
+  '#00FF00',
+  '#00FFFF',
+  '#4A86E8',
+  '#0000FF',
+  '#9900FF',
+  '#FF00FF',
+
+  // Row 3: Earth Tones & Deep Colors
+  '#E6B8AF',
+  '#F4CCCC',
+  '#FCE5CD',
+  '#FFF2CC',
+  '#D9EAD3',
+  '#D0E0E3',
+  '#C9DAF8',
+  '#CFE2F3',
+  '#D9D2E9',
+  '#EAD1DC',
+
+  // Row 4: Professional Shades
+  '#DD7E6B',
+  '#EA9999',
+  '#F9CB9C',
+  '#FFE599',
+  '#B6D7A8',
+  '#A2C4C9',
+  '#A4C2F4',
+  '#9FC5E8',
+  '#B4A7D6',
+  '#D5A6BD',
+
+  // Row 5: Bold Tones
+  '#CC4125',
+  '#E06666',
+  '#F6B26B',
+  '#FFD966',
+  '#93C47D',
+  '#76A5AF',
+  '#6D9EEB',
+  '#6FA8DC',
+  '#8E7CC3',
+  '#C27BA0',
+
+  // Row 6: Deep Tones
+  '#A61C00',
+  '#CC0000',
+  '#E69138',
+  '#F1C232',
+  '#6AA84F',
+  '#45818E',
+  '#3C78D8',
+  '#3D85C6',
+  '#674EA7',
+  '#A64D79',
+
+  // Row 7: Darker professional
+  '#85200C',
+  '#990000',
+  '#B45F06',
+  '#BF9000',
+  '#38761D',
+  '#134F5C',
+  '#1155CC',
+  '#0B5394',
+  '#351C75',
+  '#741B47',
+
+  // Row 8: Deepest
+  '#5B0F00',
+  '#660000',
+  '#783F04',
+  '#7F6000',
+  '#274E13',
+  '#0C343D',
+  '#1C4587',
+  '#073763',
+  '#20124D',
+  '#4C1130',
 ];
 
 const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
@@ -515,12 +598,11 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
               </button>
             </div>
 
-            {/* লিঙ্ক থাকলে শুধুমাত্র তখনই Unlink বাটন দেখাবে */}
             {editor.isActive('link') && (
               <button
                 onClick={() => {
                   editor.chain().focus().unsetLink().run();
-                  setLinkInput(''); // ইনপুট ক্লিয়ার করে দিবে
+                  setLinkInput('');
                 }}
                 className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg border border-transparent py-2 text-xs font-semibold text-rose-500 transition-colors hover:border-rose-100 hover:bg-rose-50"
               >

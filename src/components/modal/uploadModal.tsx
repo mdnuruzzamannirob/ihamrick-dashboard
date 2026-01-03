@@ -4,9 +4,9 @@ import { X, Calendar, Clock, FileText, Loader2, Plus } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useCreateBlogMutation, useUpdateBlogMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
-import TiptapEditor from '../TiptapEditor';
 import { fromZonedTime } from 'date-fns-tz';
 import { dateFormatter } from '@/utils/dateFormatter';
+import TiptapEditor from '../editor/TiptapEditor';
 
 interface UploadModalProps {
   selectedBlog?: any | null;

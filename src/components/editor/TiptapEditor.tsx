@@ -1,5 +1,4 @@
 'use client';
-
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -14,15 +13,23 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Superscript from '@tiptap/extension-superscript';
 import Subscript from '@tiptap/extension-subscript';
-import { FontSize } from './extensions/FontSize';
 import Toolbar from './Toolbar';
+import { FontSize } from './extensions/FontSize';
 
-export default function TiptapEditor({ value, onChange }: any) {
+export default function TiptapEditor({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        bulletList: { keepMarks: true },
-        orderedList: { keepMarks: true },
+        bulletList: { keepMarks: true, keepAttributes: true },
+        orderedList: { keepMarks: true, keepAttributes: true },
+        // We handle blockquote manually in toolbar, but this enables the node
+        blockquote: {},
       }),
       Underline,
       Superscript,
@@ -31,31 +38,48 @@ export default function TiptapEditor({ value, onChange }: any) {
       FontSize,
       TextStyle,
       Color,
-      Highlight.configure({ multicolor: true }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Link.configure({ openOnClick: false }),
-      Image.configure({ allowBase64: true }),
+      Highlight.configure({ multicolor: true }), // ENABLES CUSTOM BG COLOR
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right', 'justify'],
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { class: 'text-blue-600 hover:text-blue-800 underline' },
+      }),
+      Image.configure({
+        allowBase64: true,
+        inline: true,
+        HTMLAttributes: { class: 'rounded-lg max-w-full my-4 shadow-sm' },
+      }),
       TaskList,
       TaskItem.configure({ nested: true }),
     ],
     content: value,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
-      handleKeyDown: (_, event) => {
+      handleKeyDown: (view, event) => {
         if (event.key === 'Tab') {
-          editor?.commands.sinkListItem('listItem');
-          return true;
+          if (editor?.isActive('bulletList') || editor?.isActive('orderedList')) {
+            editor.commands.sinkListItem('listItem');
+            return true;
+          }
         }
         return false;
+      },
+      attributes: {
+        class: 'focus:outline-none min-h-[400px]',
       },
     },
     immediatelyRender: false,
   });
 
   return (
-    <div className="editor-shell">
-      <Toolbar editor={editor} />
-      <EditorContent editor={editor} className="editor-content" />
+    <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl ring-4 ring-slate-50/50">
+      {editor && <Toolbar editor={editor} />}
+      <div className="custom-scrollbar max-h-[75vh] min-h-[500px] overflow-y-auto bg-white">
+        <EditorContent editor={editor} />
+      </div>
     </div>
   );
 }

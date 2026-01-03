@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useRef } from 'react';
 import { Editor } from '@tiptap/react';
 import {
@@ -19,7 +18,6 @@ import {
   Type,
   Superscript,
   Subscript,
-  Quote,
   Eraser,
   Undo,
   Redo,
@@ -27,298 +25,670 @@ import {
   Unlink,
   PaintBucket,
   Heading1,
+  Heading2,
+  Heading3,
   FileImage,
   ExternalLink,
+  TextQuote,
+  Heading6,
+  Heading5,
+  Heading4,
+  Plus,
+  Check,
 } from 'lucide-react';
 
-// ---------------- Dropdown ----------------
-const Dropdown = ({ icon: Icon, label, children, title }: any) => {
-  const [open, setOpen] = useState(false);
-  const t = useRef<ReturnType<typeof setTimeout> | null>(null);
+const fontFamilies = [
+  'Inter',
+  'Roboto',
+  'Arial',
+  'Arial Black',
+  'Helvetica',
+  'Verdana',
+  'Trebuchet MS',
+  'Tahoma',
+  'Times New Roman',
+  'Georgia',
+  'Garamond',
+  'Courier New',
+  'Brush Script MT',
+  'Comic Sans MS',
+  'Impact',
+  'Lucida Console',
+  'Palatino',
+];
+
+const fontSizes = [
+  '2px',
+  '4px',
+  '6px',
+  '8px',
+  '10px',
+  '12px',
+  '14px',
+  '16px',
+  '18px',
+  '20px',
+  '24px',
+  '28px',
+  '32px',
+  '36px',
+  '40px',
+  '44px',
+  '48px',
+  '52px',
+  '60px',
+  '72px',
+];
+
+const googleDocsColors = [
+  // Row 1: Grayscale & Basics
+  '#000000',
+  '#434343',
+  '#666666',
+  '#999999',
+  '#B7B7B7',
+  '#CCCCCC',
+  '#D9D9D9',
+  '#EFEFEF',
+  '#F3F3F3',
+  '#FFFFFF',
+
+  // Row 2: Red & Berries
+  '#980000',
+  '#FF0000',
+  '#FF9900',
+  '#FFFF00',
+  '#00FF00',
+  '#00FFFF',
+  '#4A86E8',
+  '#0000FF',
+  '#9900FF',
+  '#FF00FF',
+
+  // Row 3: Earth Tones & Deep Colors
+  '#E6B8AF',
+  '#F4CCCC',
+  '#FCE5CD',
+  '#FFF2CC',
+  '#D9EAD3',
+  '#D0E0E3',
+  '#C9DAF8',
+  '#CFE2F3',
+  '#D9D2E9',
+  '#EAD1DC',
+
+  // Row 4: Professional Shades
+  '#DD7E6B',
+  '#EA9999',
+  '#F9CB9C',
+  '#FFE599',
+  '#B6D7A8',
+  '#A2C4C9',
+  '#A4C2F4',
+  '#9FC5E8',
+  '#B4A7D6',
+  '#D5A6BD',
+
+  // Row 5: Bold Tones
+  '#CC4125',
+  '#E06666',
+  '#F6B26B',
+  '#FFD966',
+  '#93C47D',
+  '#76A5AF',
+  '#6D9EEB',
+  '#6FA8DC',
+  '#8E7CC3',
+  '#C27BA0',
+
+  // Row 6: Deep Tones
+  '#A61C00',
+  '#CC0000',
+  '#E69138',
+  '#F1C232',
+  '#6AA84F',
+  '#45818E',
+  '#3C78D8',
+  '#3D85C6',
+  '#674EA7',
+  '#A64D79',
+
+  // Row 7: Darker professional
+  '#85200C',
+  '#990000',
+  '#B45F06',
+  '#BF9000',
+  '#38761D',
+  '#134F5C',
+  '#1155CC',
+  '#0B5394',
+  '#351C75',
+  '#741B47',
+
+  // Row 8: Deepest
+  '#5B0F00',
+  '#660000',
+  '#783F04',
+  '#7F6000',
+  '#274E13',
+  '#0C343D',
+  '#1C4587',
+  '#073763',
+  '#20124D',
+  '#4C1130',
+];
+
+const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => setIsOpen(false), 150);
+  };
 
   return (
     <div
-      className="relative"
-      onMouseEnter={() => {
-        if (t.current) clearTimeout(t.current);
-        setOpen(true);
-      }}
-      onMouseLeave={() => {
-        t.current = setTimeout(() => setOpen(false), 120);
-      }}
+      className="relative inline-block"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <button
         type="button"
         title={title}
-        className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-slate-600 hover:bg-indigo-50 hover:text-indigo-600"
+        className={`flex items-center gap-1 rounded-lg p-2 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 ${
+          active || isOpen ? 'bg-indigo-100 font-bold text-indigo-700 shadow-sm' : 'text-slate-600'
+        }`}
       >
-        {Icon && <Icon size={18} />}
-        {label && <span className="text-xs font-semibold">{label}</span>}
-        <ChevronDown size={12} />
+        {Icon && <Icon size={18} strokeWidth={2.5} />}
+        {label && <span className="max-w-20 truncate text-xs font-semibold">{label}</span>}
+        <ChevronDown
+          size={11}
+          className={`opacity-50 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
-      {open && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-56 rounded-xl border bg-white p-2 shadow-xl">
-          {children}
+      {isOpen && (
+        <div className="absolute top-full left-0 z-50 pt-1.5">
+          <div className="absolute -top-2 left-0 h-4 w-full" />
+          <div className="animate-in fade-in slide-in-from-top-1 min-w-[220px] overflow-hidden rounded-xl border border-slate-100 bg-white p-2 shadow-xl duration-150">
+            {children}
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// ---------------- Button ----------------
-const Btn = ({ icon: Icon, onClick, active, danger, title }: any) => (
+const ToolbarButton = ({ onClick, active, icon: Icon, title, danger, disabled }: any) => (
   <button
     type="button"
-    title={title}
     onClick={onClick}
-    className={`rounded-lg p-2 transition ${
+    disabled={disabled}
+    title={title}
+    className={`rounded-lg p-2 transition-all duration-200 ${
       active
-        ? 'bg-indigo-100 text-indigo-700'
+        ? 'bg-indigo-100 text-indigo-700 shadow-inner'
         : danger
           ? 'text-rose-500 hover:bg-rose-50'
-          : 'text-slate-600 hover:bg-slate-100'
+          : disabled
+            ? 'cursor-not-allowed opacity-30'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
     }`}
   >
-    <Icon size={18} />
+    <Icon size={18} strokeWidth={2.5} />
   </button>
 );
 
-// ---------------- Toolbar ----------------
 export default function Toolbar({ editor }: { editor: Editor | null }) {
+  const [linkInput, setLinkInput] = useState('');
+  const [imageInput, setImageInput] = useState('');
+
   if (!editor) return null;
 
-  const fonts = ['Inter', 'Arial', 'Georgia', 'Times New Roman', 'Courier New'];
-  const sizes = ['12px', '14px', '16px', '18px', '20px', '24px', '32px'];
-  const colors = ['#000000', '#475569', '#ef4444', '#22c55e', '#3b82f6', '#8b5cf6'];
-  const highlights = ['#fef08a', '#bbf7d0', '#bfdbfe', '#fde68a'];
+  const [, setUpdate] = React.useState(0);
+  React.useEffect(() => {
+    if (!editor) return;
+    const handler = () => setUpdate((prev) => prev + 1);
+    editor.on('transaction', handler);
+    return () => {
+      editor.off('transaction', handler);
+    };
+  }, [editor]);
 
-  const uploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () =>
-      editor
-        .chain()
-        .focus()
-        .setImage({ src: reader.result as string })
-        .run();
-    reader.readAsDataURL(file);
+  const getActiveAlignIcon = () => {
+    if (editor.isActive({ textAlign: 'center' })) return AlignCenter;
+    if (editor.isActive({ textAlign: 'right' })) return AlignRight;
+    if (editor.isActive({ textAlign: 'justify' })) return AlignJustify;
+    return AlignLeft;
   };
 
+  const getActiveListIcon = () => {
+    if (editor.isActive('bulletList')) return List;
+    if (editor.isActive('orderedList')) return ListOrdered;
+    if (editor.isActive('taskList')) return CheckSquare;
+    return List;
+  };
+
+  const getActiveHeadingIcon = () => {
+    for (let l = 1; l <= 6; l++) {
+      if (editor.isActive('heading', { level: l })) {
+        const icons = [Heading1, Heading2, Heading3, Heading4, Heading5, Heading6];
+        return icons[l - 1];
+      }
+    }
+    return Heading1;
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () =>
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: reader.result as string })
+          .run();
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const detectedFont = editor.getAttributes('textStyle')?.fontFamily;
+  const detectedSize = editor.getAttributes('textStyle')?.fontSize;
+  const currentFont = detectedFont && fontFamilies.includes(detectedFont) ? detectedFont : 'Font';
+  const currentSize = detectedSize && fontSizes.includes(detectedSize) ? detectedSize : 'Text';
+
   return (
-    <div className="sticky top-0 z-30 flex flex-wrap items-center gap-1 border-b bg-white px-3 py-2">
-      {/* Undo / Redo */}
-      <Btn icon={Undo} onClick={() => editor.chain().focus().undo().run()} />
-      <Btn icon={Redo} onClick={() => editor.chain().focus().redo().run()} />
+    <div className="sticky top-0 z-30 flex flex-wrap items-center gap-1 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-md">
+      {/* 1. History */}
+      <div className="mr-1 flex items-center gap-0.5 border-r border-slate-200 pr-2">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().undo().run()}
+          icon={Undo}
+          title="Undo"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().redo().run()}
+          icon={Redo}
+          title="Redo"
+        />
+      </div>
 
-      {/* Heading */}
-      <Dropdown icon={Heading1} title="Headings">
-        <button
-          className="dropdown-item"
-          onClick={() => editor.chain().focus().setParagraph().run()}
-        >
-          Paragraph
-        </button>
-        {[1, 2, 3, 4, 5, 6].map((l) => (
-          <button
-            key={l}
-            className="dropdown-item"
-            onClick={() =>
-              editor
-                .chain()
-                .focus()
-                .toggleHeading({ level: l as any })
-                .run()
-            }
-          >
-            Heading {l}
-          </button>
-        ))}
-      </Dropdown>
-
-      {/* Font */}
-      <Dropdown label="Font">
-        {fonts.map((f) => (
-          <button
-            key={f}
-            className="dropdown-item"
-            style={{ fontFamily: f }}
-            onClick={() => editor.chain().focus().setFontFamily(f).run()}
-          >
-            {f}
-          </button>
-        ))}
-      </Dropdown>
-
-      {/* Size */}
-      <Dropdown label="Size">
-        {sizes.map((s) => (
-          <button
-            key={s}
-            className="dropdown-item"
-            onClick={() => editor.chain().focus().setFontSize(s).run()}
-          >
-            {s}
-          </button>
-        ))}
-      </Dropdown>
-
-      {/* Marks */}
-      <Btn
-        icon={Bold}
-        active={editor.isActive('bold')}
-        onClick={() => editor.chain().focus().toggleBold().run()}
-      />
-      <Btn
-        icon={Italic}
-        active={editor.isActive('italic')}
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-      />
-      <Btn
-        icon={Underline}
-        active={editor.isActive('underline')}
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-      />
-      <Btn
-        icon={Strikethrough}
-        active={editor.isActive('strike')}
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-      />
-      <Btn
-        icon={Quote}
-        active={editor.isActive('blockquote')}
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+      {/* Paragraph (Standalone) */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setParagraph().run()}
+        active={!editor.isActive('heading')}
+        icon={Type}
+        title="Paragraph"
       />
 
-      {/* Colors */}
-      <Dropdown icon={Type} title="Text Color">
-        <div className="grid grid-cols-6 gap-1">
-          {colors.map((c) => (
+      {/* 2. Heading Dropdown (Now Dynamic & Colorful) */}
+      <Dropdown icon={getActiveHeadingIcon()} title="Headings" active={editor.isActive('heading')}>
+        {[1, 2, 3, 4, 5, 6].map((l) => {
+          const HIcons: any = [Heading1, Heading2, Heading3, Heading4, Heading5, Heading6];
+          const isActive = editor.isActive('heading', { level: l });
+          return (
             <button
-              key={c}
-              className="h-5 w-5 rounded-full border"
-              style={{ background: c }}
-              onClick={() => editor.chain().focus().setColor(c).run()}
-            />
+              key={l}
+              onClick={() =>
+                editor
+                  .chain()
+                  .focus()
+                  .toggleHeading({ level: l as any })
+                  .run()
+              }
+              className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${isActive ? 'bg-indigo-50 font-bold text-indigo-600' : 'text-slate-700 hover:bg-slate-50'}`}
+            >
+              {React.createElement(HIcons[l - 1], { size: 16 })} Heading {l}
+            </button>
+          );
+        })}
+      </Dropdown>
+
+      {/* Font Family & Size (Colorful when active) */}
+      <Dropdown label={currentFont} title="Font Family" active={detectedFont}>
+        <div className="custom-scrollbar max-h-60 overflow-y-auto">
+          <button
+            onClick={() => editor.chain().focus().unsetFontFamily().run()}
+            className="dropdown-item text-gray-400 italic"
+          >
+            Default
+          </button>
+          <hr className="my-2 text-gray-100" />
+          {fontFamilies.map((f) => (
+            <button
+              key={f}
+              onClick={() => editor.chain().focus().setFontFamily(f).run()}
+              className={`dropdown-item w-full px-3 py-2 text-left text-sm ${detectedFont === f ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
+              style={{ fontFamily: f }}
+            >
+              {f}
+            </button>
           ))}
         </div>
       </Dropdown>
 
-      <Dropdown icon={PaintBucket} title="Highlight">
-        <div className="grid grid-cols-4 gap-1">
-          {highlights.map((c) => (
+      <Dropdown label={currentSize} title="Font Size" active={detectedSize}>
+        <div className="custom-scrollbar max-h-60 overflow-y-auto">
+          <button
+            onClick={() => editor.chain().focus().unsetFontSize().run()}
+            className="dropdown-item text-gray-400 italic"
+          >
+            Default
+          </button>
+          <hr className="my-2 text-gray-100" />
+          {fontSizes.map((s) => (
             <button
-              key={c}
-              className="h-5 w-5 rounded"
-              style={{ background: c }}
-              onClick={() => editor.chain().focus().setHighlight({ color: c }).run()}
-            />
+              key={s}
+              onClick={() => editor.chain().focus().setFontSize(s).run()}
+              className={`dropdown-item w-full px-3 py-2 text-left text-sm ${detectedSize === s ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
+            >
+              {s}
+            </button>
           ))}
         </div>
       </Dropdown>
 
-      {/* Alignment */}
-      <Dropdown icon={AlignLeft} title="Align">
+      <div className="mx-1 h-5 w-px bg-slate-200" />
+
+      {/* 3. Basic Formatting */}
+      <div className="flex items-center gap-0.5">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          active={editor.isActive('bold')}
+          icon={Bold}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          active={editor.isActive('italic')}
+          icon={Italic}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          active={editor.isActive('underline')}
+          icon={Underline}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          active={editor.isActive('strike')}
+          icon={Strikethrough}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          active={editor.isActive('blockquote')}
+          icon={TextQuote}
+          title="Blockquote"
+        />
+      </div>
+
+      <div className="mx-1 h-5 w-px bg-slate-200" />
+
+      {/* 4. Colors (Highlight icon when active) */}
+      <div className="flex items-center gap-1">
+        <Dropdown icon={Type} title="Text Color" active={editor.getAttributes('textStyle').color}>
+          <div className="p-2">
+            <div className="mb-2 grid grid-cols-5 gap-1.5">
+              {googleDocsColors.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => editor.chain().focus().setColor(c).run()}
+                  className="h-6 w-6 rounded-full border border-gray-100 hover:scale-110"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+            <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
+              <Plus size={14} className="text-gray-400" />
+              <span className="text-xs text-gray-600">Custom</span>
+              <input
+                type="color"
+                className="absolute inset-0 cursor-pointer opacity-0"
+                onChange={(e: any) => editor.chain().focus().setColor(e.target.value).run()}
+              />
+            </label>
+          </div>
+        </Dropdown>
+
+        <Dropdown icon={PaintBucket} title="Highlighter" active={editor.isActive('highlight')}>
+          <div className="p-2">
+            <div className="mb-2 grid grid-cols-5 gap-1.5">
+              {googleDocsColors.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => editor.chain().focus().setHighlight({ color: c }).run()}
+                  className="h-6 w-6 rounded-full border border-gray-100 hover:scale-110"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => editor.chain().focus().unsetHighlight().run()}
+              className="mb-1 w-full rounded border py-1 text-xs text-slate-500"
+            >
+              None
+            </button>
+            <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
+              <Plus size={14} className="text-gray-400" />
+              <span className="text-xs text-gray-600">Custom</span>
+              <input
+                type="color"
+                className="absolute inset-0 cursor-pointer opacity-0"
+                onChange={(e: any) =>
+                  editor.chain().focus().setHighlight({ color: e.target.value }).run()
+                }
+              />
+            </label>
+          </div>
+        </Dropdown>
+      </div>
+
+      <div className="mx-1 h-5 w-px bg-slate-200" />
+
+      {/* 5. Alignment Dropdown (Now Dynamic & Colorful) */}
+      <Dropdown
+        icon={getActiveAlignIcon()}
+        title="Alignment"
+        active={
+          editor.isActive({ textAlign: 'center' }) ||
+          editor.isActive({ textAlign: 'right' }) ||
+          editor.isActive({ textAlign: 'justify' })
+        }
+      >
         <button
-          className="dropdown-item"
           onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'left' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
-          <AlignLeft size={14} /> Left
+          <AlignLeft size={16} /> Left
         </button>
         <button
-          className="dropdown-item"
           onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'center' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
-          <AlignCenter size={14} /> Center
+          <AlignCenter size={16} /> Center
         </button>
         <button
-          className="dropdown-item"
           onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'right' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
-          <AlignRight size={14} /> Right
+          <AlignRight size={16} /> Right
         </button>
         <button
-          className="dropdown-item"
           onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive({ textAlign: 'justify' }) ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
-          <AlignJustify size={14} /> Justify
+          <AlignJustify size={16} /> Justify
         </button>
       </Dropdown>
 
-      {/* Lists */}
-      <Dropdown icon={List} title="Lists">
+      {/* 6. List Dropdown (Now Dynamic & Colorful) */}
+      <Dropdown
+        icon={getActiveListIcon()}
+        title="Lists"
+        active={
+          editor.isActive('bulletList') ||
+          editor.isActive('orderedList') ||
+          editor.isActive('taskList')
+        }
+      >
         <button
-          className="dropdown-item"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive('bulletList') ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
-          <List size={14} /> Bullet
+          <List size={16} /> Bullet List
         </button>
         <button
-          className="dropdown-item"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive('orderedList') ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
-          <ListOrdered size={14} /> Ordered
+          <ListOrdered size={16} /> Order List
         </button>
         <button
-          className="dropdown-item"
           onClick={() => editor.chain().focus().toggleTaskList().run()}
+          className={`dropdown-item flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm ${editor.isActive('taskList') ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
         >
-          <CheckSquare size={14} /> Task
+          <CheckSquare size={16} /> Task List
         </button>
       </Dropdown>
 
-      {/* Link & Image */}
-      <Dropdown icon={Link2} title="Link">
-        <button
-          className="dropdown-item"
-          onClick={() => {
-            const url = prompt('Enter URL');
-            if (url) editor.chain().focus().setLink({ href: url }).run();
-          }}
-        >
-          Insert link
-        </button>
-        <button
-          className="dropdown-item text-rose-500"
-          onClick={() => editor.chain().focus().unsetLink().run()}
-        >
-          <Unlink size={14} /> Unlink
-        </button>
-      </Dropdown>
+      {/* 7. Link & Image */}
+      <div className="ml-1 flex items-center gap-1 border-l border-slate-200 pl-2">
+        {/* Updated Link Dropdown */}
+        <Dropdown icon={Link2} title="Link Options" active={editor.isActive('link')}>
+          <div className="flex min-w-[260px] flex-col gap-2 p-3">
+            <h4 className="px-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+              {editor.isActive('link') ? 'Edit Link' : 'Insert Link'}
+            </h4>
 
-      <Dropdown icon={ImageIcon} title="Image">
-        <label className="dropdown-item cursor-pointer">
-          <FileImage size={14} /> Upload
-          <input type="file" hidden accept="image/*" onChange={uploadImage} />
-        </label>
-        <button
-          className="dropdown-item"
-          onClick={() => {
-            const url = prompt('Image URL');
-            if (url) editor.chain().focus().setImage({ src: url }).run();
-          }}
-        >
-          <ExternalLink size={14} /> URL
-        </button>
-      </Dropdown>
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 p-1.5 transition-all focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
+              <div className="pl-1 text-slate-400">
+                <ExternalLink size={14} />
+              </div>
+              <input
+                type="text"
+                placeholder="https://example.com"
+                className="flex-1 bg-transparent py-1 text-xs text-slate-700 outline-none placeholder:text-slate-400"
+                value={linkInput || editor.getAttributes('link').href || ''}
+                onChange={(e) => setLinkInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const finalUrl = linkInput || editor.getAttributes('link').href;
+                    if (finalUrl) {
+                      editor.chain().focus().setLink({ href: finalUrl }).run();
+                      setLinkInput('');
+                    }
+                  }
+                }}
+              />
+              <button
+                onClick={() => {
+                  const finalUrl = linkInput || editor.getAttributes('link').href;
+                  if (finalUrl) {
+                    editor.chain().focus().setLink({ href: finalUrl }).run();
+                    setLinkInput('');
+                  }
+                }}
+                className="rounded-lg bg-indigo-600 p-1.5 text-white shadow-sm transition-transform hover:bg-indigo-700 active:scale-95"
+              >
+                <Check size={14} strokeWidth={3} />
+              </button>
+            </div>
 
-      {/* Utils */}
-      <Btn
-        icon={Superscript}
-        active={editor.isActive('superscript')}
+            {editor.isActive('link') && (
+              <button
+                onClick={() => {
+                  editor.chain().focus().unsetLink().run();
+                  setLinkInput('');
+                }}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg border border-transparent py-2 text-xs font-semibold text-rose-500 transition-colors hover:border-rose-100 hover:bg-rose-50"
+              >
+                <Unlink size={14} /> Remove Link
+              </button>
+            )}
+          </div>
+        </Dropdown>
+
+        {/* Updated Image Dropdown */}
+        <Dropdown icon={ImageIcon} title="Image Options">
+          <div className="flex min-w-[260px] flex-col gap-3 p-3">
+            <div>
+              <h4 className="mb-2 px-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
+                Image URL
+              </h4>
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 p-1.5 transition-all focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
+                <div className="pl-1 text-slate-400">
+                  <ImageIcon size={14} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Paste image link..."
+                  className="flex-1 bg-transparent py-1 text-xs text-slate-700 outline-none placeholder:text-slate-400"
+                  value={imageInput}
+                  onChange={(e) => setImageInput(e.target.value)}
+                />
+                <button
+                  onClick={() => {
+                    if (imageInput) {
+                      editor.chain().focus().setImage({ src: imageInput }).run();
+                      setImageInput('');
+                    }
+                  }}
+                  className="rounded-lg bg-indigo-600 p-1.5 text-white shadow-sm transition-transform hover:bg-indigo-700 active:scale-95"
+                >
+                  <Check size={14} strokeWidth={3} />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                <div className="w-full border-t border-slate-100"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-2 text-[10px] font-medium text-slate-300 uppercase">
+                  OR
+                </span>
+              </div>
+            </div>
+
+            <label className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-medium text-slate-600 transition-all hover:border-indigo-400 hover:bg-indigo-50/30">
+              <FileImage
+                size={18}
+                className="text-slate-400 transition-colors group-hover:text-indigo-500"
+              />
+              <span className="text-xs group-hover:text-indigo-600">Upload from Device</span>
+              <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+            </label>
+          </div>
+        </Dropdown>
+      </div>
+
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleSuperscript().run()}
+        active={editor.isActive('superscript')}
+        icon={Superscript}
+        title="Superscript"
       />
-      <Btn
-        icon={Subscript}
-        active={editor.isActive('subscript')}
+      <ToolbarButton
         onClick={() => editor.chain().focus().toggleSubscript().run()}
+        active={editor.isActive('subscript')}
+        icon={Subscript}
+        title="Subscript"
       />
-      <Btn
-        icon={Eraser}
-        danger
-        onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-      />
+
+      {/* 8. Eraser at Right Side */}
+      <div className="ml-auto">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
+          icon={Eraser}
+          danger
+          title="Clear Formatting"
+        />
+      </div>
     </div>
   );
 }
