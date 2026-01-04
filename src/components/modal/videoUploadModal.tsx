@@ -2,14 +2,11 @@
 
 import { useState } from 'react';
 import { Upload, X, Play, FileText, Check } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
-import { joditConfig } from '@/utils/joditConfig';
 import { useUploadVideoMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
 import { fromZonedTime } from 'date-fns-tz';
-
-const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
+import TiptapEditor from '../editor/TiptapEditor';
 
 const VideoUploadModal = ({ refetch }: { refetch: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -188,10 +185,11 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                       Description
                     </label>
                     <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
-                      <JoditEditor
+                      <TiptapEditor
                         value={formData.description}
-                        config={joditConfig}
-                        onBlur={(v) => setFormData({ ...formData, description: v })}
+                        onChange={(newContent) =>
+                          setFormData((p) => ({ ...p, description: newContent }))
+                        }
                       />
                     </div>
                   </div>
@@ -201,10 +199,11 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                       Video Transcription
                     </label>
                     <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
-                      <JoditEditor
+                      <TiptapEditor
                         value={formData.transcriptions}
-                        config={joditConfig}
-                        onBlur={(v) => setFormData({ ...formData, transcriptions: v })}
+                        onChange={(newContent) =>
+                          setFormData((p) => ({ ...p, transcriptions: newContent }))
+                        }
                       />
                     </div>
                   </div>
@@ -213,7 +212,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
             </div>
 
             {/* Footer Action Buttons */}
-            <div className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/50 px-10 py-6">
+            <div className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/50 px-10 py-5">
               <button
                 onClick={() => {
                   setIsModalOpen(false);

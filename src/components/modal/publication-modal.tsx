@@ -3,12 +3,11 @@
 import type React from 'react';
 import { useState } from 'react';
 import { ChevronDown, X, Loader2, Plus } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useCreatePublicationMutation } from '../../../services/allApi';
-import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
 import { fromZonedTime } from 'date-fns-tz';
+import TiptapEditor from '../editor/TiptapEditor';
 
 interface PublicationFormState {
   title: string;
@@ -19,8 +18,6 @@ interface PublicationFormState {
   cover: File | Blob | null;
   file: File | Blob | null;
 }
-
-const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
 
 export function PublicationModal({ refetch }: { refetch: any }) {
   const [formData, setFormData] = useState<PublicationFormState>({
@@ -123,10 +120,10 @@ export function PublicationModal({ refetch }: { refetch: any }) {
           <div className="absolute inset-0" onClick={() => setIsOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-in zoom-in z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
+            className="animate-in zoom-in z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-50 px-8 py-6">
+            <div className="flex items-center justify-between border-b border-gray-50 px-8 py-5">
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900">New Publication</h2>
                 <p className="mt-1 text-xs font-medium text-gray-400">
@@ -236,7 +233,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                       />
                     </button>
                     {statusOpen && (
-                      <div className="absolute z-20 mt-2 w-full overflow-hidden rounded bg-white shadow-2xl ring-1 ring-black/5">
+                      <div className="absolute z-99 mt-2 w-full overflow-hidden rounded bg-white shadow-2xl ring-1 ring-black/5">
                         {['Published', 'Unpublished'].map((s) => (
                           <button
                             key={s}
@@ -261,18 +258,15 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                 <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
                   Content Description
                 </label>
-                <div className="overflow-hidden rounded bg-gray-50 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-black">
-                  <JoditEditor
-                    value={formData.description}
-                    config={joditConfig}
-                    onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
-                  />
-                </div>
+                <TiptapEditor
+                  value={formData.description}
+                  onChange={(newContent) => setFormData((p) => ({ ...p, description: newContent }))}
+                />
               </div>
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-gray-50 bg-gray-50/30 px-8 py-6">
+            <div className="flex justify-end gap-3 border-t border-gray-50 bg-gray-50/30 px-8 py-5">
               <button
                 onClick={() => setIsOpen(false)}
                 className="rounded px-6 py-3 text-sm font-bold text-gray-400 transition-all hover:text-black"

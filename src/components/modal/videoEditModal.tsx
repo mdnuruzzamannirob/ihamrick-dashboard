@@ -2,15 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { X, Check, Loader2, Pencil, Play, ImageIcon } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useUpdateVideoMutation } from '../../../services/allApi';
-import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
 import { fromZonedTime } from 'date-fns-tz';
 import { dateFormatter } from '@/utils/dateFormatter';
-
-const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
+import TiptapEditor from '../editor/TiptapEditor';
 
 const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,9 +102,9 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-4 backdrop-blur-md">
-          <div className="z-10 flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-4xl border border-white/10 bg-white shadow-2xl">
+          <div className="z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-4xl border border-white/10 bg-white shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-6">
+            <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-5">
               <div>
                 <h2 className="text-2xl font-black tracking-tight text-zinc-900">Edit Content</h2>
                 <p className="mt-1 text-xs font-medium tracking-widest text-zinc-400 uppercase">
@@ -201,20 +198,22 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
                     <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
                       Description
                     </label>
-                    <JoditEditor
+                    <TiptapEditor
                       value={formData.description}
-                      config={joditConfig}
-                      onBlur={(v) => setFormData({ ...formData, description: v })}
+                      onChange={(newContent) =>
+                        setFormData((p) => ({ ...p, description: newContent }))
+                      }
                     />
                   </div>
                   <div className="space-y-3">
                     <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
                       Transcription
                     </label>
-                    <JoditEditor
+                    <TiptapEditor
                       value={formData.transcription}
-                      config={joditConfig}
-                      onBlur={(v) => setFormData({ ...formData, transcription: v })}
+                      onChange={(newContent) =>
+                        setFormData((p) => ({ ...p, transcription: newContent }))
+                      }
                     />
                   </div>
                 </div>
@@ -222,7 +221,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/50 px-10 py-6">
+            <div className="flex items-center justify-end gap-4 border-t border-zinc-100 bg-zinc-50/50 px-10 py-5">
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="px-6 py-2 text-xs font-black tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-900"

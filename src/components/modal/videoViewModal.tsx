@@ -3,6 +3,7 @@ import { dateFormatter } from '@/utils/dateFormatter';
 import { formatFileSize } from '@/utils/formatFileSize';
 import { Eye, X, Calendar, File, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
+import TiptapViewer from '../editor/TiptapViewer';
 
 export function VideoViewModal({ video }: { video: any }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -89,12 +90,9 @@ export function VideoViewModal({ video }: { video: any }) {
                 {/* Description */}
                 <div>
                   <h3 className="mb-2 text-sm font-semibold text-gray-700">Description</h3>
-                  <div
-                    className="prose prose-sm max-w-none rounded-lg bg-gray-50 p-4 text-gray-600"
-                    dangerouslySetInnerHTML={{
-                      __html: video.description || 'No description provided.',
-                    }}
-                  />
+                  <div className="rounded-2xl border border-gray-200 bg-white">
+                    <TiptapViewer content={video.description || 'No description provided.'} />
+                  </div>
                 </div>
                 {/* Transcription */}
                 <div>

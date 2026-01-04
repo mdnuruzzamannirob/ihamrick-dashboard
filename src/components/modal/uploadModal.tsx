@@ -139,12 +139,12 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-black/60 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div className="absolute inset-0" onClick={handleClose} />
 
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative flex size-full flex-col overflow-hidden bg-white"
+            className="animate-in zoom-in z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300"
           >
             {/* Header */}
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-50 bg-white/90 px-8 py-5 backdrop-blur-md">
@@ -260,7 +260,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
               <button
                 disabled={isLoading}
                 onClick={handleSave}
-                className="flex min-w-[200px] items-center justify-center gap-3 rounded-[22px] bg-black px-10 py-4 text-xs font-bold tracking-[0.2em] text-white uppercase shadow-2xl shadow-black/20 transition-all hover:bg-neutral-800 active:scale-95 disabled:bg-neutral-200"
+                className="flex min-w-[200px] items-center justify-center gap-3 rounded-2xl bg-black px-10 py-4 text-xs font-bold tracking-[0.2em] text-white uppercase shadow-2xl shadow-black/20 transition-all hover:bg-neutral-800 active:scale-95 disabled:bg-neutral-200"
               >
                 {isLoading ? (
                   <>

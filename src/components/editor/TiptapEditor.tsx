@@ -28,17 +28,16 @@ export default function TiptapEditor({
       StarterKit.configure({
         bulletList: { keepMarks: true, keepAttributes: true },
         orderedList: { keepMarks: true, keepAttributes: true },
-        // We handle blockquote manually in toolbar, but this enables the node
         blockquote: {},
       }),
+      TextStyle,
+      Color,
+      FontFamily,
+      FontSize,
       Underline,
       Superscript,
       Subscript,
-      FontFamily,
-      FontSize,
-      TextStyle,
-      Color,
-      Highlight.configure({ multicolor: true }), // ENABLES CUSTOM BG COLOR
+      Highlight.configure({ multicolor: true }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
         alignments: ['left', 'center', 'right', 'justify'],
@@ -75,9 +74,9 @@ export default function TiptapEditor({
   });
 
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl ring-4 ring-slate-50/50">
+    <div className="w-full overflow-hidden rounded-2xl border border-gray-200">
       {editor && <Toolbar editor={editor} />}
-      <div className="custom-scrollbar max-h-[75vh] min-h-[500px] overflow-y-auto bg-white">
+      <div className="custom-scrollbar max-h-[65vh] min-h-80 w-full overflow-y-auto bg-white">
         <EditorContent editor={editor} />
       </div>
     </div>

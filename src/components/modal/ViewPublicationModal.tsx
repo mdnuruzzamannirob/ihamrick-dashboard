@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { X, Eye, Calendar, User, FileText, CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { dateFormatter } from '@/utils/dateFormatter';
+import TiptapViewer from '../editor/TiptapViewer';
 
 interface Publication {
   _id: string;
@@ -139,10 +140,10 @@ export function ViewPublicationModal({ publication }: { publication: Publication
                   <h3 className="text-xs font-bold tracking-widest text-gray-400 uppercase">
                     About this Publication
                   </h3>
-                  <div
-                    className="prose prose-sm max-w-none leading-relaxed font-normal text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: publication?.description }}
-                  />
+
+                  <div className="rounded-2xl border border-gray-200 bg-white">
+                    <TiptapViewer content={publication.description} />
+                  </div>
                 </div>
 
                 {/* File Attachment Card */}

@@ -1,5 +1,6 @@
 'use client';
-import React, { useState, useRef } from 'react';
+
+import React, { useState } from 'react';
 import { Editor } from '@tiptap/react';
 import {
   Bold,
@@ -21,7 +22,6 @@ import {
   Eraser,
   Undo,
   Redo,
-  ChevronDown,
   Unlink,
   PaintBucket,
   Heading1,
@@ -36,6 +36,7 @@ import {
   Plus,
   Check,
 } from 'lucide-react';
+import { Dropdown } from './Dropdown';
 
 const fontFamilies = [
   'Inter',
@@ -48,7 +49,7 @@ const fontFamilies = [
   'Tahoma',
   'Times New Roman',
   'Georgia',
-  'Garamond',
+  'EB Garamond',
   'Courier New',
   'Brush Script MT',
   'Comic Sans MS',
@@ -81,7 +82,6 @@ const fontSizes = [
 ];
 
 const googleDocsColors = [
-  // Row 1: Grayscale & Basics
   '#000000',
   '#434343',
   '#666666',
@@ -92,8 +92,6 @@ const googleDocsColors = [
   '#EFEFEF',
   '#F3F3F3',
   '#FFFFFF',
-
-  // Row 2: Red & Berries
   '#980000',
   '#FF0000',
   '#FF9900',
@@ -104,8 +102,6 @@ const googleDocsColors = [
   '#0000FF',
   '#9900FF',
   '#FF00FF',
-
-  // Row 3: Earth Tones & Deep Colors
   '#E6B8AF',
   '#F4CCCC',
   '#FCE5CD',
@@ -116,8 +112,6 @@ const googleDocsColors = [
   '#CFE2F3',
   '#D9D2E9',
   '#EAD1DC',
-
-  // Row 4: Professional Shades
   '#DD7E6B',
   '#EA9999',
   '#F9CB9C',
@@ -128,8 +122,6 @@ const googleDocsColors = [
   '#9FC5E8',
   '#B4A7D6',
   '#D5A6BD',
-
-  // Row 5: Bold Tones
   '#CC4125',
   '#E06666',
   '#F6B26B',
@@ -140,8 +132,6 @@ const googleDocsColors = [
   '#6FA8DC',
   '#8E7CC3',
   '#C27BA0',
-
-  // Row 6: Deep Tones
   '#A61C00',
   '#CC0000',
   '#E69138',
@@ -152,8 +142,6 @@ const googleDocsColors = [
   '#3D85C6',
   '#674EA7',
   '#A64D79',
-
-  // Row 7: Darker professional
   '#85200C',
   '#990000',
   '#B45F06',
@@ -164,8 +152,6 @@ const googleDocsColors = [
   '#0B5394',
   '#351C75',
   '#741B47',
-
-  // Row 8: Deepest
   '#5B0F00',
   '#660000',
   '#783F04',
@@ -177,52 +163,6 @@ const googleDocsColors = [
   '#20124D',
   '#4C1130',
 ];
-
-const Dropdown = ({ icon: Icon, label, children, active, title }: any) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => setIsOpen(false), 150);
-  };
-
-  return (
-    <div
-      className="relative inline-block"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <button
-        type="button"
-        title={title}
-        className={`flex items-center gap-1 rounded-lg p-2 transition-all duration-200 hover:bg-indigo-50 hover:text-indigo-600 ${
-          active || isOpen ? 'bg-indigo-100 font-bold text-indigo-700 shadow-sm' : 'text-slate-600'
-        }`}
-      >
-        {Icon && <Icon size={18} strokeWidth={2.5} />}
-        {label && <span className="max-w-20 truncate text-xs font-semibold">{label}</span>}
-        <ChevronDown
-          size={11}
-          className={`opacity-50 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 z-50 pt-1.5">
-          <div className="absolute -top-2 left-0 h-4 w-full" />
-          <div className="animate-in fade-in slide-in-from-top-1 min-w-[220px] overflow-hidden rounded-xl border border-slate-100 bg-white p-2 shadow-xl duration-150">
-            {children}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const ToolbarButton = ({ onClick, active, icon: Icon, title, danger, disabled }: any) => (
   <button
@@ -284,6 +224,14 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
     return Heading1;
   };
 
+  const setFont = (fontName: string) => {
+    if (fontName === 'Inter') {
+      editor.chain().focus().unsetFontFamily().run();
+    } else {
+      editor.chain().focus().setFontFamily(fontName).run();
+    }
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -304,7 +252,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
   const currentSize = detectedSize && fontSizes.includes(detectedSize) ? detectedSize : 'Text';
 
   return (
-    <div className="sticky top-0 z-30 flex flex-wrap items-center gap-1 border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-md">
+    <div className="sticky top-0 z-30 flex flex-wrap items-center gap-1 rounded-t-2xl border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-md">
       {/* 1. History */}
       <div className="mr-1 flex items-center gap-0.5 border-r border-slate-200 pr-2">
         <ToolbarButton
@@ -319,15 +267,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         />
       </div>
 
-      {/* Paragraph (Standalone) */}
-      <ToolbarButton
-        onClick={() => editor.chain().focus().setParagraph().run()}
-        active={!editor.isActive('heading')}
-        icon={Type}
-        title="Paragraph"
-      />
-
-      {/* 2. Heading Dropdown (Now Dynamic & Colorful) */}
+      {/* 2. Heading Dropdown */}
       <Dropdown icon={getActiveHeadingIcon()} title="Headings" active={editor.isActive('heading')}>
         {[1, 2, 3, 4, 5, 6].map((l) => {
           const HIcons: any = [Heading1, Heading2, Heading3, Heading4, Heading5, Heading6];
@@ -350,7 +290,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         })}
       </Dropdown>
 
-      {/* Font Family & Size (Colorful when active) */}
+      {/* Font Family & Size */}
       <Dropdown label={currentFont} title="Font Family" active={detectedFont}>
         <div className="custom-scrollbar max-h-60 overflow-y-auto">
           <button
@@ -363,7 +303,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           {fontFamilies.map((f) => (
             <button
               key={f}
-              onClick={() => editor.chain().focus().setFontFamily(f).run()}
+              onClick={() => setFont(f)}
               className={`dropdown-item w-full px-3 py-2 text-left text-sm ${detectedFont === f ? 'bg-indigo-50 font-bold text-indigo-600' : 'hover:bg-slate-50'}`}
               style={{ fontFamily: f }}
             >
@@ -428,10 +368,10 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
       <div className="mx-1 h-5 w-px bg-slate-200" />
 
-      {/* 4. Colors (Highlight icon when active) */}
+      {/* 4. Colors */}
       <div className="flex items-center gap-1">
         <Dropdown icon={Type} title="Text Color" active={editor.getAttributes('textStyle').color}>
-          <div className="p-2">
+          <div className="custom-scrollbar max-h-60 overflow-y-auto p-2">
             <div className="mb-2 grid grid-cols-5 gap-1.5">
               {googleDocsColors.map((c) => (
                 <button
@@ -455,7 +395,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         </Dropdown>
 
         <Dropdown icon={PaintBucket} title="Highlighter" active={editor.isActive('highlight')}>
-          <div className="p-2">
+          <div className="custom-scrollbar max-h-60 overflow-y-auto p-2">
             <div className="mb-2 grid grid-cols-5 gap-1.5">
               {googleDocsColors.map((c) => (
                 <button
@@ -489,7 +429,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
       <div className="mx-1 h-5 w-px bg-slate-200" />
 
-      {/* 5. Alignment Dropdown (Now Dynamic & Colorful) */}
+      {/* 5. Alignment Dropdown */}
       <Dropdown
         icon={getActiveAlignIcon()}
         title="Alignment"
@@ -525,7 +465,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
         </button>
       </Dropdown>
 
-      {/* 6. List Dropdown (Now Dynamic & Colorful) */}
+      {/* 6. List Dropdown */}
       <Dropdown
         icon={getActiveListIcon()}
         title="Lists"
@@ -557,13 +497,11 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
 
       {/* 7. Link & Image */}
       <div className="ml-1 flex items-center gap-1 border-l border-slate-200 pl-2">
-        {/* Updated Link Dropdown */}
         <Dropdown icon={Link2} title="Link Options" active={editor.isActive('link')}>
           <div className="flex min-w-[260px] flex-col gap-2 p-3">
             <h4 className="px-1 text-[11px] font-bold tracking-wider text-slate-400 uppercase">
               {editor.isActive('link') ? 'Edit Link' : 'Insert Link'}
             </h4>
-
             <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50/50 p-1.5 transition-all focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10">
               <div className="pl-1 text-slate-400">
                 <ExternalLink size={14} />
@@ -597,7 +535,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
                 <Check size={14} strokeWidth={3} />
               </button>
             </div>
-
             {editor.isActive('link') && (
               <button
                 onClick={() => {
@@ -612,7 +549,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           </div>
         </Dropdown>
 
-        {/* Updated Image Dropdown */}
         <Dropdown icon={ImageIcon} title="Image Options">
           <div className="flex min-w-[260px] flex-col gap-3 p-3">
             <div>
@@ -643,7 +579,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
                 </button>
               </div>
             </div>
-
             <div className="relative">
               <div className="absolute inset-0 flex items-center" aria-hidden="true">
                 <div className="w-full border-t border-slate-100"></div>
@@ -654,7 +589,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
                 </span>
               </div>
             </div>
-
             <label className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-3 text-sm font-medium text-slate-600 transition-all hover:border-indigo-400 hover:bg-indigo-50/30">
               <FileImage
                 size={18}

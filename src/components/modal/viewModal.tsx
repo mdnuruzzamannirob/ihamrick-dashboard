@@ -2,6 +2,7 @@
 
 import { dateFormatter } from '@/utils/dateFormatter';
 import { X, Calendar, User, Music, Headphones } from 'lucide-react';
+import TiptapViewer from '../editor/TiptapViewer';
 
 interface ViewBlogModalProps {
   isOpen: boolean;
@@ -131,11 +132,8 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
             <label className="block text-xs font-bold tracking-widest text-neutral-400 uppercase">
               Description
             </label>
-            <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
-              <div
-                className="prose prose-sm max-w-none leading-relaxed font-normal text-gray-600"
-                dangerouslySetInnerHTML={{ __html: blog.description }}
-              />
+            <div className="rounded-2xl border border-gray-200 bg-white">
+              <TiptapViewer content={blog.description} />
             </div>
           </div>
 

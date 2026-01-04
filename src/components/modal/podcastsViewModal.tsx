@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useStartPodcastMutation, useEndPodcastMutation } from '../../../services/allApi';
 import { dateFormatter } from '@/utils/dateFormatter';
+import TiptapViewer from '../editor/TiptapViewer';
 
 export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch: () => void }) {
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -303,11 +304,8 @@ const ContentSection = ({ title, content, icon }: any) => (
         {title}
       </h3>
     </div>
-    <div
-      className="prose prose-sm max-w-none rounded-3xl border border-transparent bg-slate-50 p-6 leading-relaxed text-slate-600 transition-all hover:border-indigo-100 hover:bg-white hover:shadow-sm"
-      dangerouslySetInnerHTML={{
-        __html: content || `<p class="italic opacity-50">No ${title.toLowerCase()} provided.</p>`,
-      }}
-    />
+    <div className="rounded-2xl border border-gray-200 bg-white">
+      <TiptapViewer content={content} />
+    </div>
   </div>
 );

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&family=EB+Garamond:wght@400;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -32,12 +33,10 @@ button {
 }
 
 
-/* --- Cute Dropdown Items --- */
 .dropdown-item {
   @apply flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600 text-left;
 }
 
-/* --- Scrollbar for Font Lists --- */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
 }
@@ -57,7 +56,8 @@ button {
 
 /* --- Editor Core --- */
 .ProseMirror {
-  @apply outline-none p-12 max-w-4xl mx-auto text-slate-800 leading-7;
+  @apply outline-none p-5 text-slate-800 leading-7;
+  color: #1e293b;
   font-family: 'Inter', sans-serif;
 }
 

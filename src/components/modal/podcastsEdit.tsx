@@ -2,15 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Pencil, Loader2, X } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { toast } from 'react-toastify';
 import { useUpdatePodcastMutation } from '../../../services/allApi';
-import { joditConfig } from '@/utils/joditConfig';
 import { SmartMediaUpload } from '../SmartMediaUpload';
 import { fromZonedTime } from 'date-fns-tz';
 import { dateFormatter } from '@/utils/dateFormatter';
-
-const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
+import TiptapEditor from '../editor/TiptapEditor';
 
 const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,7 +92,7 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
           <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="animate-in zoom-in z-10 flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl duration-200"
+            className="animate-in zoom-in z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl duration-200"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
@@ -161,20 +158,24 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
                   <label className="mb-1.5 block text-sm font-semibold text-gray-700">
                     Description
                   </label>
-                  <JoditEditor
+
+                  <TiptapEditor
                     value={formData.description}
-                    config={joditConfig}
-                    onBlur={(v) => setFormData((p) => ({ ...p, description: v }))}
+                    onChange={(newContent) =>
+                      setFormData((p) => ({ ...p, description: newContent }))
+                    }
                   />
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-semibold text-gray-700">
                     Transcription
                   </label>
-                  <JoditEditor
+
+                  <TiptapEditor
                     value={formData.transcription}
-                    config={joditConfig}
-                    onBlur={(v) => setFormData((p) => ({ ...p, transcription: v }))}
+                    onChange={(newContent) =>
+                      setFormData((p) => ({ ...p, transcription: newContent }))
+                    }
                   />
                 </div>
               </div>
