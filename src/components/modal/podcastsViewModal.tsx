@@ -78,7 +78,7 @@ export function PodcastsViewModal({ podcast, refetch }: { podcast: any; refetch:
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm transition-opacity">
           <div className="absolute inset-0" onClick={() => setViewModalOpen(false)} />
 
-          <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-4xl bg-white shadow-2xl ring-1 ring-slate-900/5">
+          <div className="relative z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-4xl bg-white shadow-2xl ring-1 ring-slate-900/5">
             {/* Header / Cover Image Area */}
             <div className="relative h-72 w-full shrink-0 overflow-hidden bg-slate-900">
               {podcast?.coverImage && podcast?.coverImage !== 'default-podcast-cover.jpg' ? (

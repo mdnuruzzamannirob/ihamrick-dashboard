@@ -1,7 +1,8 @@
 'use client';
 
+import React from 'react';
+import { X, Calendar, Music, Headphones, CheckCircle, Clock } from 'lucide-react';
 import { dateFormatter } from '@/utils/dateFormatter';
-import { X, Calendar, User, Music, Headphones } from 'lucide-react';
 import TiptapViewer from '../editor/TiptapViewer';
 
 interface ViewBlogModalProps {
@@ -15,90 +16,74 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
 
   const audioSrc = blog.audioSignedUrl || blog.audioUrl;
   const isScheduled = blog.status === 'scheduled';
-  const dateLabel = isScheduled ? 'Scheduled Date' : 'Upload Date';
+
+  // Status styling logic
+  const statusStyles = {
+    published: 'bg-green-100 text-green-700',
+    scheduled: 'bg-blue-100 text-blue-700',
+    draft: 'bg-amber-100 text-amber-700',
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm md:p-5">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-all"
+      onClick={onClose}
+    >
       <div className="absolute inset-0" onClick={onClose} />
+
       <div
-        className="font-poppins relative z-10 max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white p-8 shadow-2xl"
+        className="animate-in zoom-in z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 rounded-full p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-black"
-        >
-          <X className="h-5 w-5" />
-        </button>
-
-        {/* Modal Header */}
-        <div className="mb-8 border-b border-neutral-100 pb-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-neutral-900">Blog Details</h2>
-              <p className="mt-1 text-sm text-neutral-500">
-                View complete information regarding this post
-              </p>
-            </div>
-            <span
-              className={`inline-block shrink-0 rounded-full px-4 py-1.5 text-xs font-bold tracking-wider text-white uppercase shadow-md ${
-                blog.status === 'published'
-                  ? 'bg-black'
-                  : blog.status === 'scheduled'
-                    ? 'bg-blue-600'
-                    : 'bg-red-500'
-              }`}
-            >
-              {blog.status}
-            </span>
+        {/* --- FIXED HEADER --- */}
+        <div className="flex items-center justify-between border-b border-gray-100 px-8 py-5">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Blog Details</h2>
+            <p className="mt-0.5 text-xs tracking-wider text-gray-400 uppercase">
+              Resource ID: {blog?._id}
+            </p>
           </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-2 text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-900"
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        {/* Blog Content */}
-        <div className="space-y-8">
-          {/* Title Area */}
-          <div>
-            <label className="mb-2 block text-xs font-bold tracking-widest text-neutral-400 uppercase">
-              Title
-            </label>
-            <h1 className="text-xl font-medium text-neutral-800 md:text-2xl">{blog.title}</h1>
-          </div>
-
-          {/* Meta Grid */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="flex items-center space-x-4 rounded-2xl border border-neutral-100 bg-neutral-50/50 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-                <User className="h-5 w-5 text-neutral-600" />
-              </div>
-              <div>
-                <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
-                  Author
-                </p>
-                <p className="font-semibold text-neutral-900">{blog.author || 'Admin'}</p>
-              </div>
+        {/* --- SCROLLABLE BODY --- */}
+        <div className="flex-1 space-y-8 overflow-y-auto p-8">
+          <div className="space-y-4">
+            {/* Status Badge */}
+            <div
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-bold tracking-wider uppercase ${statusStyles[blog.status as keyof typeof statusStyles] || statusStyles.draft}`}
+            >
+              {blog.status === 'published' ? <CheckCircle size={12} /> : <Clock size={12} />}
+              {blog.status}
             </div>
 
-            {/* Dynamic Date Field */}
-            <div className="flex items-center space-x-4 rounded-2xl border border-neutral-100 bg-neutral-50/50 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm">
-                <Calendar className="h-5 w-5 text-neutral-600" />
+            {/* Title */}
+            <h1 className="text-3xl leading-tight font-extrabold text-gray-900">{blog.title}</h1>
+          </div>
+
+          {/* Info Grid (Author bad deoya hoyeche) */}
+          <div className="grid grid-cols-1 gap-6 border-y border-gray-100 py-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-600">
+                <Calendar size={18} />
               </div>
               <div>
-                <p className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
-                  {dateLabel}
+                <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+                  {isScheduled ? 'Scheduled For' : 'Upload Date'}
                 </p>
-                <p className="font-semibold text-neutral-900">
-                  {' '}
-                  {blog?.status === 'scheduled'
-                    ? dateFormatter(blog?.scheduledAt)
-                    : dateFormatter(blog.uploadDate)}
+                <p className="text-sm font-semibold text-gray-800">
+                  {isScheduled ? dateFormatter(blog?.scheduledAt) : dateFormatter(blog.uploadDate)}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Audio Player Section (Replaced Image) */}
+          {/* Audio Player Section */}
           <div className="space-y-3">
             <label className="flex items-center gap-2 text-xs font-bold tracking-widest text-neutral-400 uppercase">
               <Music size={14} /> Audio File
@@ -127,25 +112,25 @@ export function ViewBlogModal({ isOpen, onClose, blog }: ViewBlogModalProps) {
             </div>
           </div>
 
-          {/* Description */}
+          {/* Description Content */}
           <div className="space-y-3">
             <label className="block text-xs font-bold tracking-widest text-neutral-400 uppercase">
-              Description
+              Content Description
             </label>
             <div className="rounded-2xl border border-gray-200 bg-white">
               <TiptapViewer content={blog.description} />
             </div>
           </div>
+        </div>
 
-          {/* Footer */}
-          <div className="flex justify-end pt-4">
-            <button
-              onClick={onClose}
-              className="rounded-xl bg-neutral-100 px-8 py-3 text-sm font-bold text-neutral-600 transition-all hover:bg-black hover:text-white hover:shadow-lg"
-            >
-              Close Details
-            </button>
-          </div>
+        {/* --- FIXED FOOTER --- */}
+        <div className="flex justify-end border-t border-gray-100 bg-gray-50 px-8 py-5">
+          <button
+            onClick={onClose}
+            className="rounded-xl bg-black px-8 py-2.5 text-sm font-bold text-white shadow-lg shadow-black/10 transition-all hover:bg-zinc-800 active:scale-95"
+          >
+            Close Preview
+          </button>
         </div>
       </div>
     </div>

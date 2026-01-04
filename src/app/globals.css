@@ -133,3 +133,21 @@ button {
 .ProseMirror [style*="text-align: right"] {
   text-align: right;
 }
+
+.ProseMirror img[style*="text-align: left"] {
+  margin-left: 0;
+  margin-right: auto;
+  display: block;
+}
+
+.ProseMirror img[style*="text-align: center"] {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.ProseMirror img[style*="text-align: right"] {
+  margin-left: auto;
+  margin-right: 0;
+  display: block;
+}

@@ -167,7 +167,7 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
 
             {/* Scrollable Form Body */}
             <div className="custom-scrollbar flex-1 space-y-8 overflow-y-auto bg-[#fcfcfc] p-8">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div className="space-y-2">
                   <label className="ml-1 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
                     Title
@@ -202,23 +202,26 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
                     />
                   </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="ml-1 flex items-center gap-2 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
-                  {formState.status === 'scheduled' ? <Clock size={14} /> : <Calendar size={14} />}
-                  {formState.status === 'scheduled'
-                    ? 'Scheduling Time'
-                    : formState.status === 'unpublished'
-                      ? 'Publication Date (optional)'
-                      : 'Publication Date'}
-                </label>
-                <input
-                  type={formState.status === 'scheduled' ? 'datetime-local' : 'date'}
-                  value={formState.date}
-                  onChange={(e) => setFormState((p) => ({ ...p, date: e.target.value }))}
-                  className="w-full rounded border border-neutral-200 bg-white px-5 py-4 font-medium transition-all outline-none focus:border-black disabled:cursor-default! disabled:opacity-30"
-                />
+                <div className="space-y-2">
+                  <label className="ml-1 flex items-center gap-2 text-[11px] font-bold tracking-[0.15em] text-neutral-400 uppercase">
+                    {formState.status === 'scheduled' ? (
+                      <Clock size={14} />
+                    ) : (
+                      <Calendar size={14} />
+                    )}
+                    {formState.status === 'scheduled'
+                      ? 'Scheduling Time'
+                      : formState.status === 'unpublished'
+                        ? 'Publication Date (optional)'
+                        : 'Publication Date'}
+                  </label>
+                  <input
+                    type={formState.status === 'scheduled' ? 'datetime-local' : 'date'}
+                    value={formState.date}
+                    onChange={(e) => setFormState((p) => ({ ...p, date: e.target.value }))}
+                    className="w-full rounded border border-neutral-200 bg-white px-5 py-4 font-medium transition-all outline-none focus:border-black disabled:cursor-default! disabled:opacity-30"
+                  />
+                </div>
               </div>
 
               <div className="space-y-3">
