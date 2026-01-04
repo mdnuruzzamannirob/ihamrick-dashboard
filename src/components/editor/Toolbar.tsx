@@ -33,7 +33,6 @@ import {
   Heading6,
   Heading5,
   Heading4,
-  Plus,
   Check,
 } from 'lucide-react';
 import { Dropdown } from './Dropdown';
@@ -81,88 +80,301 @@ const fontSizes = [
   '72px',
 ];
 
-const googleDocsColors = [
-  '#000000',
-  '#434343',
-  '#666666',
-  '#999999',
-  '#B7B7B7',
-  '#CCCCCC',
-  '#D9D9D9',
-  '#EFEFEF',
-  '#F3F3F3',
-  '#FFFFFF',
-  '#980000',
-  '#FF0000',
-  '#FF9900',
-  '#FFFF00',
-  '#00FF00',
-  '#00FFFF',
-  '#4A86E8',
-  '#0000FF',
-  '#9900FF',
-  '#FF00FF',
-  '#E6B8AF',
-  '#F4CCCC',
-  '#FCE5CD',
-  '#FFF2CC',
-  '#D9EAD3',
-  '#D0E0E3',
-  '#C9DAF8',
-  '#CFE2F3',
-  '#D9D2E9',
-  '#EAD1DC',
-  '#DD7E6B',
-  '#EA9999',
-  '#F9CB9C',
-  '#FFE599',
-  '#B6D7A8',
-  '#A2C4C9',
-  '#A4C2F4',
-  '#9FC5E8',
-  '#B4A7D6',
-  '#D5A6BD',
-  '#CC4125',
-  '#E06666',
-  '#F6B26B',
-  '#FFD966',
-  '#93C47D',
-  '#76A5AF',
-  '#6D9EEB',
-  '#6FA8DC',
-  '#8E7CC3',
-  '#C27BA0',
-  '#A61C00',
-  '#CC0000',
-  '#E69138',
-  '#F1C232',
-  '#6AA84F',
-  '#45818E',
-  '#3C78D8',
-  '#3D85C6',
-  '#674EA7',
-  '#A64D79',
-  '#85200C',
-  '#990000',
-  '#B45F06',
-  '#BF9000',
-  '#38761D',
-  '#134F5C',
-  '#1155CC',
-  '#0B5394',
-  '#351C75',
-  '#741B47',
-  '#5B0F00',
-  '#660000',
-  '#783F04',
-  '#7F6000',
-  '#274E13',
-  '#0C343D',
-  '#1C4587',
-  '#073763',
-  '#20124D',
-  '#4C1130',
-];
+const tailwindFullPalette = {
+  // Theme: All Gray/Neutral variations (50-950)
+  theme: {
+    slate: [
+      '#f8fafc',
+      '#f1f5f9',
+      '#e2e8f0',
+      '#cbd5e1',
+      '#94a3b8',
+      '#64748b',
+      '#475569',
+      '#334155',
+      '#1e293b',
+      '#0f172a',
+      '#020617',
+    ],
+    gray: [
+      '#f9fafb',
+      '#f3f4f6',
+      '#e5e7eb',
+      '#d1d5db',
+      '#9ca3af',
+      '#6b7280',
+      '#4b5563',
+      '#374151',
+      '#1f2937',
+      '#111827',
+      '#030712',
+    ],
+    zinc: [
+      '#fafafa',
+      '#f4f4f5',
+      '#e4e4e7',
+      '#d4d4d8',
+      '#a1a1aa',
+      '#71717a',
+      '#52525b',
+      '#3f3f46',
+      '#27272a',
+      '#18181b',
+      '#09090b',
+    ],
+    neutral: [
+      '#fafafa',
+      '#f5f5f5',
+      '#e5e5e5',
+      '#d4d4d4',
+      '#a3a3a3',
+      '#737373',
+      '#525252',
+      '#404040',
+      '#262626',
+      '#171717',
+      '#0a0a0a',
+    ],
+    stone: [
+      '#fafaf9',
+      '#f5f5f4',
+      '#e7e5e4',
+      '#d6d3d1',
+      '#a8a29e',
+      '#78716c',
+      '#57534e',
+      '#44403c',
+      '#292524',
+      '#1c1917',
+      '#0c0a09',
+    ],
+  },
+
+  // Standard: All other color families (50-950)
+  standard: {
+    red: [
+      '#fef2f2',
+      '#fee2e2',
+      '#fecaca',
+      '#fca5a5',
+      '#f87171',
+      '#ef4444',
+      '#dc2626',
+      '#b91c1c',
+      '#991b1b',
+      '#7f1d1d',
+      '#450a0a',
+    ],
+    orange: [
+      '#fff7ed',
+      '#ffedd5',
+      '#fed7aa',
+      '#fdba74',
+      '#fb923c',
+      '#f97316',
+      '#ea580c',
+      '#c2410c',
+      '#9a3412',
+      '#7c2d12',
+      '#431407',
+    ],
+    amber: [
+      '#fffbeb',
+      '#fef3c7',
+      '#fde68a',
+      '#fcd34d',
+      '#fbbf24',
+      '#f59e0b',
+      '#d97706',
+      '#b45309',
+      '#92400e',
+      '#78350f',
+      '#451a03',
+    ],
+    yellow: [
+      '#fefce8',
+      '#fef9c3',
+      '#fef08a',
+      '#fde047',
+      '#facc15',
+      '#eab308',
+      '#ca8a04',
+      '#a16207',
+      '#854d0e',
+      '#713f12',
+      '#422006',
+    ],
+    lime: [
+      '#f7fee7',
+      '#ecfccb',
+      '#d9f99d',
+      '#bef264',
+      '#a3e635',
+      '#84cc16',
+      '#65a30d',
+      '#4d7c0f',
+      '#3f6212',
+      '#365314',
+      '#1a2e05',
+    ],
+    green: [
+      '#f0fdf4',
+      '#dcfce7',
+      '#bbf7d0',
+      '#86efac',
+      '#4ade80',
+      '#22c55e',
+      '#16a34a',
+      '#15803d',
+      '#166534',
+      '#14532d',
+      '#052e16',
+    ],
+    emerald: [
+      '#ecfdf5',
+      '#d1fae5',
+      '#a7f3d0',
+      '#6ee7b7',
+      '#34d399',
+      '#10b981',
+      '#059669',
+      '#047857',
+      '#065f46',
+      '#064e3b',
+      '#022c22',
+    ],
+    teal: [
+      '#f0fdfa',
+      '#ccfbf1',
+      '#99f6e4',
+      '#5eead4',
+      '#2dd4bf',
+      '#14b8a6',
+      '#0d9488',
+      '#0f766e',
+      '#115e59',
+      '#134e4a',
+      '#042f2e',
+    ],
+    cyan: [
+      '#ecfeff',
+      '#cffafe',
+      '#a5f3fc',
+      '#67e8f9',
+      '#22d3ee',
+      '#06b6d4',
+      '#0891b2',
+      '#0e7490',
+      '#155e75',
+      '#164e63',
+      '#083344',
+    ],
+    sky: [
+      '#f0f9ff',
+      '#e0f2fe',
+      '#bae6fd',
+      '#7dd3fc',
+      '#38bdf8',
+      '#0ea5e9',
+      '#0284c7',
+      '#0369a1',
+      '#075985',
+      '#0c4a6e',
+      '#082f49',
+    ],
+    blue: [
+      '#eff6ff',
+      '#dbeafe',
+      '#bfdbfe',
+      '#93c5fd',
+      '#60a5fa',
+      '#3b82f6',
+      '#2563eb',
+      '#1d4ed8',
+      '#1e40af',
+      '#1e3a8a',
+      '#172554',
+    ],
+    indigo: [
+      '#eef2ff',
+      '#e0e7ff',
+      '#c7d2fe',
+      '#a5b4fc',
+      '#818cf8',
+      '#6366f1',
+      '#4f46e5',
+      '#4338ca',
+      '#3730a3',
+      '#312e81',
+      '#1e1b4b',
+    ],
+    violet: [
+      '#f5f3ff',
+      '#ede9fe',
+      '#ddd6fe',
+      '#c4b5fd',
+      '#a78bfa',
+      '#8b5cf6',
+      '#7c3aed',
+      '#6d28d9',
+      '#5b21b6',
+      '#4c1d95',
+      '#2e1065',
+    ],
+    purple: [
+      '#faf5ff',
+      '#f3e8ff',
+      '#e9d5ff',
+      '#d8b4fe',
+      '#c084fc',
+      '#a855f7',
+      '#9333ea',
+      '#7e22ce',
+      '#6b21a8',
+      '#581c87',
+      '#3b0764',
+    ],
+    fuchsia: [
+      '#fdf4ff',
+      '#fae8ff',
+      '#f5d0fe',
+      '#f0abfc',
+      '#e879f9',
+      '#d946ef',
+      '#c026d3',
+      '#a21caf',
+      '#86198f',
+      '#701a75',
+      '#4a044e',
+    ],
+    pink: [
+      '#fdf2f8',
+      '#fce7f3',
+      '#fbcfe8',
+      '#f9a8d4',
+      '#f472b6',
+      '#ec4899',
+      '#db2777',
+      '#be185d',
+      '#9d174d',
+      '#831843',
+      '#500724',
+    ],
+    rose: [
+      '#fff1f2',
+      '#ffe4e6',
+      '#fecdd3',
+      '#fda4af',
+      '#fb7185',
+      '#f43f5e',
+      '#e11d48',
+      '#be123c',
+      '#9f1239',
+      '#881337',
+      '#4c0519',
+    ],
+  },
+};
 
 const ToolbarButton = ({ onClick, active, icon: Icon, title, danger, disabled }: any) => (
   <button
@@ -371,58 +583,94 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
       {/* 4. Colors */}
       <div className="flex items-center gap-1">
         <Dropdown icon={Type} title="Text Color" active={editor.getAttributes('textStyle').color}>
-          <div className="custom-scrollbar max-h-60 overflow-y-auto p-2">
-            <div className="mb-2 grid grid-cols-5 gap-1.5">
-              {googleDocsColors.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => editor.chain().focus().setColor(c).run()}
-                  className="h-6 w-6 rounded-full border border-gray-100 hover:scale-110"
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
-            <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
-              <Plus size={14} className="text-gray-400" />
-              <span className="text-xs text-gray-600">Custom</span>
-              <input
-                type="color"
-                className="absolute inset-0 cursor-pointer opacity-0"
-                onChange={(e: any) => editor.chain().focus().setColor(e.target.value).run()}
-              />
-            </label>
+          <div className="custom-scrollbar max-h-72 space-y-4 overflow-y-auto p-3">
+            {/* Automatic */}
+            <button
+              onClick={() => editor.chain().focus().unsetColor().run()}
+              className="w-full rounded px-2 py-1 text-left text-sm text-slate-600 hover:bg-slate-100"
+            >
+              Default
+            </button>
+
+            {/* Theme Colors */}
+            {Object.entries(tailwindFullPalette.theme).map(([family, colors]) => (
+              <div key={family}>
+                <p className="mb-1 text-[11px] font-semibold text-slate-400 uppercase">{family}</p>
+                <div className="flex flex-wrap items-center gap-1">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => editor.chain().focus().setColor(c).run()}
+                      className="h-5 w-5 border border-gray-200"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Standard Colors */}
+            {Object.entries(tailwindFullPalette.standard).map(([family, colors]) => (
+              <div key={family}>
+                <p className="mb-1 text-[11px] font-semibold text-slate-400 uppercase">{family}</p>
+                <div className="flex flex-wrap items-center gap-1">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => editor.chain().focus().setColor(c).run()}
+                      className="h-5 w-5 border border-gray-200"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </Dropdown>
 
-        <Dropdown icon={PaintBucket} title="Highlighter" active={editor.isActive('highlight')}>
-          <div className="custom-scrollbar max-h-60 overflow-y-auto p-2">
-            <div className="mb-2 grid grid-cols-5 gap-1.5">
-              {googleDocsColors.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => editor.chain().focus().setHighlight({ color: c }).run()}
-                  className="h-6 w-6 rounded-full border border-gray-100 hover:scale-110"
-                  style={{ backgroundColor: c }}
-                />
-              ))}
-            </div>
+        <Dropdown icon={PaintBucket} title="Highlight" active={editor.isActive('highlight')}>
+          <div className="custom-scrollbar max-h-72 space-y-4 overflow-y-auto p-3">
+            {/* None */}
             <button
               onClick={() => editor.chain().focus().unsetHighlight().run()}
-              className="mb-1 w-full rounded border py-1 text-xs text-slate-500"
+              className="w-full rounded px-2 py-1 text-left text-sm text-slate-600 hover:bg-slate-100"
             >
               None
             </button>
-            <label className="relative flex cursor-pointer items-center gap-2 rounded bg-gray-50 p-1 hover:bg-gray-100">
-              <Plus size={14} className="text-gray-400" />
-              <span className="text-xs text-gray-600">Custom</span>
-              <input
-                type="color"
-                className="absolute inset-0 cursor-pointer opacity-0"
-                onChange={(e: any) =>
-                  editor.chain().focus().setHighlight({ color: e.target.value }).run()
-                }
-              />
-            </label>
+
+            {/* Theme */}
+            {Object.entries(tailwindFullPalette.theme).map(([family, colors]) => (
+              <div key={family}>
+                <p className="mb-1 text-[11px] font-semibold text-slate-400 uppercase">{family}</p>
+                <div className="flex flex-wrap items-center gap-1">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => editor.chain().focus().setHighlight({ color: c }).run()}
+                      className="h-5 w-5 border border-gray-200"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {/* Standard */}
+            {Object.entries(tailwindFullPalette.standard).map(([family, colors]) => (
+              <div key={family}>
+                <p className="mb-1 text-[11px] font-semibold text-slate-400 uppercase">{family}</p>
+                <div className="flex flex-wrap items-center gap-1">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => editor.chain().focus().setHighlight({ color: c }).run()}
+                      className="h-5 w-5 border border-gray-200"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </Dropdown>
       </div>
