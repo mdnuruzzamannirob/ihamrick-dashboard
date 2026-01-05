@@ -59,15 +59,39 @@ export function PublicationModal({ refetch }: { refetch: any }) {
 
     const payload = new FormData();
 
-    const utcDate = formData?.publicationDate
-      ? (() => {
-          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          const now = new Date();
-          const localDateTime = `${formData.publicationDate}T${now.toTimeString().slice(0, 8)}`;
+    const utcDate = (() => {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
 
-          return fromZonedTime(localDateTime, timeZone).toISOString();
-        })()
-      : null;
+      let localDateStr = formData.publicationDate;
+
+      if (!localDateStr) {
+        localDateStr = now.toISOString().split('T')[0];
+      }
+
+      if (localDateStr) {
+        try {
+          let localDateTime = localDateStr;
+
+          if (!localDateTime.includes('T')) {
+            const currentTime = now.toTimeString().slice(0, 8);
+            localDateTime = `${localDateTime}T${currentTime}`;
+          }
+
+          const zonedDate = fromZonedTime(localDateTime, timeZone);
+
+          if (isNaN(zonedDate.getTime())) {
+            return null;
+          }
+
+          return zonedDate.toISOString();
+        } catch (error) {
+          console.error('Date formatting error:', error);
+          return null;
+        }
+      }
+      return null;
+    })();
 
     payload.append('title', formData.title);
     payload.append('author', formData.author);

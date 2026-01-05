@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Pencil, Loader2, X } from 'lucide-react';
+import { Pencil, Loader2, X, ChevronDown } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useUpdatePodcastMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
@@ -11,12 +11,14 @@ import TiptapEditor from '../editor/TiptapEditor';
 
 const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+
   const [updatePodcast, { isLoading: isUpdating }] = useUpdatePodcastMutation();
 
   const [formData, setFormData] = useState({
     title: '',
     date: '',
-    status: 'scheduled',
+    status: '',
     description: '',
     transcription: '',
   });
@@ -47,15 +49,38 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
 
     const payload = new FormData();
 
-    const utcDate = formData?.date
-      ? (() => {
-          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          const now = new Date();
-          const localDateTime = `${formData.date}T${now.toTimeString().slice(0, 8)}`;
+    const utcDate = (() => {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
 
-          return fromZonedTime(localDateTime, timeZone).toISOString();
-        })()
-      : null;
+      let localDateStr = formData.date;
+
+      if (!localDateStr) {
+        localDateStr = now.toISOString().split('T')[0];
+      }
+
+      if (localDateStr) {
+        try {
+          let localDateTime = localDateStr;
+
+          if (!localDateTime.includes('T')) {
+            const currentTime = now.toTimeString().slice(0, 8);
+            localDateTime = `${localDateTime}T${currentTime}`;
+          }
+
+          const zonedDate = fromZonedTime(localDateTime, timeZone);
+
+          if (isNaN(zonedDate.getTime())) {
+            return null;
+          }
+
+          return zonedDate.toISOString();
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    })();
 
     payload.append('title', formData.title);
     payload.append('description', formData.description);
@@ -133,6 +158,50 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
                       onChange={handleInputChange}
                       className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm transition-all outline-none focus:border-black disabled:bg-gray-100 disabled:opacity-50"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="ml-1 text-[11px] font-bold tracking-widest text-gray-400 uppercase">
+                      Status
+                    </label>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        disabled={podcast.status === 'scheduled' || podcast.status === 'live'}
+                        onClick={() => setStatusOpen(!statusOpen)}
+                        className={`flex h-12 w-full items-center justify-between rounded bg-gray-50 px-5 text-sm font-medium transition-all outline-none ${
+                          podcast.status === 'scheduled' || podcast.status === 'live'
+                            ? 'cursor-not-allowed bg-gray-100 opacity-60'
+                            : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <span className="capitalize">{formData.status || 'Select status'}</span>
+                        {!(podcast.status === 'scheduled' || podcast.status === 'live') && (
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${statusOpen ? 'rotate-180' : ''}`}
+                          />
+                        )}
+                      </button>
+
+                      {statusOpen &&
+                        !(podcast.status === 'scheduled' || podcast.status === 'live') && (
+                          <div className="absolute z-99 mt-2 w-full overflow-hidden rounded bg-white shadow-2xl ring-1 ring-black/5">
+                            {['published', 'unpublished'].map((s) => (
+                              <button
+                                key={s}
+                                type="button"
+                                onClick={() => {
+                                  setFormData((p) => ({ ...p, status: s as any }));
+                                  setStatusOpen(false);
+                                }}
+                                className="block w-full px-5 py-3.5 text-left text-sm font-medium capitalize transition-all hover:bg-black hover:text-white"
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                    </div>
                   </div>
                 </div>
 

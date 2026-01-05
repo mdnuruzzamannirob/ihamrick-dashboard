@@ -52,18 +52,43 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
 
   const handleSave = async () => {
     if (!formData.title.trim()) return toast.error('Title is required');
+    if (formData.status === 'published' && !formData.uploadDate)
+      return toast.error('Upload date is required');
 
     const payload = new FormData();
 
-    const utcDate = formData?.uploadDate
-      ? (() => {
-          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          const now = new Date();
-          const localDateTime = `${formData.uploadDate}T${now.toTimeString().slice(0, 8)}`;
+    const utcDate = (() => {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
 
-          return fromZonedTime(localDateTime, timeZone).toISOString();
-        })()
-      : null;
+      let localDateStr = formData.uploadDate;
+
+      if (!localDateStr) {
+        localDateStr = now.toISOString().split('T')[0];
+      }
+
+      if (localDateStr) {
+        try {
+          let localDateTime = localDateStr;
+
+          if (!localDateTime.includes('T')) {
+            const currentTime = now.toTimeString().slice(0, 8);
+            localDateTime = `${localDateTime}T${currentTime}`;
+          }
+
+          const zonedDate = fromZonedTime(localDateTime, timeZone);
+
+          if (isNaN(zonedDate.getTime())) {
+            return null;
+          }
+
+          return zonedDate.toISOString();
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    })();
 
     payload.append('title', formData.title);
     payload.append('description', formData.description);

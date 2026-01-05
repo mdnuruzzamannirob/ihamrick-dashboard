@@ -12,7 +12,7 @@ import TiptapEditor from '../editor/TiptapEditor';
 interface PodcastFormState {
   title: string;
   date: string;
-  status: 'scheduled' | 'live' | 'ended' | 'cancelled';
+  status: 'scheduled';
   description: string;
   transcription: string;
   coverImage: File | Blob | null;
@@ -39,6 +39,10 @@ const PodcastUploadModal = ({ refetch }: any) => {
   };
 
   const handleSubmit = async () => {
+    if (!formData.title) {
+      toast.error('Title is required');
+      return;
+    }
     if (!formData.date) {
       toast.error('Date is required');
       return;
@@ -46,15 +50,38 @@ const PodcastUploadModal = ({ refetch }: any) => {
 
     const payload = new FormData();
 
-    const utcDate = formData?.date
-      ? (() => {
-          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          const now = new Date();
-          const localDateTime = `${formData.date}T${now.toTimeString().slice(0, 8)}`;
+    const utcDate = (() => {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
 
-          return fromZonedTime(localDateTime, timeZone).toISOString();
-        })()
-      : null;
+      let localDateStr = formData.date;
+
+      if (!localDateStr) {
+        localDateStr = now.toISOString().split('T')[0];
+      }
+
+      if (localDateStr) {
+        try {
+          let localDateTime = localDateStr;
+
+          if (!localDateTime.includes('T')) {
+            const currentTime = now.toTimeString().slice(0, 8);
+            localDateTime = `${localDateTime}T${currentTime}`;
+          }
+
+          const zonedDate = fromZonedTime(localDateTime, timeZone);
+
+          if (isNaN(zonedDate.getTime())) {
+            return null;
+          }
+
+          return zonedDate.toISOString();
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    })();
 
     payload.append('title', formData.title);
     payload.append('description', formData.description);

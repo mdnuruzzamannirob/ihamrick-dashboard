@@ -86,32 +86,39 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
 
     const formData = new FormData();
 
-    const utcDate = formState?.date
-      ? (() => {
-          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const utcDate = (() => {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
 
-          let localDateTime = formState.date;
+      let localDateStr = formState.date;
+
+      if (!localDateStr) {
+        localDateStr = now.toISOString().split('T')[0];
+      }
+
+      if (localDateStr) {
+        try {
+          let localDateTime = localDateStr;
 
           if (!localDateTime.includes('T')) {
-            const now = new Date();
             const currentTime = now.toTimeString().slice(0, 8);
             localDateTime = `${localDateTime}T${currentTime}`;
           }
 
-          try {
-            const zonedDate = fromZonedTime(localDateTime, timeZone);
+          const zonedDate = fromZonedTime(localDateTime, timeZone);
 
-            if (isNaN(zonedDate.getTime())) {
-              throw new Error('Invalid date object');
-            }
-
-            return zonedDate.toISOString();
-          } catch (e) {
-            console.error('Date conversion error:', e);
+          if (isNaN(zonedDate.getTime())) {
             return null;
           }
-        })()
-      : null;
+
+          return zonedDate.toISOString();
+        } catch (error) {
+          console.error('Date formatting error:', error);
+          return null;
+        }
+      }
+      return null;
+    })();
 
     if (formState.date && !utcDate) {
       toast.error('Invalid date format selected!');

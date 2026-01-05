@@ -40,19 +40,44 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
   const handleSubmit = async () => {
     if (!videoData.file) return toast.error('Please upload a video');
     if (!imageData.file) return toast.error('Please upload a thumbnail');
+    if (formData.status === 'published' && !formData.date)
+      return toast.error('Upload date is required');
     if (!formData.title.trim()) return toast.error('Title is required');
 
     const payload = new FormData();
 
-    const utcDate = formData?.date
-      ? (() => {
-          const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          const now = new Date();
-          const localDateTime = `${formData.date}T${now.toTimeString().slice(0, 8)}`;
+    const utcDate = (() => {
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const now = new Date();
 
-          return fromZonedTime(localDateTime, timeZone).toISOString();
-        })()
-      : null;
+      let localDateStr = formData.date;
+
+      if (!localDateStr) {
+        localDateStr = now.toISOString().split('T')[0];
+      }
+
+      if (localDateStr) {
+        try {
+          let localDateTime = localDateStr;
+
+          if (!localDateTime.includes('T')) {
+            const currentTime = now.toTimeString().slice(0, 8);
+            localDateTime = `${localDateTime}T${currentTime}`;
+          }
+
+          const zonedDate = fromZonedTime(localDateTime, timeZone);
+
+          if (isNaN(zonedDate.getTime())) {
+            return null;
+          }
+
+          return zonedDate.toISOString();
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    })();
 
     payload.append('title', formData.title);
     payload.append('description', formData.description);
