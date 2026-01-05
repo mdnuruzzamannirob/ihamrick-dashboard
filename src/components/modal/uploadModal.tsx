@@ -59,8 +59,6 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
 
   const handleClose = () => {
     setIsOpen(false);
-    setFormState({ title: '', status: 'published', date: '', description: '' });
-    setAudioData({ file: null, preview: '' });
     if (onCloseTrigger) onCloseTrigger();
   };
 

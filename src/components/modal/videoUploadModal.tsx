@@ -208,7 +208,6 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
               <button
                 onClick={() => {
                   setIsModalOpen(false);
-                  resetForm();
                 }}
                 className="px-6 py-2 text-xs font-black tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-900"
               >
