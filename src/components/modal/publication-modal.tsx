@@ -124,12 +124,10 @@ export function PublicationModal({ refetch }: { refetch: any }) {
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-50 px-8 py-5">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900">New Publication</h2>
-                <p className="mt-1 text-xs font-medium text-gray-400">
-                  Add details and upload files for the new publication.
-                </p>
-              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+                Add New Publication
+              </h2>
+
               <button
                 onClick={() => setIsOpen(false)}
                 className="rounded-full bg-gray-50 p-2.5 text-gray-400 transition-all hover:bg-gray-100 hover:text-black"
@@ -278,7 +276,7 @@ export function PublicationModal({ refetch }: { refetch: any }) {
                 disabled={isLoading}
                 className="flex items-center gap-2 rounded bg-black px-10 py-3 text-sm font-bold text-white shadow-xl shadow-black/20 transition-all disabled:opacity-50"
               >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Publication'}
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add Publication'}
               </button>
             </div>
           </div>

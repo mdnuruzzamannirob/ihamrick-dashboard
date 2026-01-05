@@ -1,50 +1,83 @@
+'use client';
+
+import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../services/store';
+import { BookOpen, ChevronRight, User } from 'lucide-react';
 
 export function ManagePublications() {
-  const publications = useSelector((state: RootState) => state.media.publications.data);
+  // Fetch the publications from the Redux state
+  const publications = useSelector((state: RootState) => state.media.publications.data) || [];
+
+  // Get the first 5 publications
+  const limitedPublications = publications.slice(0, 5);
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-6">
-      <h2 className="font-poppins mb-4 text-2xl font-semibold text-black">Manage Publications</h2>
+    <div className="rounded-2xl border border-neutral-100 bg-white p-6 shadow-sm">
+      {/* Header with View All */}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-black">Recent Publications</h2>
+        <Link
+          href="/manage-publications"
+          className="flex items-center text-sm font-semibold hover:text-blue-600 hover:underline"
+        >
+          View All <ChevronRight size={16} />
+        </Link>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-neutral-200">
-              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
-                Title
-              </th>
-
-              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
-                Author
-              </th>
-              <th className="font-poppins pb-3 text-left text-base font-bold text-[#383232]">
-                Status
-              </th>
+            <tr className="border-b border-neutral-50 text-left text-xs font-black tracking-widest text-neutral-400 uppercase">
+              <th className="pb-4">Publication Title</th>
+              <th className="pb-4">Author</th>
+              <th className="pb-4">Status</th>
             </tr>
           </thead>
-          <tbody>
-            {publications.slice(0, 5).map((publication, index) => (
-              <tr key={index} className="border-b border-neutral-100 last:border-0">
-                <td className="font-poppins max-w-40 truncate py-3 pr-3 text-left text-base font-normal text-[#333]">
-                  {publication.title}
-                </td>
+          <tbody className="divide-y divide-neutral-50">
+            {limitedPublications.length > 0 ? (
+              limitedPublications.map((pub: any, index: number) => (
+                <tr key={index} className="group transition-colors hover:bg-neutral-50/50">
+                  <td className="py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100 text-neutral-500">
+                        <BookOpen size={16} />
+                      </div>
+                      <p className="max-w-[180px] truncate text-sm font-bold text-neutral-800">
+                        {pub.title}
+                      </p>
+                    </div>
+                  </td>
 
-                <td className="font-poppins max-w-36 truncate py-3 pr-3 text-base font-normal text-[#333]">
-                  {publication.author}
-                </td>
+                  <td className="py-4">
+                    <div className="flex items-center gap-2 text-sm text-neutral-600">
+                      <User size={14} className="text-neutral-400" />
+                      <span className="max-w-[120px] truncate font-medium">
+                        {pub.author || 'Unknown'}
+                      </span>
+                    </div>
+                  </td>
 
-                <td className="font-poppins py-3 pr-3 text-base font-normal text-[#333]">
-                  <span
-                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
-                      publication.status ? 'bg-[#D75757] text-white' : 'bg-[#262626] text-white'
-                    }`}
-                  >
-                    {publication.status ? '  Published' : '  Unpublished'}
-                  </span>
+                  <td className="py-4">
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-black tracking-tighter uppercase ${
+                        pub.status
+                          ? 'bg-green-100 text-green-600'
+                          : 'bg-neutral-200 text-neutral-500'
+                      }`}
+                    >
+                      {pub.status ? 'Published' : 'Unpublished'}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={3} className="py-10 text-center text-sm text-neutral-400">
+                  No publications found.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

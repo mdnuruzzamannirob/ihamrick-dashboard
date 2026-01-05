@@ -95,13 +95,14 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
             className="animate-in zoom-in z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-xl bg-white shadow-2xl duration-200"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-              <h2 className="text-lg font-bold text-gray-800">Edit Podcast Details</h2>
+            <div className="flex items-center justify-between border-b border-gray-50 px-8 py-5">
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">Update Podcast</h2>
+
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-black"
+                className="rounded-full bg-gray-50 p-2.5 text-gray-400 transition-all hover:bg-gray-100 hover:text-black"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
@@ -182,25 +183,19 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-gray-50 bg-gray-50/30 px-8 py-5">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-lg px-6 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100"
+                className="rounded px-6 py-3 text-sm font-bold text-gray-400 transition-all hover:text-black"
               >
-                Cancel
+                Discard
               </button>
               <button
                 onClick={handleSave}
                 disabled={isUpdating}
-                className="flex items-center gap-2 rounded-lg bg-black px-8 py-2 text-sm font-medium text-white shadow-lg shadow-black/10 transition-all hover:bg-zinc-800 disabled:opacity-50"
+                className="flex items-center gap-2 rounded bg-black px-10 py-3 text-sm font-bold text-white shadow-xl shadow-black/20 transition-all disabled:opacity-50"
               >
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Updating...
-                  </>
-                ) : (
-                  'Update Podcast'
-                )}
+                {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update Podcast'}
               </button>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import type React from 'react';
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Loader2, Plus, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useCreatePodcastMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
@@ -107,13 +107,16 @@ const PodcastUploadModal = ({ refetch }: any) => {
             className="z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-              <h2 className="text-sm font-semibold">Create Podcast</h2>
+            <div className="flex items-center justify-between border-b border-gray-50 px-8 py-5">
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+                Create New Podcast
+              </h2>
+
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-2xl text-gray-500 hover:text-black"
+                className="rounded-full bg-gray-50 p-2.5 text-gray-400 transition-all hover:bg-gray-100 hover:text-black"
               >
-                ×
+                <X size={20} />
               </button>
             </div>
 
@@ -180,19 +183,19 @@ const PodcastUploadModal = ({ refetch }: any) => {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-4 border-t border-gray-200 bg-white px-6 py-4">
+            <div className="flex justify-end gap-3 border-t border-gray-50 bg-gray-50/30 px-8 py-5">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="rounded bg-red-500 px-5 py-2 text-sm text-white"
+                className="rounded px-6 py-3 text-sm font-bold text-gray-400 transition-all hover:text-black"
               >
-                Cancel
+                Discard
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="rounded bg-black px-5 py-2 text-sm text-white"
+                className="flex items-center gap-2 rounded bg-black px-10 py-3 text-sm font-bold text-white shadow-xl shadow-black/20 transition-all disabled:opacity-50"
               >
-                {isLoading ? 'Submitting...' : 'Submit'}
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Create Podcast'}
               </button>
             </div>
           </div>

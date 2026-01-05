@@ -16,14 +16,12 @@ import {
   CheckSquare,
   Link2,
   Image as ImageIcon,
-  Type,
   Superscript,
   Subscript,
   Eraser,
   Undo,
   Redo,
   Unlink,
-  PaintBucket,
   Heading1,
   Heading2,
   Heading3,
@@ -34,6 +32,8 @@ import {
   Heading5,
   Heading4,
   Check,
+  Palette,
+  Highlighter,
 } from 'lucide-react';
 import { Dropdown } from './Dropdown';
 
@@ -461,7 +461,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
   const detectedFont = editor.getAttributes('textStyle')?.fontFamily;
   const detectedSize = editor.getAttributes('textStyle')?.fontSize;
   const currentFont = detectedFont && fontFamilies.includes(detectedFont) ? detectedFont : 'Font';
-  const currentSize = detectedSize && fontSizes.includes(detectedSize) ? detectedSize : 'Text';
+  const currentSize = detectedSize && fontSizes.includes(detectedSize) ? detectedSize : 'Size';
 
   return (
     <div className="sticky top-0 z-30 flex flex-wrap items-center gap-1 rounded-t-2xl border-b border-slate-100 bg-white/95 px-3 py-2 backdrop-blur-md">
@@ -554,21 +554,25 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive('bold')}
           icon={Bold}
+          title="Bold"
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleItalic().run()}
           active={editor.isActive('italic')}
           icon={Italic}
+          title="Italic"
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           active={editor.isActive('underline')}
           icon={Underline}
+          title="Underline"
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleStrike().run()}
           active={editor.isActive('strike')}
           icon={Strikethrough}
+          title="Strike"
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -576,13 +580,25 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           icon={TextQuote}
           title="Blockquote"
         />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleSuperscript().run()}
+          active={editor.isActive('superscript')}
+          icon={Superscript}
+          title="Superscript"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleSubscript().run()}
+          active={editor.isActive('subscript')}
+          icon={Subscript}
+          title="Subscript"
+        />
       </div>
 
       <div className="mx-1 h-5 w-px bg-slate-200" />
 
       {/* 4. Colors */}
       <div className="flex items-center gap-1">
-        <Dropdown icon={Type} title="Text Color" active={editor.getAttributes('textStyle').color}>
+        <Dropdown icon={Palette} title="Color" active={editor.getAttributes('textStyle').color}>
           <div className="custom-scrollbar max-h-72 space-y-4 overflow-y-auto p-3">
             {/* Automatic */}
             <button
@@ -628,7 +644,7 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           </div>
         </Dropdown>
 
-        <Dropdown icon={PaintBucket} title="Highlight" active={editor.isActive('highlight')}>
+        <Dropdown icon={Highlighter} title="Highlight" active={editor.isActive('highlight')}>
           <div className="custom-scrollbar max-h-72 space-y-4 overflow-y-auto p-3">
             {/* None */}
             <button
@@ -848,19 +864,6 @@ export default function Toolbar({ editor }: { editor: Editor | null }) {
           </div>
         </Dropdown>
       </div>
-
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleSuperscript().run()}
-        active={editor.isActive('superscript')}
-        icon={Superscript}
-        title="Superscript"
-      />
-      <ToolbarButton
-        onClick={() => editor.chain().focus().toggleSubscript().run()}
-        active={editor.isActive('subscript')}
-        icon={Subscript}
-        title="Subscript"
-      />
 
       {/* 8. Eraser at Right Side */}
       <div className="ml-auto">

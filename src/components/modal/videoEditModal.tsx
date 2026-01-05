@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Check, Loader2, Pencil, Play, ImageIcon } from 'lucide-react';
+import { X, Loader2, Pencil, Play, ImageIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useUpdateVideoMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
@@ -105,12 +105,8 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
           <div className="z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-4xl border border-white/10 bg-white shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-5">
-              <div>
-                <h2 className="text-2xl font-black tracking-tight text-zinc-900">Edit Content</h2>
-                <p className="mt-1 text-xs font-medium tracking-widest text-zinc-400 uppercase">
-                  Video ID: {video._id.slice(-6)}
-                </p>
-              </div>
+              <h2 className="text-2xl font-black tracking-tight text-zinc-900">Edit Video</h2>
+
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-full p-2 hover:bg-zinc-100"
@@ -233,7 +229,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
                 disabled={isUpdating}
                 className="flex items-center gap-3 rounded-2xl bg-black px-12 py-4 text-xs font-black tracking-[2px] text-white uppercase shadow-2xl transition-all hover:scale-[1.02] active:scale-95 disabled:bg-zinc-200"
               >
-                {isUpdating ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
+                {isUpdating && <Loader2 className="animate-spin" size={18} />}
                 {isUpdating ? 'SAVING...' : 'UPDATE VIDEO'}
               </button>
             </div>

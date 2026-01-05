@@ -87,17 +87,12 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-4 backdrop-blur-md">
-          <div className="z-10 flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-4xl border border-white/10 bg-white shadow-2xl">
+          <div className="z-10 flex max-h-[95vh] w-full max-w-7xl flex-col overflow-hidden rounded-4xl border border-white/10 bg-white shadow-2xl">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-6">
-              <div>
-                <h2 className="text-2xl font-black tracking-tight text-zinc-900">
-                  Publish Content
-                </h2>
-                <p className="mt-1 text-xs font-medium tracking-widest text-zinc-400 uppercase">
-                  Video & Media Management
-                </p>
-              </div>
+            <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-5">
+              <h2 className="text-2xl font-black tracking-tight text-zinc-900">
+                Publish New Video
+              </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-full p-2 transition-colors hover:bg-zinc-100"
@@ -174,7 +169,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                       className="w-full cursor-pointer appearance-none rounded-2xl border border-zinc-200 bg-zinc-50/50 px-6 py-4 text-sm outline-none focus:bg-white"
                     >
                       <option value="published">Published</option>
-                      <option value="unpublished">Private</option>
+                      <option value="unpublished">Unpublished</option>
                     </select>
                   </div>
                 </div>
@@ -184,28 +179,25 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                     <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
                       Description
                     </label>
-                    <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
-                      <TiptapEditor
-                        value={formData.description}
-                        onChange={(newContent) =>
-                          setFormData((p) => ({ ...p, description: newContent }))
-                        }
-                      />
-                    </div>
+                    <TiptapEditor
+                      value={formData.description}
+                      onChange={(newContent) =>
+                        setFormData((p) => ({ ...p, description: newContent }))
+                      }
+                    />
                   </div>
 
                   <div className="space-y-3">
                     <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
-                      Video Transcription
+                      Transcription
                     </label>
-                    <div className="overflow-hidden rounded-2xl border border-zinc-200 shadow-sm">
-                      <TiptapEditor
-                        value={formData.transcriptions}
-                        onChange={(newContent) =>
-                          setFormData((p) => ({ ...p, transcriptions: newContent }))
-                        }
-                      />
-                    </div>
+
+                    <TiptapEditor
+                      value={formData.transcriptions}
+                      onChange={(newContent) =>
+                        setFormData((p) => ({ ...p, transcriptions: newContent }))
+                      }
+                    />
                   </div>
                 </div>
               </div>
@@ -220,7 +212,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                 }}
                 className="px-6 py-2 text-xs font-black tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-900"
               >
-                Discard Changes
+                Discard
               </button>
               <button
                 onClick={handleSubmit}

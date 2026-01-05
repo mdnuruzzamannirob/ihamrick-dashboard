@@ -111,14 +111,10 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-50 px-8 py-5">
-              <div>
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-                  Update Publication
-                </h2>
-                <p className="mt-1 text-xs font-medium text-gray-400">
-                  Modify content or replace existing files.
-                </p>
-              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900">
+                Update Publication
+              </h2>
+
               <button
                 onClick={() => setIsOpen(false)}
                 className="rounded-full bg-gray-50 p-2.5 text-gray-400 transition-all hover:bg-gray-100 hover:text-black"
@@ -265,7 +261,7 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
                 disabled={isLoading}
                 className="flex items-center gap-2 rounded bg-black px-10 py-3 text-sm font-bold text-white shadow-xl disabled:opacity-50"
               >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update Publication'}
               </button>
             </div>
           </div>
