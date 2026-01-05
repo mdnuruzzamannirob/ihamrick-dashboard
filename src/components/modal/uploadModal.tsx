@@ -89,12 +89,34 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
     const utcDate = formState?.date
       ? (() => {
           const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          const now = new Date();
-          const localDateTime = `${formState.date}T${now.toTimeString().slice(0, 8)}`;
 
-          return fromZonedTime(localDateTime, timeZone).toISOString();
+          let localDateTime = formState.date;
+
+          if (!localDateTime.includes('T')) {
+            const now = new Date();
+            const currentTime = now.toTimeString().slice(0, 8);
+            localDateTime = `${localDateTime}T${currentTime}`;
+          }
+
+          try {
+            const zonedDate = fromZonedTime(localDateTime, timeZone);
+
+            if (isNaN(zonedDate.getTime())) {
+              throw new Error('Invalid date object');
+            }
+
+            return zonedDate.toISOString();
+          } catch (e) {
+            console.error('Date conversion error:', e);
+            return null;
+          }
         })()
       : null;
+
+    if (formState.date && !utcDate) {
+      toast.error('Invalid date format selected!');
+      return;
+    }
 
     formData.append('title', formState.title);
     formData.append('description', formState.description);
@@ -119,6 +141,8 @@ export default function UploadModal({ selectedBlog, onCloseTrigger, refetch }: U
         toast.success('Article published!');
       }
       refetch();
+      setFormState({ title: '', status: 'published', date: '', description: '' });
+      setAudioData({ file: null, preview: '' });
       handleClose();
     } catch (err: any) {
       toast.error(err?.message || err?.data?.message || 'Something went wrong!');
