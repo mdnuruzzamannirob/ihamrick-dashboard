@@ -54,27 +54,27 @@ button {
 
 /* Headings */
 .ProseMirror h1 {
-  @apply text-5xl font-black mb-6 mt-12 text-slate-900;
+  @apply text-5xl font-black my-6 text-slate-900;
 }
 
 .ProseMirror h2 {
-  @apply text-4xl font-extrabold mb-5 mt-10 text-slate-900;
+  @apply text-4xl font-extrabold my-5 text-slate-900;
 }
 
 .ProseMirror h3 {
-  @apply text-3xl font-bold mb-4 mt-8 text-slate-900;
+  @apply text-3xl font-bold my-4 text-slate-900;
 }
 
 .ProseMirror h4 {
-  @apply text-2xl font-semibold mb-3 mt-6 text-slate-900;
+  @apply text-2xl font-semibold my-3 text-slate-900;
 }
 
 .ProseMirror h5 {
-  @apply text-xl font-medium mb-2 mt-4 text-slate-900;
+  @apply text-xl font-medium my-2 text-slate-900;
 }
 
 .ProseMirror h6 {
-  @apply text-lg font-medium mb-1 mt-2 text-slate-900;
+  @apply text-lg font-medium my-1 text-slate-900;
 }
 
 /* Blockquote - Fixed missing style */
@@ -82,9 +82,17 @@ button {
   @apply border-l-4 border-indigo-500 pl-4 py-2 italic bg-indigo-50/50 text-slate-700 rounded-r-lg my-4;
 }
 
-/* Lists (Roman Support) */
+/* Lists  */
 .ProseMirror ol {
-  @apply list-decimal pl-6 my-4;
+  @apply list-decimal ml-6 pl-6 my-5 space-y-2;
+}
+
+
+.ProseMirror ol ol,
+.ProseMirror ul ul,
+.ProseMirror ol ul,
+.ProseMirror ul ol {
+  @apply ml-6 mt-2 mb-0;
 }
 
 .ProseMirror ol ol {
@@ -96,12 +104,12 @@ button {
 }
 
 .ProseMirror ul {
-  @apply list-disc pl-6 my-4;
+  @apply list-disc ml-6 pl-6 my-5 space-y-2;
 }
 
 /* Task Lists */
 .ProseMirror ul[data-type="taskList"] {
-  @apply list-none p-0;
+  @apply list-none p-0 ml-2;
 }
 
 .ProseMirror ul[data-type="taskList"] li {

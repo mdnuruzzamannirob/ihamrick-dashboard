@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
-import { joditConfig } from '@/utils/joditConfig';
-
-const JoditEditor = dynamic(() => import('jodit-react'), { ssr: false });
+import { useEffect, useState } from 'react';
+import TiptapEditor from '../editor/TiptapEditor';
 
 interface Props {
   title: string;
@@ -21,7 +18,6 @@ export default function AboutUsEditor({
   isFetching,
   isSaving,
 }: Props) {
-  const editorRef = useRef(null);
   const [content, setContent] = useState('');
 
   useEffect(() => {
@@ -42,14 +38,7 @@ export default function AboutUsEditor({
     <div className="font-poppins min-h-screen">
       <h1 className="mb-4 text-lg font-semibold text-gray-900">{title}</h1>
 
-      <div className="rounded-lg border border-gray-200">
-        <JoditEditor
-          ref={editorRef}
-          value={content}
-          config={{ ...joditConfig, placeholder: '' }}
-          onBlur={(newContent) => setContent(newContent)}
-        />
-      </div>
+      <TiptapEditor value={initialContent} onChange={(newContent) => setContent(newContent)} />
 
       <div className="mt-6 flex justify-center">
         <button
