@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, Pencil, Play, ImageIcon } from 'lucide-react';
+import { X, Loader2, Pencil, Play, ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useUpdateVideoMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
@@ -20,6 +20,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     status: 'published',
     description: '',
     transcription: '',
+    videoUrl: '',
   });
 
   // Media States
@@ -35,6 +36,8 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
   // Initialize data when modal opens
   useEffect(() => {
     if (video && isModalOpen) {
+      const existingUrl = typeof video.videoUrl === 'string' ? video.videoUrl : '';
+
       setFormData({
         title: video.title || '',
         uploadDate: video.uploadDate
@@ -43,9 +46,14 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
         status: video.status === 'published' || video.status === true ? 'published' : 'unpublished',
         description: video.description || '',
         transcription: video.transcription || '',
+        videoUrl: existingUrl,
       });
 
-      setVideoData({ file: null, preview: video.signedUrl || video.videoUrl || '' });
+      setVideoData({
+        file: null,
+        preview: video.signedUrl || (!existingUrl ? video.videoUrl : '') || '',
+      });
+
       setImageData({ file: null, preview: video.thumbnailUrl || '' });
     }
   }, [video, isModalOpen]);
@@ -54,6 +62,11 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     if (!formData.title.trim()) return toast.error('Title is required');
     if (formData.status === 'published' && !formData.uploadDate)
       return toast.error('Upload date is required');
+
+    // Validation: Check if at least one source exists
+    if (!videoData.file && !formData.videoUrl.trim() && !videoData.preview) {
+      return toast.error('Video content is required');
+    }
 
     const payload = new FormData();
 
@@ -93,13 +106,14 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     payload.append('title', formData.title);
     payload.append('description', formData.description);
     payload.append('transcription', formData.transcription);
-    if (utcDate) {
-      payload.append('uploadDate', utcDate);
-    }
     payload.append('status', formData.status);
+    if (utcDate) payload.append('uploadDate', utcDate);
 
     if (videoData.file) {
       payload.append('video', videoData.file);
+      payload.append('videoUrl', '');
+    } else if (formData.videoUrl.trim()) {
+      payload.append('videoUrl', formData.videoUrl.trim());
     }
 
     if (imageData.file) {
@@ -116,6 +130,9 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
     }
   };
 
+  const isUrlDisabled = !!videoData.file;
+  const isFileUploadDisabled = formData.videoUrl.trim().length > 0;
+
   return (
     <>
       <button
@@ -131,7 +148,6 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-zinc-100 px-10 py-5">
               <h2 className="text-2xl font-black tracking-tight text-zinc-900">Edit Video</h2>
-
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-full p-2 hover:bg-zinc-100"
@@ -141,21 +157,52 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-10">
-              {/* Media Section: New Smart Uploader Applied Here */}
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
                 {/* 1. Video Edit Section */}
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
-                    <Play size={14} className="text-zinc-900" /> Video Content
-                  </label>
-                  <SmartMediaUpload
-                    label="Change Video File"
-                    allowedFormats={['video/*']}
-                    className="aspect-video"
-                    onFileChange={(file, preview) => setVideoData({ file, preview })}
-                    initialUrl={videoData.preview}
-                    // thumbnail={imageData.preview}
-                  />
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                      <Play size={14} className="text-zinc-900" /> Video Source
+                    </label>
+                  </div>
+
+                  {/* File Upload part */}
+                  <div
+                    className={`${isFileUploadDisabled ? 'pointer-events-none opacity-40' : ''}`}
+                  >
+                    <SmartMediaUpload
+                      label="Change Video File"
+                      allowedFormats={['video/*']}
+                      className="aspect-video"
+                      onFileChange={(file, preview) => setVideoData({ file, preview })}
+                      initialUrl={videoData.preview}
+                    />
+                  </div>
+
+                  <div className="relative flex items-center py-1">
+                    <div className="grow border-t border-zinc-100"></div>
+                    <span className="mx-4 text-[10px] font-bold text-zinc-300 uppercase">OR</span>
+                    <div className="grow border-t border-zinc-100"></div>
+                  </div>
+
+                  {/* URL Input part */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                      <LinkIcon size={14} className="text-zinc-900" /> Video URL
+                    </label>
+                    <input
+                      type="text"
+                      disabled={isUrlDisabled}
+                      placeholder={
+                        isUrlDisabled
+                          ? 'Clear selected file to use URL'
+                          : 'Paste YouTube/Vimeo link...'
+                      }
+                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm font-medium transition-all outline-none focus:border-black focus:bg-white disabled:cursor-not-allowed"
+                      value={formData.videoUrl}
+                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    />
+                  </div>
                 </div>
 
                 {/* 2. Thumbnail Edit Section */}

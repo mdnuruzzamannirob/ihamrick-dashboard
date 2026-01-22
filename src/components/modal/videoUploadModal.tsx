@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Upload, X, Play, FileText, Check } from 'lucide-react';
+import { Upload, X, Play, FileText, Check, Link as LinkIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useUploadVideoMutation } from '../../../services/allApi';
 import { SmartMediaUpload } from '../SmartMediaUpload';
@@ -18,9 +18,10 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
     date: '',
     status: 'published',
     description: '',
-    transcriptions: '',
+    transcription: '',
+    videoUrl: '',
   });
-
+  console.log(formData);
   // Media States
   const [videoData, setVideoData] = useState<{ file: File | Blob | null; preview: string }>({
     file: null,
@@ -32,13 +33,28 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
   });
 
   const resetForm = () => {
-    setFormData({ title: '', date: '', status: 'published', description: '', transcriptions: '' });
+    setFormData({
+      title: '',
+      date: '',
+      status: 'published',
+      description: '',
+      transcription: '',
+      videoUrl: '',
+    });
     setVideoData({ file: null, preview: '' });
     setImageData({ file: null, preview: '' });
   };
 
   const handleSubmit = async () => {
-    if (!videoData.file) return toast.error('Please upload a video');
+    if (!videoData.file && !formData.videoUrl.trim()) {
+      return toast.error('Please upload a video file or provide a video URL');
+    }
+
+    // Don't allow both (safety check)
+    if (videoData.file && formData.videoUrl.trim()) {
+      return toast.error('Please provide either a video file or a URL, not both');
+    }
+
     if (!imageData.file) return toast.error('Please upload a thumbnail');
     if (formData.status === 'published' && !formData.date)
       return toast.error('Upload date is required');
@@ -79,16 +95,20 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
       return null;
     })();
 
+    // Append standard fields
     payload.append('title', formData.title);
     payload.append('description', formData.description);
-    payload.append('transcription', formData.transcriptions);
-    if (utcDate) {
-      payload.append('uploadDate', utcDate);
-    }
-
+    payload.append('transcription', formData.transcription);
     payload.append('status', formData.status);
-    payload.append('video', videoData.file);
     payload.append('coverImage', imageData.file);
+    if (utcDate) payload.append('uploadDate', utcDate);
+
+    // Conditional Video Append
+    if (videoData.file) {
+      payload.append('video', videoData.file);
+    } else if (formData.videoUrl.trim()) {
+      payload.append('videoUrl', formData.videoUrl.trim());
+    }
 
     try {
       await uploadVideo(payload).unwrap();
@@ -97,9 +117,13 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
       refetch();
       resetForm();
     } catch (err: any) {
-      toast.error(err.message || 'Upload failed.');
+      toast.error(err.data?.message || err.message || 'Upload failed.');
     }
   };
+
+  // Logic to determine if inputs should be disabled
+  const isUrlDisabled = !!videoData.file;
+  const isFileUploadDisabled = formData.videoUrl.trim().length > 0;
 
   return (
     <>
@@ -127,26 +151,64 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
             </div>
 
             <div className="flex-1 overflow-y-auto p-10">
+              {/* Media Section */}
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
-                {/* 1. Video Upload Section */}
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
-                    <Play size={14} className="text-zinc-900" /> Video Source
-                  </label>
-                  <SmartMediaUpload
-                    label="Drop Video File"
-                    allowedFormats={['video/*']}
-                    className="aspect-video"
-                    onFileChange={(file: any, preview: any) => setVideoData({ file, preview })}
-                    initialUrl={videoData.preview}
-                  />
+                {/* 1. Video Source Section */}
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                      <Play size={14} className="text-zinc-900" /> Video File
+                    </label>
+                    <p className="text-[10px] text-zinc-400 italic">Upload a local file</p>
+                  </div>
+
+                  <div
+                    className={`${isFileUploadDisabled ? 'pointer-events-none opacity-40' : ''}`}
+                  >
+                    <SmartMediaUpload
+                      label="Drop Video File"
+                      allowedFormats={['video/*']}
+                      className="aspect-video"
+                      onFileChange={(file: any, preview: any) => setVideoData({ file, preview })}
+                      initialUrl={videoData.preview}
+                    />
+                  </div>
+
+                  <div className="relative flex items-center py-2">
+                    <div className="grow border-t border-zinc-100"></div>
+                    <span className="mx-4 shrink text-[10px] font-bold text-zinc-300 uppercase">
+                      OR
+                    </span>
+                    <div className="grow border-t border-zinc-100"></div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                      <LinkIcon size={14} className="text-zinc-900" /> Video URL
+                    </label>
+                    <input
+                      type="text"
+                      disabled={isUrlDisabled}
+                      placeholder={
+                        isUrlDisabled
+                          ? 'Disable: Video file selected'
+                          : 'Paste YouTube/Vimeo link...'
+                      }
+                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm font-medium transition-all outline-none focus:border-black focus:bg-white disabled:cursor-not-allowed"
+                      value={formData.videoUrl}
+                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    />
+                  </div>
                 </div>
 
-                {/* 2. Thumbnail Upload Section */}
-                <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
-                    <FileText size={14} className="text-zinc-900" /> Cover Thumbnail
-                  </label>
+                {/* 2. Thumbnail Section */}
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="flex items-center gap-2 text-[10px] font-black tracking-[2px] text-zinc-400 uppercase">
+                      <FileText size={14} className="text-zinc-900" /> Cover Thumbnail
+                    </label>
+                    <p className="text-[10px] text-zinc-400 italic">High-res image recommended</p>
+                  </div>
                   <SmartMediaUpload
                     label="Drop Cover Image"
                     allowedFormats={['image/*']}
@@ -216,11 +278,10 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
                     <label className="text-xs font-black tracking-widest text-zinc-500 uppercase">
                       Transcription
                     </label>
-
                     <TiptapEditor
-                      value={formData.transcriptions}
+                      value={formData.transcription}
                       onChange={(newContent) =>
-                        setFormData((p) => ({ ...p, transcriptions: newContent }))
+                        setFormData((p) => ({ ...p, transcription: newContent }))
                       }
                     />
                   </div>
@@ -233,6 +294,7 @@ const VideoUploadModal = ({ refetch }: { refetch: any }) => {
               <button
                 onClick={() => {
                   setIsModalOpen(false);
+                  resetForm();
                 }}
                 className="px-6 py-2 text-xs font-black tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-900"
               >
