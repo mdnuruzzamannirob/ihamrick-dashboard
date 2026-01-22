@@ -27,7 +27,7 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
   const [imagePreview, setImagePreview] = useState('');
 
   useEffect(() => {
-    if (podcast && isModalOpen) {
+    if (podcast) {
       setFormData({
         title: podcast.title || '',
         date: podcast.date ? dateFormatter(podcast.date).split('T')[0] : '',
@@ -37,7 +37,7 @@ const PodcastEditModal = ({ podcast, refetch }: { podcast: any; refetch: any }) 
       });
       setImagePreview(podcast?.coverImageUrl || podcast?.coverImage || '');
     }
-  }, [podcast, isModalOpen]);
+  }, [podcast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

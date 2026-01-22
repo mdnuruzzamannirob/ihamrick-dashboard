@@ -28,7 +28,7 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
   const [previews, setPreviews] = useState({ cover: '', file: '' });
 
   useEffect(() => {
-    if (publication && isOpen) {
+    if (publication) {
       setFormData({
         title: publication.title || '',
         author: publication.author || '',
@@ -45,7 +45,7 @@ export function EditPublicationModal({ publication, refetch }: { publication: an
         file: publication.file || '',
       });
     }
-  }, [publication, isOpen]);
+  }, [publication]);
 
   const handleUpdate = async () => {
     if (!formData.title) {

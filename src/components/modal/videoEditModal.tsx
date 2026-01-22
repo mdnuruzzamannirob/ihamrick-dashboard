@@ -35,7 +35,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
 
   // Initialize data when modal opens
   useEffect(() => {
-    if (video && isModalOpen) {
+    if (video) {
       const existingUrl = typeof video.videoUrl === 'string' ? video.videoUrl : '';
 
       setFormData({
@@ -46,7 +46,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
         status: video.status === 'published' || video.status === true ? 'published' : 'unpublished',
         description: video.description || '',
         transcription: video.transcription || '',
-        videoUrl: existingUrl,
+        videoUrl: '',
       });
 
       setVideoData({
@@ -56,7 +56,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
 
       setImageData({ file: null, preview: video.thumbnailUrl || '' });
     }
-  }, [video, isModalOpen]);
+  }, [video]);
 
   const handleSave = async () => {
     if (!formData.title.trim()) return toast.error('Title is required');
@@ -194,9 +194,7 @@ const VideoEditModal = ({ video, refetch }: { video: any; refetch: any }) => {
                       type="text"
                       disabled={isUrlDisabled}
                       placeholder={
-                        isUrlDisabled
-                          ? 'Clear selected file to use URL'
-                          : 'Paste YouTube/Vimeo link...'
+                        isUrlDisabled ? 'Clear selected file to use URL' : 'Paste video link...'
                       }
                       className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-4 py-3 text-sm font-medium transition-all outline-none focus:border-black focus:bg-white disabled:cursor-not-allowed"
                       value={formData.videoUrl}
