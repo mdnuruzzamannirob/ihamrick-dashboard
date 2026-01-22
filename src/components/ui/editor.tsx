@@ -35,7 +35,7 @@ export default function AboutUsEditor({
   }
 
   return (
-    <div className="font-poppins min-h-screen">
+    <div className="font-poppins">
       <h1 className="mb-4 text-lg font-semibold text-gray-900">{title}</h1>
 
       <TiptapEditor value={initialContent} onChange={(newContent) => setContent(newContent)} />

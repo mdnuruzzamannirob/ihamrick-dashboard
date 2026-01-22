@@ -262,6 +262,10 @@ const allApi = createApi({
     'AboutUs',
     'PrivacyPolicy',
     'Motivations',
+    'BlogMotivations',
+    'PublicationMotivations',
+    'VideoMotivations',
+    'PodcastMotivations',
     'ContactText',
     'FooterText1',
     'FooterText2',
@@ -669,6 +673,74 @@ const allApi = createApi({
       invalidatesTags: ['Motivation'],
     }),
 
+    // --- MOTIVATION FOR BLOG ---
+    getMotivationForBlog: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/blog-motivation',
+        method: 'GET',
+      }),
+      providesTags: ['BlogMotivations'],
+    }),
+    updateMotivationForBlog: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/blog-motivation',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['BlogMotivations'],
+    }),
+
+    // --- MOTIVATION FOR PUBLICATIONS ---
+    getMotivationForPublication: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/publication-motivation',
+        method: 'GET',
+      }),
+      providesTags: ['PublicationMotivations'],
+    }),
+    updateMotivationForPublication: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/publication-motivation',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['PublicationMotivations'],
+    }),
+
+    // --- MOTIVATION FOR VIDEO ---
+    getMotivationForVideo: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/video-motivation',
+        method: 'GET',
+      }),
+      providesTags: ['VideoMotivations'],
+    }),
+    updateMotivationForVideo: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/video-motivation',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['VideoMotivations'],
+    }),
+
+    // --- MOTIVATION FOR PODCAST ---
+    getMotivationForPodcast: builder.query<any, void>({
+      query: () => ({
+        url: 'website-content/podcast-motivation',
+        method: 'GET',
+      }),
+      providesTags: ['PodcastMotivations'],
+    }),
+    updateMotivationForPodcast: builder.mutation<void, { content: string }>({
+      query: (body) => ({
+        url: 'website-content/podcast-motivation',
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['PodcastMotivations'],
+    }),
+
     // Contact
     getContactText: builder.query<any, void>({
       query: () => ({
@@ -825,6 +897,14 @@ export const {
   useGetContactTextQuery,
   useUpdateContactTextMutation,
   useGetRSSSubscriptionsQuery,
+  useGetMotivationForBlogQuery,
+  useUpdateMotivationForBlogMutation,
+  useGetMotivationForPublicationQuery,
+  useUpdateMotivationForPublicationMutation,
+  useGetMotivationForVideoQuery,
+  useUpdateMotivationForVideoMutation,
+  useGetMotivationForPodcastQuery,
+  useUpdateMotivationForPodcastMutation,
 } = allApi;
 
 export default allApi;
