@@ -197,9 +197,9 @@ export default function ProfilePage() {
                 <input
                   name="email"
                   type="email"
+                  disabled
                   value={formData.email}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border px-4 py-2.5 text-sm"
+                  className="w-full rounded-lg border px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
                 />
               </div>
 
